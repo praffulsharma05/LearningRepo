@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Landmaark Backend — Database Relationships & ER Flowchart</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Mermaid.js -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --bg-dark: #090d16;
+      --bg-card: rgba(19, 27, 44, 0.75);
+      --bg-card-hover: rgba(28, 39, 64, 0.85);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-active: rgba(99, 102, 241, 0.5);
+      
+      --primary: #6366f1;
+      --primary-glow: rgba(99, 102, 241, 0.35);
+      --accent-cyan: #06b6d4;
+      --accent-purple: #8b5cf6;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --text-dim: #6b7280;
+      
+      --font-sans: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      --font-mono: 'Fira Code', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(at 10% 10%, rgba(99, 102, 241, 0.15) 0px, transparent 40%),
+        radial-gradient(at 90% 90%, rgba(6, 182, 212, 0.12) 0px, transparent 40%);
+      background-attachment: fixed;
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      padding-bottom: 60px;
+    }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    header {
+      padding: 40px 0 24px;
+      text-align: center;
+    }
+
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 16px;
+      border-radius: 9999px;
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      color: #a5b4fc;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    h1 {
+      font-size: 2.6rem;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 50%, #38bdf8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 12px;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      max-width: 780px;
+      margin: 0 auto;
+    }
+
+    /* Relationship Badges Bar */
+    .relationship-types-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin: 28px 0;
+    }
+
+    .rel-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 16px 20px;
+      backdrop-filter: blur(12px);
+      transition: all 0.2s ease;
+    }
+
+    .rel-card:hover {
+      border-color: var(--border-active);
+      transform: translateY(-2px);
+    }
+
+    .rel-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+
+    .rel-badge {
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .rel-badge.one-to-many { background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); }
+    .rel-badge.many-to-many { background: rgba(192, 132, 252, 0.2); color: #c084fc; border: 1px solid rgba(192, 132, 252, 0.4); }
+    .rel-badge.one-to-one { background: rgba(52, 211, 153, 0.2); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.4); }
+    .rel-badge.recursive { background: rgba(251, 191, 36, 0.2); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.4); }
+
+    .rel-title {
+      font-weight: 700;
+      color: #fff;
+      font-size: 0.95rem;
+    }
+
+    .rel-desc {
+      font-size: 0.825rem;
+      color: var(--text-muted);
+    }
+
+    /* Toolbar */
+    .toolbar {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 14px 20px;
+      backdrop-filter: blur(12px);
+      margin-bottom: 24px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 15px;
+      z-index: 100;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+    }
+
+    .tab-group {
+      display: flex;
+      gap: 6px;
+      background: rgba(15, 23, 42, 0.8);
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+    }
+
+    .tab-btn {
+      padding: 9px 18px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn.active {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--accent-purple) 100%);
+      color: #fff;
+      box-shadow: 0 4px 12px var(--primary-glow);
+    }
+
+    /* Diagram Display Container */
+    .diagram-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 28px;
+      backdrop-filter: blur(12px);
+      margin-bottom: 30px;
+      overflow-x: auto;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    .diagram-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .diagram-sub {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-bottom: 24px;
+    }
+
+    .mermaid {
+      display: flex;
+      justify-content: center;
+      min-width: 850px;
+    }
+
+    /* Relationships Table */
+    .rel-table-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 18px;
+      overflow: hidden;
+      backdrop-filter: blur(12px);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th {
+      background: rgba(15, 23, 42, 0.9);
+      padding: 16px 20px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    td {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 0.925rem;
+      color: var(--text-main);
+    }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    code {
+      font-family: var(--font-mono);
+      background: rgba(15, 23, 42, 0.9);
+      color: #38bdf8;
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-size: 0.875em;
+      border: 1px solid rgba(56, 189, 248, 0.2);
+    }
+
+    .view-section {
+      display: none;
+    }
+
+    .view-section.active {
+      display: block;
+    }
+
+    @media (max-width: 768px) {
+      h1 { font-size: 1.8rem; }
+      .toolbar { flex-direction: column; align-items: stretch; }
+      .tab-group { width: 100%; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="container">
+      <div class="badge-pill">
+        <i data-lucide="git-merge" style="width: 16px; height: 16px;"></i>
+        Landmaark Project DB Design
+      </div>
+      <h1>Database Table Relationships & Cardinality Flowchart</h1>
+      <p>Explicit mapping of One-to-Many (1:N), Many-to-Many (M:N), One-to-One (1:1), and Recursive Hierarchy relationships.</p>
+
+      <!-- Cardinality Cards -->
+      <div class="relationship-types-bar">
+        <div class="rel-card">
+          <div class="rel-header">
+            <span class="rel-badge one-to-many">1 : N</span>
+            <span class="rel-title">One-to-Many</span>
+          </div>
+          <div class="rel-desc">Parent table record connects to multiple child records (e.g. Townships ➔ Properties).</div>
+        </div>
+
+        <div class="rel-card">
+          <div class="rel-header">
+            <span class="rel-badge many-to-many">M : N</span>
+            <span class="rel-title">Many-to-Many</span>
+          </div>
+          <div class="rel-desc">Linked via junction table (e.g. Properties ➔ Property_Amenities ➔ Amenities).</div>
+        </div>
+
+        <div class="rel-card">
+          <div class="rel-header">
+            <span class="rel-badge one-to-one">1 : 1</span>
+            <span class="rel-title">One-to-One</span>
+          </div>
+          <div class="rel-desc">Direct single extension record (e.g. Sales ➔ Sales_Audits document verification).</div>
+        </div>
+
+        <div class="rel-card">
+          <div class="rel-header">
+            <span class="rel-badge recursive">1 : N Self</span>
+            <span class="rel-title">Recursive Upline</span>
+          </div>
+          <div class="rel-desc">Self-referencing foreign key (Users ➔ Sponsor_ID Upline tree).</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- View Switcher -->
+    <div class="toolbar">
+      <div style="font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
+        <i data-lucide="layers" style="color: var(--primary);"></i>
+        Database Views
+      </div>
+
+      <div class="tab-group">
+        <button class="tab-btn active" onclick="switchView('er-view', this)">
+          <i data-lucide="network" style="width: 16px; height: 16px;"></i> ER Diagram (Mermaid.js)
+        </button>
+        <button class="tab-btn" onclick="switchView('matrix-view', this)">
+          <i data-lucide="table-properties" style="width: 16px; height: 16px;"></i> Relationship Matrix
+        </button>
+        <button class="tab-btn" onclick="switchView('flow-view', this)">
+          <i data-lucide="workflow" style="width: 16px; height: 16px;"></i> Sales Pipeline Flowchart
+        </button>
+      </div>
+    </div>
+
+    <!-- VIEW 1: Mermaid ER Diagram -->
+    <section id="er-view" class="view-section active">
+      <div class="diagram-card">
+        <div class="diagram-title">
+          <i data-lucide="network" style="color: var(--accent-cyan);"></i>
+          Full Entity-Relationship Diagram (ERD)
+        </div>
+        <div class="diagram-sub">
+          Symbols: <code>||--o{</code> (1 to Many) | <code>||--||</code> (1 to 1) | <code>}|--|{</code> (Many to Many via Junction Table)
+        </div>
+
+        <pre class="mermaid">
+erDiagram
+    %% ONE TO MANY (1:N) RELATIONSHIPS
+    TOWNSHIPS ||--o{ PROPERTIES : "1:N (contains many)"
+    TOWNSHIPS ||--o{ PLACES : "1:N (has nearby)"
+    CATEGORIES ||--o{ BLOGS : "1:N (categorizes)"
+    PROPERTIES ||--o{ CONTACT_SUBMISSIONS : "1:N (receives inquiries)"
+    PROPERTIES ||--o{ SALES : "1:N (sold via)"
+    USERS ||--o{ SALES : "1:N (originates sale)"
+    SALES ||--o{ EARNINGS : "1:N (generates commissions)"
+    USERS ||--o{ EARNINGS : "1:N (receives payouts)"
+    POOL_RUNS ||--o{ POOL_DISTRIBUTIONS : "1:N (executes batch)"
+    USERS ||--o{ POOL_DISTRIBUTIONS : "1:N (receives pool share)"
+
+    %% MANY TO MANY (M:N) RELATIONSHIP
+    PROPERTIES ||--o{ PROPERTY_AMENITIES : "M:N (has amenities)"
+    AMENITIES ||--o{ PROPERTY_AMENITIES : "M:N (belongs to properties)"
+
+    %% ONE TO ONE (1:1) RELATIONSHIP
+    SALES ||--|| SALES_AUDITS : "1:1 (agreement & registry audit)"
+
+    %% RECURSIVE ONE TO MANY (1:N) UPLINE HIERARCHY
+    USERS ||--o{ USERS : "1:N Self (Sponsor Upline)"
+
+    TOWNSHIPS {
+        int township_id PK
+        string name
+        string location
+        text description
+        string cover_image
+    }
+
+    PROPERTIES {
+        int property_id PK
+        int township_id FK
+        string title
+        string location
+        int bhk
+        string property_type
+        string construction_status
+        decimal price
+        decimal area_sqft
+        boolean verified
+    }
+
+    AMENITIES {
+        int amenity_id PK
+        string name
+        string icon
+    }
+
+    PROPERTY_AMENITIES {
+        int property_id PK_FK
+        int amenity_id PK_FK
+    }
+
+    PLACES {
+        int place_id PK
+        int township_id FK
+        string name
+        string distance
+        string category
+    }
+
+    CATEGORIES {
+        int category_id PK
+        string name
+        string slug
+    }
+
+    BLOGS {
+        int blog_id PK
+        int category_id FK
+        string title
+        text content
+        string image
+    }
+
+    CONTACT_SUBMISSIONS {
+        int submission_id PK
+        int property_id FK
+        string name
+        string email
+        string phone
+        text message
+    }
+
+    USERS {
+        int user_id PK
+        int sponsor_id FK
+        string name
+        string email
+        string role
+        string rank
+    }
+
+    SALES {
+        int sale_id PK
+        int property_id FK
+        int seller_associate_id FK
+        string buyer_name
+        decimal price
+        string status
+    }
+
+    SALES_AUDITS {
+        int audit_id PK
+        int sale_id FK
+        string agreement_doc
+        string registry_doc
+        string audit_status
+    }
+
+    EARNINGS {
+        int earning_id PK
+        int sale_id FK
+        int associate_id FK
+        int upline_level
+        decimal commission_amount
+    }
+
+    POOL_RUNS {
+        int run_id PK
+        string pool_type
+        decimal total_amount
+    }
+
+    POOL_DISTRIBUTIONS {
+        int distribution_id PK
+        int run_id FK
+        int associate_id FK
+        decimal pool_amount
+    }
+        </pre>
+      </div>
+    </section>
+
+    <!-- VIEW 2: Explicit Relationship Matrix -->
+    <section id="matrix-view" class="view-section">
+      <div class="rel-table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Parent / Source Table</th>
+              <th>Child / Target Table</th>
+              <th style="width: 140px;">Type / Symbol</th>
+              <th>Foreign Key (FK) Field</th>
+              <th>Business Logic & Relationship Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>townships</code></td>
+              <td><code>properties</code></td>
+              <td><span class="rel-badge one-to-many">1 : N</span></td>
+              <td><code>properties.township_id</code></td>
+              <td>One township contains multiple plots/properties across blocks.</td>
+            </tr>
+            <tr>
+              <td><code>properties</code></td>
+              <td><code>amenities</code></td>
+              <td><span class="rel-badge many-to-many">M : N</span></td>
+              <td><code>property_amenities (Junction)</code></td>
+              <td>A property has many amenities, and an amenity applies to many properties.</td>
+            </tr>
+            <tr>
+              <td><code>townships</code></td>
+              <td><code>places</code></td>
+              <td><span class="rel-badge one-to-many">1 : N</span></td>
+              <td><code>places.township_id</code></td>
+              <td>A township maps to multiple nearby places (highways, schools, hospitals).</td>
+            </tr>
+            <tr>
+              <td><code>categories</code></td>
+              <td><code>blogs</code></td>
+              <td><span class="rel-badge one-to-many">1 : N</span></td>
+              <td><code>blogs.category_id</code></td>
+              <td>A blog category (e.g. Real Estate News) groups multiple blog posts.</td>
+            </tr>
+            <tr>
+              <td><code>properties</code></td>
+              <td><code>contact_submissions</code></td>
+              <td><span class="rel-badge one-to-many">1 : N</span></td>
+              <td><code>contact_submissions.property_id</code></td>
+              <td>Potential buyers submit lead inquiries for specific properties.</td>
+            </tr>
+            <tr>
+              <td><code>users</code> (Sponsor)</td>
+              <td><code>users</code> (Downlines)</td>
+              <td><span class="rel-badge recursive">1 : N Self</span></td>
+              <td><code>users.sponsor_id</code></td>
+              <td>An associate has 1 sponsor, but can build a team of multiple downlines.</td>
+            </tr>
+            <tr>
+              <td><code>properties</code></td>
+              <td><code>sales</code></td>
+              <td><span class="rel-badge one-to-many">1 : N</span></td>
+              <td><code>sales.property_id</code></td>
+              <td>A property tracks booking and registry sales transactions.</td>
+            </tr>
+            <tr>
+              <td><code>users</code></td>
+              <td><code>sales</code></td>
+              <td><span class="rel-badge one-to-many">1 : N</span></td>
+              <td><code>sales.seller_associate_id</code></td>
+              <td>An associate originates multiple property sales.</td>
+            </tr>
+            <tr>
+              <td><code>sales</code></td>
+              <td><code>sales_audits</code></td>
+              <td><span class="rel-badge one-to-one">1 : 1</span></td>
+              <td><code>sales_audits.sale_id</code></td>
+              <td>Each sale has exactly one audit record verifying agreement & registry PDFs.</td>
+            </tr>
+            <tr>
+              <td><code>sales</code></td>
+              <td><code>earnings</code></td>
+              <td><span class="rel-badge one-to-many">1 : N</span></td>
+              <td><code>earnings.sale_id</code></td>
+              <td>One approved sale generates multi-level commission lines up the MLM tree.</td>
+            </tr>
+            <tr>
+              <td><code>pool_runs</code></td>
+              <td><code>pool_distributions</code></td>
+              <td><span class="rel-badge one-to-many">1 : N</span></td>
+              <td><code>pool_distributions.run_id</code></td>
+              <td>One global pool distribution batch distributes funds to all qualified associates.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- VIEW 3: Sales Pipeline Flowchart -->
+    <section id="flow-view" class="view-section">
+      <div class="diagram-card">
+        <div class="diagram-title">
+          <i data-lucide="workflow" style="color: var(--accent-purple);"></i>
+          Data Domain & Execution Flowchart
+        </div>
+        <div class="diagram-sub">
+          Shows how township inventory flows into Sales Booking ➔ Sales Audit Approval ➔ MLM Commission Calculation ➔ Global Pool Run.
+        </div>
+
+        <pre class="mermaid">
+graph TD
+    subgraph 1. Core Content Domain
+        T[Townships] -->|1:N| P[Properties]
+        T -->|1:N| PL[Places]
+        P -.->|M:N Junction| PA[Property Amenities]
+        A[Amenities] -.->|M:N Junction| PA
+        C[Categories] -->|1:N| B[Blogs]
+        P -->|1:N| CS[Contact Submissions]
+    end
+
+    subgraph 2. MLM Associate Hierarchy
+        U[Users / Associates] -->|1:N Self Upline| U
+    end
+
+    subgraph 3. Sales & Audit Pipeline
+        P -->|1:N| S[Sales Pipeline]
+        U -->|1:N Originator| S
+        S -->|1:1 Audit Lock| SA[Sales Audit & Verification]
+        SA -->|Admin Approval| AP[Approved Sale]
+    end
+
+    subgraph 4. Commission & Pool Engine
+        AP -->|Triggers| EE[MLM Earnings Engine]
+        EE -->|1:N Level Payouts| E[Associate Earnings]
+        U -->|Receives| E
+        AP -->|Pool Contribution| PR[Global Pool Runs]
+        PR -->|1:N Batch Disburse| PD[Pool Distributions]
+        U -->|Receives Rank Share| PD
+    end
+        </pre>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      themeVariables: {
+        darkMode: true,
+        background: '#131b2c',
+        primaryColor: '#6366f1',
+        secondaryColor: '#06b6d4',
+        tertiaryColor: '#8b5cf6',
+        lineColor: '#818cf8',
+        fontFamily: 'Plus Jakarta Sans',
+        fontSize: '14px'
+      }
+    });
+
+    function switchView(viewId, btn) {
+      document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      
+      document.getElementById(viewId).classList.add('active');
+      btn.classList.add('active');
+    }
+
+    lucide.createIcons();
+  </script>
+</body>
+</html>
