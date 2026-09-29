@@ -1,0 +1,1452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Landmaark Associate Backend — 50+ Learning MCQs & Study Guide</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    :root {
+      --bg-dark: #0b0f19;
+      --bg-card: rgba(23, 31, 48, 0.7);
+      --bg-card-hover: rgba(30, 41, 63, 0.85);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-active: rgba(99, 102, 241, 0.5);
+      
+      --primary: #6366f1;
+      --primary-glow: rgba(99, 102, 241, 0.35);
+      --accent-cyan: #06b6d4;
+      --accent-purple: #8b5cf6;
+      --success: #10b981;
+      --success-glow: rgba(16, 185, 129, 0.25);
+      --danger: #ef4444;
+      --danger-glow: rgba(239, 68, 68, 0.25);
+      --warning: #f59e0b;
+
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --text-dim: #6b7280;
+      
+      --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'Fira Code', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(at 15% 15%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
+        radial-gradient(at 85% 85%, rgba(6, 182, 212, 0.1) 0px, transparent 50%);
+      background-attachment: fixed;
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      padding-bottom: 60px;
+    }
+
+    /* Container */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* Header & Hero */
+    header {
+      padding: 40px 0 30px;
+      text-align: center;
+      position: relative;
+    }
+
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 16px;
+      border-radius: 9999px;
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      color: #a5b4fc;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      background: linear-gradient(135deg, #ffffff 0%, #a5b4fc 50%, #38bdf8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 12px;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    /* Stats Bar */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
+      margin: 30px 0;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 18px 20px;
+      backdrop-filter: blur(12px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--border-active);
+    }
+
+    .stat-val {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .stat-val.primary { color: #818cf8; }
+    .stat-val.success { color: #34d399; }
+    .stat-val.cyan { color: #38bdf8; }
+    .stat-val.warning { color: #fbbf24; }
+
+    .stat-label {
+      font-size: 0.825rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      margin-top: 4px;
+    }
+
+    /* Controls & Toolbar */
+    .toolbar {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 16px 20px;
+      backdrop-filter: blur(12px);
+      margin-bottom: 30px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 15px;
+      z-index: 100;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+    }
+
+    .search-box {
+      position: relative;
+      flex: 1;
+      min-width: 260px;
+    }
+
+    .search-box i {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      width: 18px;
+      height: 18px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 10px 16px 10px 42px;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      color: #fff;
+      font-family: inherit;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .search-box input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-glow);
+    }
+
+    .view-modes {
+      display: flex;
+      background: rgba(15, 23, 42, 0.8);
+      padding: 4px;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+      gap: 4px;
+    }
+
+    .mode-btn {
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .mode-btn.active {
+      background: var(--primary);
+      color: #fff;
+      box-shadow: 0 2px 8px var(--primary-glow);
+    }
+
+    /* Category Filter Tabs */
+    .filter-tabs {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 10px;
+      margin-bottom: 24px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border-color) transparent;
+    }
+
+    .tab-btn {
+      padding: 8px 16px;
+      background: rgba(23, 31, 48, 0.5);
+      border: 1px solid var(--border-color);
+      border-radius: 9999px;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      font-weight: 600;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn:hover {
+      background: var(--bg-card-hover);
+      color: #fff;
+    }
+
+    .tab-btn.active {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--accent-purple) 100%);
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 4px 12px var(--primary-glow);
+    }
+
+    /* Question Cards */
+    .questions-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .question-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 18px;
+      padding: 24px 28px;
+      backdrop-filter: blur(12px);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      position: relative;
+    }
+
+    .question-card:hover {
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .q-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+
+    .q-number {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #818cf8;
+      background: rgba(99, 102, 241, 0.12);
+      padding: 4px 12px;
+      border-radius: 6px;
+      border: 1px solid rgba(99, 102, 241, 0.25);
+    }
+
+    .q-category-tag {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .q-text {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 18px;
+      line-height: 1.5;
+    }
+
+    code {
+      font-family: var(--font-mono);
+      background: rgba(15, 23, 42, 0.9);
+      color: #38bdf8;
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-size: 0.9em;
+      border: 1px solid rgba(56, 189, 248, 0.2);
+    }
+
+    /* Options */
+    .options-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .option-item {
+      padding: 13px 18px;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      color: var(--text-main);
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .option-item:hover {
+      background: rgba(30, 41, 59, 0.9);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .opt-letter {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      flex-shrink: 0;
+      transition: all 0.2s ease;
+    }
+
+    /* Option States */
+    .option-item.selected {
+      border-color: var(--primary);
+      background: rgba(99, 102, 241, 0.12);
+    }
+
+    .option-item.selected .opt-letter {
+      background: var(--primary);
+      color: #fff;
+      border-color: transparent;
+    }
+
+    .option-item.correct {
+      background: rgba(16, 185, 129, 0.15) !important;
+      border-color: var(--success) !important;
+      color: #ecfdf5 !important;
+    }
+
+    .option-item.correct .opt-letter {
+      background: var(--success) !important;
+      color: #fff !important;
+      border-color: transparent !important;
+    }
+
+    .option-item.wrong {
+      background: rgba(239, 68, 68, 0.15) !important;
+      border-color: var(--danger) !important;
+      color: #fef2f2 !important;
+    }
+
+    .option-item.wrong .opt-letter {
+      background: var(--danger) !important;
+      color: #fff !important;
+      border-color: transparent !important;
+    }
+
+    .status-icon {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+    }
+
+    /* Explanation Box */
+    .explanation-box {
+      margin-top: 16px;
+      padding: 16px 20px;
+      background: rgba(15, 23, 42, 0.9);
+      border-left: 4px solid var(--accent-cyan);
+      border-radius: 0 12px 12px 0;
+      font-size: 0.925rem;
+      color: #cbd5e1;
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .explanation-box.visible {
+      display: block;
+    }
+
+    .explanation-title {
+      font-weight: 700;
+      color: var(--accent-cyan);
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+    }
+
+    /* Table View mode */
+    .table-view {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 18px;
+      overflow: hidden;
+      backdrop-filter: blur(12px);
+      display: none;
+    }
+
+    .table-view.visible {
+      display: block;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th {
+      background: rgba(15, 23, 42, 0.9);
+      padding: 16px 20px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    td {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 0.95rem;
+      color: var(--text-main);
+    }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .key-badge {
+      display: inline-block;
+      width: 28px;
+      height: 28px;
+      line-height: 28px;
+      text-align: center;
+      border-radius: 6px;
+      background: var(--primary);
+      color: #fff;
+      font-weight: 700;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+
+    .empty-state i {
+      width: 48px;
+      height: 48px;
+      margin-bottom: 12px;
+      opacity: 0.5;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      h1 { font-size: 1.8rem; }
+      .toolbar { flex-direction: column; align-items: stretch; }
+      .search-box { min-width: 100%; }
+      .view-modes { width: 100%; justify-content: center; }
+      .question-card { padding: 18px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="container">
+      <div class="badge-pill">
+        <i data-lucide="shield-check" style="width: 16px; height: 16px;"></i>
+        Official Study Guide
+      </div>
+      <h1>Landmaark Associate Backend MCQs</h1>
+      <p>Master the Architecture, Express Routing, MySQL Data Layer, JWT Security & MLM Earnings Engine.</p>
+
+      <!-- Stats Bar -->
+      <div class="stats-bar">
+        <div class="stat-card">
+          <div class="stat-val primary" id="total-count">54</div>
+          <div class="stat-label">Total MCQs</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val cyan" id="answered-count">0</div>
+          <div class="stat-label">Answered</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-card-inner">
+            <div class="stat-val success" id="score-count">0</div>
+            <div class="stat-label">Correct Score</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val warning" id="accuracy-val">0%</div>
+          <div class="stat-label">Accuracy</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Sticky Toolbar -->
+    <div class="toolbar">
+      <div class="search-box">
+        <i data-lucide="search"></i>
+        <input type="text" id="search-input" placeholder="Search questions, code terms, or topics...">
+      </div>
+
+      <div class="view-modes">
+        <button class="mode-btn active" data-mode="quiz">
+          <i data-lucide="gamepad-2" style="width: 16px; height: 16px;"></i> Quiz Mode
+        </button>
+        <button class="mode-btn" data-mode="study">
+          <i data-lucide="book-open" style="width: 16px; height: 16px;"></i> Study Key Mode
+        </button>
+        <button class="mode-btn" data-mode="table">
+          <i data-lucide="layout-grid" style="width: 16px; height: 16px;"></i> Grid Table
+        </button>
+      </div>
+    </div>
+
+    <!-- Category Filter Tabs -->
+    <div class="filter-tabs" id="filter-tabs">
+      <!-- Generated via JS -->
+    </div>
+
+    <!-- Questions Container (Cards View) -->
+    <div class="questions-grid" id="questions-grid">
+      <!-- Generated via JS -->
+    </div>
+
+    <!-- Table View Mode -->
+    <div class="table-view" id="table-view">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 60px;">#</th>
+            <th style="width: 160px;">Category</th>
+            <th>Question</th>
+            <th style="width: 90px; text-align: center;">Key</th>
+          </tr>
+        </thead>
+        <tbody id="table-body">
+          <!-- Generated via JS -->
+        </tbody>
+      </table>
+    </div>
+
+    <div class="empty-state" id="empty-state" style="display: none;">
+      <i data-lucide="file-question"></i>
+      <h3>No questions match your query</h3>
+      <p>Try searching for a different keyword or resetting filters.</p>
+    </div>
+  </main>
+
+  <script>
+    // Comprehensive Dataset of 54 MCQs
+    const questionsData = [
+      // Section 1
+      {
+        id: 1,
+        part: "Section 1",
+        category: "Previous Section",
+        question: "In the Landmaark backend, how are API endpoints registered and organized across the project?",
+        options: [
+          "Routes are registered in server.js with a base path, which combines with sub-paths in individual route files.",
+          "All routes are placed in a single routes.js file.",
+          "Endpoints are autogenerated based on database table names.",
+          "Express handles routing automatically without route files."
+        ],
+        answer: 0,
+        explanation: "In `server.js`, Express mounts each router with a base path (e.g. `app.use('/api/sales', salesRoutes)`). Inside `routes/sales.js`, sub-paths like `/` or `/:id` complete the full endpoint URL (`/api/sales` or `/api/sales/:id`)."
+      },
+      {
+        id: 2,
+        part: "Section 1",
+        category: "Previous Section",
+        question: "What is the primary difference between code inside controllers/ and code inside features/?",
+        options: [
+          "controllers/ contains older JavaScript (.js) logic, while features/ hosts newer TypeScript (.ts) feature-sliced modules.",
+          "controllers/ is for frontend logic, features/ is for backend logic.",
+          "controllers/ is deprecated and empty, features/ contains everything.",
+          "features/ is for database migrations only."
+        ],
+        answer: 0,
+        explanation: "The codebase is undergoing a modern feature-sliced refactoring. Older modules live in `controllers/*.js`, while newer domains like marketing (`features/marketing/`) and dashboards (`features/admin-dashboard/`) are organized into dedicated feature folders with TypeScript (.ts)."
+      },
+      {
+        id: 3,
+        part: "Section 1",
+        category: "Previous Section",
+        question: "What database driver and pattern does db.js use to interact with MySQL in this backend?",
+        options: [
+          "mysql2 connection pool with promise-based queries (db.query(...) returning promises).",
+          "Prisma ORM with PostgreSQL.",
+          "Mongoose with MongoDB.",
+          "Sequelize with SQLite."
+        ],
+        answer: 0,
+        explanation: "`db.js` imports `mysql2/promise` and exports a pool instance `db`. Queries use `await db.query('SELECT ...')` which returns destructurable `[rows, fields]`."
+      },
+      {
+        id: 4,
+        part: "Section 1",
+        category: "Previous Section",
+        question: "How is Role-Based Access Control (RBAC) implemented for protected admin/finance routes?",
+        options: [
+          "Using the authorizeRoles(...roles) middleware function following JWT token verification.",
+          "Hardcoded inside each MySQL table.",
+          "Handled entirely by Nginx configuration.",
+          "Using basic HTTP Auth header with base64 encoded username."
+        ],
+        answer: 0,
+        explanation: "`middleware/authMiddleware.js` provides `verifyToken` to decode the JWT and attach `req.user`, followed by `authorizeRoles('admin', 'finance_manager')` which checks `req.user.role` and rejects unauthorized requests with `403 Forbidden`."
+      },
+
+      // Part A (Q5-Q14 overall -> Q1-Q10 in prompt)
+      {
+        id: 5,
+        part: "Part A",
+        category: "Server & Express",
+        question: "Which main file acts as the primary entry point for launching the Express HTTP server?",
+        options: ["index.cjs", "server.js", "app.cjs", "startup.cjs"],
+        answer: 1,
+        explanation: "`server.js` initializes Express, connects middleware, mounts routers, and calls `app.listen()`."
+      },
+      {
+        id: 6,
+        part: "Part A",
+        category: "Server & Express",
+        question: "How is ES Module (import/export) syntax enabled in package.json for this project?",
+        options: ['"module": true', '"type": "module"', '"syntax": "es6"', '"esm": "enabled"'],
+        answer: 1,
+        explanation: "Adding `\"type\": \"module\"` in `package.json` instructs Node.js to treat `.js` files as ES Modules."
+      },
+      {
+        id: 7,
+        part: "Part A",
+        category: "Server & Express",
+        question: "In package.json, what CLI runner is configured in the \"start\" script (tsx server.js) to execute TypeScript/JavaScript files on the fly?",
+        options: ["ts-node", "nodemon", "tsx", "babel-node"],
+        answer: 2,
+        explanation: "`tsx` is an esbuild-powered fast TypeScript/ESM runner configured for instant execution."
+      },
+      {
+        id: 8,
+        part: "Part A",
+        category: "Server & Express",
+        question: "Which bundling tool is used in package.json for production server builds (npm run build)?",
+        options: ["webpack", "rollup", "esbuild", "vite"],
+        answer: 2,
+        explanation: "`esbuild` is configured in build scripts to bundle backend source files quickly for production."
+      },
+      {
+        id: 9,
+        part: "Part A",
+        category: "Server & Express",
+        question: "If an API route handler logic is written directly inside a routes/*.js file without importing a separate controller, how is it documented in README.md?",
+        options: ["Controller missing", "_(inline)_", "Anonymous", "Direct route"],
+        answer: 1,
+        explanation: "The project README documents inline callback handlers as `_(inline)_` under the Controller column."
+      },
+      {
+        id: 10,
+        part: "Part A",
+        category: "Server & Express",
+        question: "Which CORS configuration approach is utilized in server.js?",
+        options: [
+          "Disabled completely",
+          "Configured via Express cors middleware package",
+          "Managed by Nginx reverse proxy only",
+          "Handled via custom HTML headers in frontend"
+        ],
+        answer: 1,
+        explanation: "The `cors` npm package is imported and mounted via `app.use(cors(...))` in `server.js`."
+      },
+      {
+        id: 11,
+        part: "Part A",
+        category: "Server & Express",
+        question: "Where are publicly accessible uploaded static media files served from in Express?",
+        options: ["src/media/", "uploads/ mounted as static directory", "dist/public/", "extra files/"],
+        answer: 1,
+        explanation: "`express.static('uploads')` mounts the `uploads/` directory to serve uploaded media directly."
+      },
+      {
+        id: 12,
+        part: "Part A",
+        category: "Server & Express",
+        question: "What happens when a client sends a request to an undefined route URL in this Express application?",
+        options: [
+          "Express returns default 404 HTML",
+          "Server crashes with unhandled exception",
+          "Handled by fallback route/middleware logging 404 response",
+          "Request hangs indefinitely"
+        ],
+        answer: 2,
+        explanation: "A global fallback route handles unregistered paths and sends a structured JSON 404 response."
+      },
+      {
+        id: 13,
+        part: "Part A",
+        category: "Server & Express",
+        question: "Which environment variable management library is loaded at the very top of server.js?",
+        options: ["config", "dotenv", "cross-env", "env-cmd"],
+        answer: 1,
+        explanation: "`dotenv` is loaded first (`import 'dotenv/config'`) to populate `process.env` from `.env` file."
+      },
+      {
+        id: 14,
+        part: "Part A",
+        category: "Server & Express",
+        question: "What tool generates static deployment ZIP archives in package.json (npm run zip:deploy)?",
+        options: ["archiver", "System zip command line utility", "tar", "gulp-zip"],
+        answer: 1,
+        explanation: "The npm `zip:deploy` script invokes the system `zip` command line utility to package backend releases."
+      },
+
+      // Part B (Q15-Q22 overall)
+      {
+        id: 15,
+        part: "Part B",
+        category: "Database & MySQL",
+        question: "In db.js, what does await db.query(sql, [params]) return?",
+        options: [
+          "An object containing { data, count }",
+          "An array where the first element [0] contains query rows",
+          "A single JSON object with the result set",
+          "A Node.js Readable Stream"
+        ],
+        answer: 1,
+        explanation: "`mysql2/promise` returns `[rows, fields]`. Destructuring `const [rows] = await db.query(...)` accesses rows."
+      },
+      {
+        id: 16,
+        part: "Part B",
+        category: "Database & MySQL",
+        question: "How does the application prevent SQL Injection when executing database queries?",
+        options: [
+          "Escaping single quotes manually using regex",
+          "Using parameterized placeholder syntax (?) with db.query(sql, [values])",
+          "Converting all input strings to uppercase",
+          "Storing all query parameters in Redis"
+        ],
+        answer: 1,
+        explanation: "Prepared statement parameters (`?`) escape user inputs safely within `mysql2`."
+      },
+      {
+        id: 17,
+        part: "Part B",
+        category: "Database & MySQL",
+        question: "Which centralized file contains constants for SQL table names like DB_TABLES.USERS and DB_TABLES.SALES?",
+        options: ["constants/tables.js", "utils/dbConstants.js", "config/database.json", "models/schema.js"],
+        answer: 1,
+        explanation: "`utils/dbConstants.js` exports central table name constants to prevent typos and hardcoding."
+      },
+      {
+        id: 18,
+        part: "Part B",
+        category: "Database & MySQL",
+        question: "What driver library is listed in package.json for connecting to the MySQL database?",
+        options: ["mysql", "mysql2", "pg", "sqlite3"],
+        answer: 1,
+        explanation: "`mysql2` provides promise support and high-performance connection pooling."
+      },
+      {
+        id: 19,
+        part: "Part B",
+        category: "Database & MySQL",
+        question: "When performing pagination on property or sales queries, which SQL clauses are appended to the query?",
+        options: ["FETCH NEXT and OFFSET", "LIMIT and OFFSET", "PAGE and SIZE", "SLICE and DICE"],
+        answer: 1,
+        explanation: "Standard MySQL pagination uses `LIMIT page_size OFFSET offset_val`."
+      },
+      {
+        id: 20,
+        part: "Part B",
+        category: "Database & MySQL",
+        question: "How are database connection settings (Host, User, Password, Database Name) provided to db.js?",
+        options: [
+          "Hardcoded in source code",
+          "Loaded from process environment variables (process.env.DB_HOST, etc.)",
+          "Read from a remote AWS S3 config bucket",
+          "Prompted on command line at server startup"
+        ],
+        answer: 1,
+        explanation: "`db.js` reads `process.env.DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`."
+      },
+      {
+        id: 21,
+        part: "Part B",
+        category: "Database & MySQL",
+        question: "Why is a database connection pool used instead of mysql.createConnection?",
+        options: [
+          "Connection pool auto-compiles SQL to C++",
+          "Connection pool reuses active DB connections efficiently for concurrent HTTP requests",
+          "Connection pool bypasses database password requirements",
+          "Connection pool stores data in RAM cache automatically"
+        ],
+        answer: 1,
+        explanation: "Pools maintain reusable open connections, preventing handshake overhead on concurrent requests."
+      },
+      {
+        id: 22,
+        part: "Part B",
+        category: "Database & MySQL",
+        question: "Where are raw data export files and SQL schema backup scripts stored in the workspace?",
+        options: ["backups/ and test-data/", "node_modules/", ".idea/", "dist/"],
+        answer: 0,
+        explanation: "`backups/` and `test-data/` store SQL dumps, migration scripts, and seed files."
+      },
+
+      // Part C (Q23-Q30 overall)
+      {
+        id: 23,
+        part: "Part C",
+        category: "Auth & Security",
+        question: "What token mechanism is used for user session authentication across protected routes?",
+        options: ["Session Cookies", "JSON Web Token (JWT)", "OAuth2 Refresh Tokens only", "API Key in URL query parameters"],
+        answer: 1,
+        explanation: "Stateless JWT tokens are signed on login and passed in the `Authorization` HTTP header."
+      },
+      {
+        id: 24,
+        part: "Part C",
+        category: "Auth & Security",
+        question: "In middleware/authMiddleware.js, where is the JWT extracted from in the incoming HTTP request?",
+        options: ["req.body.token", "Authorization header formatted as Bearer <token>", "req.query.accessToken", "req.cookies.session_id"],
+        answer: 1,
+        explanation: "The middleware inspects `req.headers.authorization`, stripping the `Bearer ` prefix."
+      },
+      {
+        id: 25,
+        part: "Part C",
+        category: "Auth & Security",
+        question: "Which library in package.json is used to hash and compare user account passwords securely?",
+        options: ["crypto-js", "bcrypt", "argon2", "md5"],
+        answer: 1,
+        explanation: "`bcrypt` hashes passwords with salt rounds during registration and verifies them on login."
+      },
+      {
+        id: 26,
+        part: "Part C",
+        category: "Auth & Security",
+        question: "What payload property on req.user is typically evaluated by authorizeRoles(...roles) middleware?",
+        options: ["req.user.role", "req.user.permission_level", "req.user.is_admin", "req.user.type"],
+        answer: 0,
+        explanation: "`req.user.role` (e.g. `'admin'`, `'associate'`, `'finance_manager'`) is checked against permitted roles."
+      },
+      {
+        id: 27,
+        part: "Part C",
+        category: "Auth & Security",
+        question: "Which controller handles sending and verifying Email OTP for account verification?",
+        options: ["forgotPasswordController.js", "verifyEmailController.js", "verifyIfscController.js", "contactController.ts"],
+        answer: 1,
+        explanation: "`verifyEmailController.js` sends 6-digit OTP codes via email and verifies matching input."
+      },
+      {
+        id: 28,
+        part: "Part C",
+        category: "Auth & Security",
+        question: "Which external API service SDK in package.json (sib-api-v3-sdk) is used for transactional email delivery (Brevo / Sendinblue)?",
+        options: ["nodemailer", "@sendgrid/mail", "sib-api-v3-sdk", "aws-sdk"],
+        answer: 2,
+        explanation: "`sib-api-v3-sdk` (Brevo SDK) handles sending transactional email templates."
+      },
+      {
+        id: 29,
+        part: "Part C",
+        category: "Auth & Security",
+        question: "What check is performed by controllers/checkUniqueController.ts during associate registration?",
+        options: [
+          "Verifying if username/email/mobile already exists in database",
+          "Checking if the associate's bank account has minimum balance",
+          "Checking if user has installed mobile app",
+          "Checking website domain availability"
+        ],
+        answer: 0,
+        explanation: "`checkUniqueController.ts` queries MySQL to ensure no duplicate email, username, or phone number exists."
+      },
+      {
+        id: 30,
+        part: "Part C",
+        category: "Auth & Security",
+        question: "Which controller manages checking bank branch details from an IFSC code?",
+        options: ["verifyEmailController.js", "verifyIfscController.js", "banksController.js", "accountantEarningsController.js"],
+        answer: 1,
+        explanation: "`verifyIfscController.js` queries external Razorpay/IFSC API to return bank name and branch info."
+      },
+
+      // Part D (Q31-Q40 overall)
+      {
+        id: 31,
+        part: "Part D",
+        category: "MLM Earnings Engine",
+        question: "Which controller contains the core endpoint (/api/earnings) triggered when a property sale registry is approved?",
+        options: ["controllers/earningsController.js", "controllers/salesAuditController.js", "controllers/royaltyFundController.js", "controllers/levelUpController.js"],
+        answer: 0,
+        explanation: "`controllers/earningsController.js` coordinates commission payouts upon registry approval."
+      },
+      {
+        id: 32,
+        part: "Part D",
+        category: "MLM Earnings Engine",
+        question: "Where is the actual multi-level calculation logic for commissions and yard distribution implemented?",
+        options: ["helpers/earningsHelpers.js", "utils/logger.js", "routes/earnings.js", "controllers/optionsController.js"],
+        answer: 0,
+        explanation: "`helpers/earningsHelpers.js` traverses the sponsor tree and calculates level-by-level commission percentages."
+      },
+      {
+        id: 33,
+        part: "Part D",
+        category: "MLM Earnings Engine",
+        question: "What triggers an associate's rank/level upgrade in the MLM hierarchy?",
+        options: [
+          "levelUpController.js via /api/level-up based on accumulated sales/yards or admin direct action",
+          "Automatic server restart every night",
+          "Updating associate's profile picture",
+          "Sending a contact inquiry"
+        ],
+        answer: 0,
+        explanation: "`levelUpController.js` evaluates cumulative yard performance to upgrade associate ranks."
+      },
+      {
+        id: 34,
+        part: "Part D",
+        category: "MLM Earnings Engine",
+        question: "Which file builds or visualizes the tree structure of uplines/downlines for an associate?",
+        options: ["controllers/earningsTree.js and routes/userTree.js", "controllers/carouselController.ts", "features/marketing/marketingController.ts", "controllers/amenityController.js"],
+        answer: 0,
+        explanation: "`userTree.js` and `earningsTree.js` recursively construct hierarchical direct & indirect team trees."
+      },
+      {
+        id: 35,
+        part: "Part D",
+        category: "MLM Earnings Engine",
+        question: "What parameter is required in the request body for /api/earnings?",
+        options: ["userId", "saleId", "propertyId", "townshipId"],
+        answer: 1,
+        explanation: "`saleId` is required so the engine can look up property price, total yards, and seller sponsor ID."
+      },
+      {
+        id: 36,
+        part: "Part D",
+        category: "MLM Earnings Engine",
+        question: "What auxiliary step is executed asynchronously after calculating earnings for a sale?",
+        options: [
+          "sendEarningEmails(saleId, earningsData) to notify earners via email",
+          "Deleting the sale from database",
+          "Resetting user passwords",
+          "Archiving sales log to S3"
+        ],
+        answer: 0,
+        explanation: "`sendEarningEmails` dispatches email breakdown notifications to each earning upline associate."
+      },
+      {
+        id: 37,
+        part: "Part D",
+        category: "MLM Earnings Engine",
+        question: "Which endpoint allows the Finance Manager to view earnings across all associates?",
+        options: ["/api/broker-visits", "/api/finance-manager/earnings-list", "/api/marketing/images", "/api/options"],
+        answer: 1,
+        explanation: "`/api/finance-manager/earnings-list` exposes paginated earnings reports for auditing."
+      },
+      {
+        id: 38,
+        part: "Part D",
+        category: "MLM Earnings Engine",
+        question: "What business rule metric is calculated by controllers/totalYardsController.js?",
+        options: [
+          "Total square yards of property sold across team hierarchy",
+          "Total distance from township to nearest highway",
+          "Total construction yards completed",
+          "Total yards of fencing required"
+        ],
+        answer: 0,
+        explanation: "`totalYardsController.js` computes total plot square yardage credited to associate teams."
+      },
+      {
+        id: 39,
+        part: "Part D",
+        category: "MLM Earnings Engine",
+        question: "What is the purpose of controllers/specialBonusController.js (/api/special-bonus/run)?",
+        options: [
+          "Running special promotional or incentive bonus distributions to top associates",
+          "Giving discount codes to retail property buyers",
+          "Paying website hosting bills",
+          "Refunding canceled booking deposits"
+        ],
+        answer: 0,
+        explanation: "`specialBonusController.js` processes periodic contest rewards and target-based incentive bonuses."
+      },
+      {
+        id: 40,
+        part: "Part D",
+        category: "MLM Earnings Engine",
+        question: "What is calculated by controllers/royaltyFundController.js?",
+        options: [
+          "Monthly or quarterly royalty fund allocation for high-level leadership ranks",
+          "Royalty fees paid to government land registry office",
+          "Copyright licensing fees for marketing banners",
+          "Architectural blueprint royalty fees"
+        ],
+        answer: 0,
+        explanation: "`royaltyFundController.js` pools top-line revenue percentages into executive leadership pools."
+      },
+
+      // Part E (Q41-Q46 overall)
+      {
+        id: 41,
+        part: "Part E",
+        category: "Global Pool Distribution",
+        question: "According to README_POOL_FUNDS.md, what is the Global Pool Distribution system?",
+        options: [
+          "A system that collects a portion of property sales revenues and distributes pools among eligible qualified associates",
+          "A swimming pool booking management module",
+          "A server connection pooling algorithm",
+          "A shared file storage system"
+        ],
+        answer: 0,
+        explanation: "The global pool sets aside sales percentages into pooled funds disbursed to rank-eligible associates."
+      },
+      {
+        id: 42,
+        part: "Part E",
+        category: "Global Pool Distribution",
+        question: "Which controller handles triggering global pool distribution for a date range?",
+        options: ["controllers/poolDistributionController.js", "controllers/bhkController.js", "controllers/categoryController.ts", "controllers/contactController.ts"],
+        answer: 0,
+        explanation: "`poolDistributionController.js` executes batch distribution for specified cycle date windows."
+      },
+      {
+        id: 43,
+        part: "Part E",
+        category: "Global Pool Distribution",
+        question: "What check is performed before executing a pool distribution run (isPoolAlreadyDistributed)?",
+        options: [
+          "Checking if pool for specified pool type and date range was already executed to prevent double payout",
+          "Checking if database has at least 100GB free space",
+          "Checking if associate has paid monthly subscription fee",
+          "Checking if current day is Sunday"
+        ],
+        answer: 0,
+        explanation: "`isPoolAlreadyDistributed` guards against duplicate pool runs for the same period."
+      },
+      {
+        id: 44,
+        part: "Part E",
+        category: "Global Pool Distribution",
+        question: "Which database tables track pool execution logs and individual user pool allocations?",
+        options: ["pool_runs and pool_distributions", "users and sales", "townships and properties", "logs and backups"],
+        answer: 0,
+        explanation: "`pool_runs` logs run metadata while `pool_distributions` stores user payout line items."
+      },
+      {
+        id: 45,
+        part: "Part E",
+        category: "Global Pool Distribution",
+        question: "How does an associate request withdrawal of their accumulated pool earnings?",
+        options: [
+          "/api/pool/request-payout handled by controllers/poolPayoutController.js",
+          "Sending SMS to admin",
+          "Raising a transaction concern",
+          "Updating their email address"
+        ],
+        answer: 0,
+        explanation: "`poolPayoutController.js` manages withdrawal requests and approval workflows."
+      },
+      {
+        id: 46,
+        part: "Part E",
+        category: "Global Pool Distribution",
+        question: "What action can an admin perform via deletePoolRun (DELETE /api/pool/runs/:id)?",
+        options: [
+          "Remove a pool run record and cleanly rollback associated pool distributions",
+          "Delete all associate user accounts",
+          "Drop the MySQL database schema",
+          "Wipe out server log files"
+        ],
+        answer: 0,
+        explanation: "`deletePoolRun` reverses an erroneous pool run by rolling back associated balance credits."
+      },
+
+      // Part F (Q47-Q54 overall)
+      {
+        id: 47,
+        part: "Part F",
+        category: "Township & Sales Management",
+        question: "Which unified controller provides properties for a township across different phases?",
+        options: ["controllers/unifiedTownshipPropertiesController.ts", "controllers/blogController.ts", "controllers/carouselController.ts", "controllers/banksController.js"],
+        answer: 0,
+        explanation: "`unifiedTownshipPropertiesController.ts` consolidates property inventory across phases & blocks."
+      },
+      {
+        id: 48,
+        part: "Part F",
+        category: "Township & Sales Management",
+        question: "What stages does a property sale undergo in the sales pipeline?",
+        options: [
+          "Booking → Approval → Mark Sold → Sales Audit (Agreement & Registry Upload) → Final Registry Approval",
+          "Registration → Direct Approval → Archive",
+          "Inquiry → Review → Cancel",
+          "Draft → Published → Expired"
+        ],
+        answer: 0,
+        explanation: "The full lifecycle spans initial booking approval, agreement/registry document upload, and audit approval."
+      },
+      {
+        id: 49,
+        part: "Part F",
+        category: "Township & Sales Management",
+        question: "Which controller handles uploading sale agreement and registry documents for audit?",
+        options: ["controllers/salesAuditController.js", "controllers/loginController.js", "controllers/joiningBonusController.js", "controllers/popularPropertiesController.js"],
+        answer: 0,
+        explanation: "`salesAuditController.js` manages document file uploads and audit status updates."
+      },
+      {
+        id: 50,
+        part: "Part F",
+        category: "Township & Sales Management",
+        question: "Where are marketing banners and promotional carousels managed?",
+        options: ["controllers/carouselController.ts and features/marketing/marketingController.ts", "controllers/earningsTree.js", "controllers/verifyIfscController.js", "scripts/healthCheck.js"],
+        answer: 0,
+        explanation: "Carousel sliders and promotional marketing content are served via these marketing controllers."
+      },
+      {
+        id: 51,
+        part: "Part F",
+        category: "Township & Sales Management",
+        question: "What image processing library is included in package.json (sharp) for resizing and optimizing uploaded property images?",
+        options: ["jimp", "sharp", "imagemagick", "canvas"],
+        answer: 1,
+        explanation: "`sharp` is used to resize, compress, and auto-convert property imagery to WebP."
+      },
+      {
+        id: 52,
+        part: "Part F",
+        category: "Township & Sales Management",
+        question: "What middleware handles multi-language localization (e.g. Hindi/English error strings)?",
+        options: ["middleware/languageMiddleware.ts", "middleware/authMiddleware.js", "cors", "body-parser"],
+        answer: 0,
+        explanation: "`languageMiddleware.ts` detects `Accept-Language` or `lang` headers to translate API error messages."
+      },
+      {
+        id: 53,
+        part: "Part F",
+        category: "Township & Sales Management",
+        question: "Which script in package.json performs backend health checks (npm run health-check)?",
+        options: ["node scripts/healthCheck.js && node scripts/comprehensiveHealthCheck.js", "npm test", "eslint .", "tsc --noEmit"],
+        answer: 0,
+        explanation: "`npm run health-check` triggers node health check scripts testing database connection and service status."
+      },
+      {
+        id: 54,
+        part: "Part F",
+        category: "Township & Sales Management",
+        question: "How does the application organize modern feature additions under the new architecture?",
+        options: [
+          "Placing related routes, controllers, types, and services together inside domain folders under features/",
+          "Adding all functions into a single 50,000-line server.js file",
+          "Storing code in external cloud functions only",
+          "Creating individual Git repositories for every single endpoint"
+        ],
+        answer: 0,
+        explanation: "Feature-Sliced Design clusters domain files (routes, services, types) together inside modular `features/` folders."
+      }
+    ];
+
+    // Application State
+    let userAnswers = {};
+    let currentMode = 'quiz'; // 'quiz', 'study', 'table'
+    let selectedCategory = 'ALL';
+    let searchQuery = '';
+
+    // Categories list
+    const categories = [
+      'ALL',
+      'Section 1',
+      'Server & Express',
+      'Database & MySQL',
+      'Auth & Security',
+      'MLM Earnings Engine',
+      'Global Pool Distribution',
+      'Township & Sales Management'
+    ];
+
+    // DOM Elements
+    const filterTabsContainer = document.getElementById('filter-tabs');
+    const questionsGrid = document.getElementById('questions-grid');
+    const tableView = document.getElementById('table-view');
+    const tableBody = document.getElementById('table-body');
+    const emptyState = document.getElementById('empty-state');
+    const searchInput = document.getElementById('search-input');
+    const totalCountEl = document.getElementById('total-count');
+    const answeredCountEl = document.getElementById('answered-count');
+    const scoreCountEl = document.getElementById('score-count');
+    const accuracyValEl = document.getElementById('accuracy-val');
+
+    // Initialize UI
+    function init() {
+      renderCategoryTabs();
+      renderQuestions();
+      updateStats();
+      lucide.createIcons();
+    }
+
+    // Render Category Pills
+    function renderCategoryTabs() {
+      filterTabsContainer.innerHTML = categories.map(cat => `
+        <button class="tab-btn ${cat === selectedCategory ? 'active' : ''}" onclick="selectCategory('${cat}')">
+          ${cat === 'ALL' ? 'All MCQs (54)' : cat}
+        </button>
+      `).join('');
+    }
+
+    // Category Change Handler
+    window.selectCategory = function(cat) {
+      selectedCategory = cat;
+      renderCategoryTabs();
+      renderQuestions();
+    };
+
+    // Filter Questions
+    function getFilteredQuestions() {
+      return questionsData.filter(q => {
+        const matchesCategory = selectedCategory === 'ALL' || q.part === selectedCategory || q.category === selectedCategory;
+        const matchesSearch = searchQuery === '' || 
+          q.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          q.explanation.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          q.options.some(opt => opt.toLowerCase().includes(searchQuery.toLowerCase()));
+        return matchesCategory && matchesSearch;
+      });
+    }
+
+    // Format text code tags
+    function formatCodeInText(text) {
+      return text.replace(/`([^`]+)`/g, '<code>$1</code>');
+    }
+
+    // Render Main View
+    function renderQuestions() {
+      const filtered = getFilteredQuestions();
+
+      if (filtered.length === 0) {
+        questionsGrid.style.display = 'none';
+        tableView.style.display = 'none';
+        emptyState.style.display = 'block';
+        return;
+      }
+
+      emptyState.style.display = 'none';
+
+      if (currentMode === 'table') {
+        questionsGrid.style.display = 'none';
+        tableView.style.display = 'block';
+        renderTableMode(filtered);
+      } else {
+        tableView.style.display = 'none';
+        questionsGrid.style.display = 'flex';
+        renderCardsMode(filtered);
+      }
+
+      lucide.createIcons();
+    }
+
+    // Render Card Mode (Quiz & Study)
+    function renderCardsMode(questions) {
+      questionsGrid.innerHTML = questions.map((q, idx) => {
+        const userAnswer = userAnswers[q.id];
+        const isAnswered = userAnswer !== undefined;
+        const isStudyMode = currentMode === 'study';
+        const showResults = isAnswered || isStudyMode;
+
+        return `
+          <div class="question-card" id="q-card-${q.id}">
+            <div class="q-header">
+              <span class="q-number">Q${q.id}</span>
+              <span class="q-category-tag">${q.part} • ${q.category}</span>
+            </div>
+            
+            <div class="q-text">${formatCodeInText(q.question)}</div>
+
+            <div class="options-list">
+              ${q.options.map((opt, optIdx) => {
+                const letter = String.fromCharCode(65 + optIdx);
+                let optClass = 'option-item';
+                let iconMarkup = '';
+
+                if (showResults) {
+                  if (optIdx === q.answer) {
+                    optClass += ' correct';
+                    iconMarkup = `<span class="status-icon"><i data-lucide="check-circle" style="color: #10b981; width: 18px;"></i></span>`;
+                  } else if (userAnswer === optIdx) {
+                    optClass += ' wrong';
+                    iconMarkup = `<span class="status-icon"><i data-lucide="x-circle" style="color: #ef4444; width: 18px;"></i></span>`;
+                  }
+                } else if (userAnswer === optIdx) {
+                  optClass += ' selected';
+                }
+
+                return `
+                  <div class="${optClass}" onclick="handleOptionSelect(${q.id}, ${optIdx})">
+                    <span class="opt-letter">${letter}</span>
+                    <span>${formatCodeInText(opt)}</span>
+                    ${iconMarkup}
+                  </div>
+                `;
+              }).join('')}
+            </div>
+
+            <div class="explanation-box ${showResults ? 'visible' : ''}">
+              <div class="explanation-title">
+                <i data-lucide="info" style="width: 15px; height: 15px;"></i> Explanation
+              </div>
+              <div>${formatCodeInText(q.explanation)}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Render Table View Mode
+    function renderTableMode(questions) {
+      tableBody.innerHTML = questions.map(q => {
+        const keyLetter = String.fromCharCode(65 + q.answer);
+        return `
+          <tr>
+            <td><strong>#${q.id}</strong></td>
+            <td><span style="font-size: 0.8rem; color: var(--text-muted);">${q.category}</span></td>
+            <td>
+              <div style="font-weight: 600; color: #fff; margin-bottom: 4px;">${formatCodeInText(q.question)}</div>
+              <div style="font-size: 0.85rem; color: var(--success); font-weight: 500;">Answer: ${formatCodeInText(q.options[q.answer])}</div>
+            </td>
+            <td style="text-align: center;"><span class="key-badge">${keyLetter}</span></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // Option Selection Handler
+    window.handleOptionSelect = function(qId, optIdx) {
+      if (currentMode === 'study') return; // Read-only in study mode
+      userAnswers[qId] = optIdx;
+      renderQuestions();
+      updateStats();
+    };
+
+    // Stats Calculator
+    function updateStats() {
+      const answeredKeys = Object.keys(userAnswers);
+      const answeredCount = answeredKeys.length;
+      let correctCount = 0;
+
+      answeredKeys.forEach(id => {
+        const q = questionsData.find(item => item.id == id);
+        if (q && userAnswers[id] === q.answer) {
+          correctCount++;
+        }
+      });
+
+      const accuracy = answeredCount > 0 ? Math.round((correctCount / answeredCount) * 100) : 0;
+
+      answeredCountEl.innerText = answeredCount;
+      scoreCountEl.innerText = correctCount;
+      accuracyValEl.innerText = `${accuracy}%`;
+    }
+
+    // View Mode Switcher
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentMode = btn.dataset.mode;
+        renderQuestions();
+      });
+    });
+
+    // Search Input Listener
+    searchInput.addEventListener('input', (e) => {
+      searchQuery = e.target.value.trim();
+      renderQuestions();
+    });
+
+    // Initialize application on page load
+    init();
+  </script>
+</body>
+</html>
