@@ -402,7 +402,7 @@
             <span class="rel-badge one-to-many">1 : N</span>
             <span class="rel-title">One-to-Many</span>
           </div>
-          <div class="rel-desc">Riders ➔ Rides, Drivers ➔ Rides, Vehicle Types ➔ Vehicles.</div>
+          <div class="rel-desc">Riders ➔ Rides, Drivers ➔ Rides, Drivers ➔ Vehicles.</div>
         </div>
 
         <div class="rel-card">
@@ -410,7 +410,7 @@
             <span class="rel-badge many-to-many">M : N</span>
             <span class="rel-title">Many-to-Many</span>
           </div>
-          <div class="rel-desc">Riders ➔ Rider_Coupons ➔ Promo Coupons redemption.</div>
+          <div class="rel-desc">Riders ➔ Coupons redemption, Vehicles ➔ Vehicle Types mapping.</div>
         </div>
 
         <div class="rel-card">
@@ -471,7 +471,8 @@
 erDiagram
     RIDERS ||--o{ RIDES : "1:N (books rides)"
     DRIVERS ||--o{ VEHICLES : "1:N (owns registered vehicles)"
-    VEHICLE_TYPES ||--o{ VEHICLES : "1:N (categorizes vehicle)"
+    VEHICLES ||--o{ VEHICLE_SERVICE_TYPES : "M:N (is eligible for)"
+    VEHICLE_TYPES ||--o{ VEHICLE_SERVICE_TYPES : "M:N (has eligible vehicles)"
     VEHICLE_TYPES ||--o{ RIDES : "1:N (selected fare rate)"
     DRIVERS ||--o{ RIDES : "1:N (accepts and drives)"
     DRIVERS ||--o{ DRIVER_DOCUMENTS : "1:N (uploads KYC docs)"
@@ -512,11 +513,16 @@ erDiagram
     VEHICLES {
         int vehicle_id PK
         int driver_id FK
-        int vehicle_type_id FK
         string make
         string model
         string plate_number
         string color
+    }
+
+    VEHICLE_SERVICE_TYPES {
+        int vehicle_id PK_FK
+        int vehicle_type_id PK_FK
+        boolean is_active
     }
 
     VEHICLE_TYPES {
@@ -661,11 +667,11 @@ erDiagram
               <td>A driver can register multiple vehicles (Bike, Auto, Sedan), 1 active.</td>
             </tr>
             <tr>
-              <td><code>vehicle_types</code></td>
               <td><code>vehicles</code></td>
-              <td><span class="rel-badge one-to-many">1 : N</span></td>
-              <td><code>vehicles.vehicle_type_id</code></td>
-              <td>Category (e.g. Rapido Bike, Uber Go, UberXL) groups vehicles.</td>
+              <td><code>vehicle_types</code></td>
+              <td><span class="rel-badge many-to-many">M : N</span></td>
+              <td><code>vehicle_service_types (Junction)</code></td>
+              <td>A vehicle can be eligible for multiple service categories (e.g. UberX & UberXL).</td>
             </tr>
             <tr>
               <td><code>drivers</code></td>
@@ -800,10 +806,19 @@ graph TD
           <ul class="field-list">
             <li class="field-item"><div class="field-left"><span class="field-name">vehicle_id</span> <span class="tag-pk">PK</span></div><span class="field-type">INT AUTO_INC</span></li>
             <li class="field-item"><div class="field-left"><span class="field-name">driver_id</span> <span class="tag-fk">FK</span></div><span class="field-type">INT</span></li>
-            <li class="field-item"><div class="field-left"><span class="field-name">vehicle_type_id</span> <span class="tag-fk">FK</span></div><span class="field-type">INT</span></li>
             <li class="field-item"><div class="field-left"><span class="field-name">make</span></div><span class="field-type">VARCHAR(50)</span></li>
             <li class="field-item"><div class="field-left"><span class="field-name">model</span></div><span class="field-type">VARCHAR(50)</span></li>
             <li class="field-item"><div class="field-left"><span class="field-name">plate_number</span></div><span class="field-type">VARCHAR(30)</span></li>
+          </ul>
+        </div>
+
+        <!-- Vehicle Service Types -->
+        <div class="table-card">
+          <div class="table-name"><i data-lucide="link"></i> vehicle_service_types</div>
+          <ul class="field-list">
+            <li class="field-item"><div class="field-left"><span class="field-name">vehicle_id</span> <span class="tag-pk">PK</span><span class="tag-fk">FK</span></div><span class="field-type">INT</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">vehicle_type_id</span> <span class="tag-pk">PK</span><span class="tag-fk">FK</span></div><span class="field-type">INT</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">is_active</span></div><span class="field-type">BOOLEAN</span></li>
           </ul>
         </div>
 
