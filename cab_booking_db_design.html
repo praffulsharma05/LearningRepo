@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Uber / Rapido Cab Booking System — DB Architecture & ER Flowchart</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Mermaid.js -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --bg-dark: #080c14;
+      --bg-card: rgba(18, 26, 43, 0.75);
+      --bg-card-hover: rgba(28, 39, 64, 0.85);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-active: rgba(99, 102, 241, 0.5);
+      
+      --primary: #6366f1;
+      --primary-glow: rgba(99, 102, 241, 0.35);
+      --accent-cyan: #06b6d4;
+      --accent-yellow: #f59e0b;
+      --accent-purple: #8b5cf6;
+      --success: #10b981;
+      --danger: #ef4444;
+
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --text-dim: #6b7280;
+      
+      --font-sans: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      --font-mono: 'Fira Code', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(at 12% 12%, rgba(245, 158, 11, 0.12) 0px, transparent 45%),
+        radial-gradient(at 88% 88%, rgba(99, 102, 241, 0.15) 0px, transparent 45%);
+      background-attachment: fixed;
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      padding-bottom: 60px;
+    }
+
+    .container {
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Header */
+    header {
+      padding: 40px 0 24px;
+      text-align: center;
+    }
+
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 16px;
+      border-radius: 9999px;
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #fbbf24;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    h1 {
+      font-size: 2.6rem;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      background: linear-gradient(135deg, #ffffff 0%, #fbbf24 40%, #818cf8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 12px;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      max-width: 820px;
+      margin: 0 auto;
+    }
+
+    /* Relationship Badges Bar */
+    .relationship-types-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin: 28px 0;
+    }
+
+    .rel-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 16px 20px;
+      backdrop-filter: blur(12px);
+      transition: all 0.2s ease;
+    }
+
+    .rel-card:hover {
+      border-color: var(--border-active);
+      transform: translateY(-2px);
+    }
+
+    .rel-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+
+    .rel-badge {
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .rel-badge.one-to-many { background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); }
+    .rel-badge.many-to-many { background: rgba(192, 132, 252, 0.2); color: #c084fc; border: 1px solid rgba(192, 132, 252, 0.4); }
+    .rel-badge.one-to-one { background: rgba(52, 211, 153, 0.2); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.4); }
+    .rel-badge.geo-tracking { background: rgba(251, 191, 36, 0.2); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.4); }
+
+    .rel-title {
+      font-weight: 700;
+      color: #fff;
+      font-size: 0.95rem;
+    }
+
+    .rel-desc {
+      font-size: 0.825rem;
+      color: var(--text-muted);
+    }
+
+    /* Toolbar */
+    .toolbar {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 14px 20px;
+      backdrop-filter: blur(12px);
+      margin-bottom: 24px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 15px;
+      z-index: 100;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+    }
+
+    .tab-group {
+      display: flex;
+      gap: 6px;
+      background: rgba(15, 23, 42, 0.8);
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+    }
+
+    .tab-btn {
+      padding: 9px 18px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn.active {
+      background: linear-gradient(135deg, var(--accent-yellow) 0%, var(--primary) 100%);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
+    }
+
+    /* Diagram Card */
+    .diagram-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 28px;
+      backdrop-filter: blur(12px);
+      margin-bottom: 30px;
+      overflow-x: auto;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    .diagram-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .diagram-sub {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-bottom: 24px;
+    }
+
+    .mermaid {
+      display: flex;
+      justify-content: center;
+      min-width: 900px;
+    }
+
+    /* Table Container */
+    .rel-table-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 18px;
+      overflow: hidden;
+      backdrop-filter: blur(12px);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th {
+      background: rgba(15, 23, 42, 0.9);
+      padding: 16px 20px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    td {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 0.925rem;
+      color: var(--text-main);
+    }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    code {
+      font-family: var(--font-mono);
+      background: rgba(15, 23, 42, 0.9);
+      color: #fbbf24;
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-size: 0.875em;
+      border: 1px solid rgba(251, 191, 36, 0.2);
+    }
+
+    /* Schema Grid */
+    .schema-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 20px;
+    }
+
+    .table-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 20px 24px;
+      backdrop-filter: blur(12px);
+      transition: border-color 0.2s ease;
+    }
+
+    .table-card:hover {
+      border-color: rgba(255,255,255,0.18);
+    }
+
+    .table-name {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #fbbf24;
+      font-family: var(--font-mono);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .field-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .field-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.875rem;
+      padding: 6px 10px;
+      background: rgba(15, 23, 42, 0.6);
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .field-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .field-name {
+      font-family: var(--font-mono);
+      color: var(--text-main);
+      font-weight: 500;
+    }
+
+    .tag-pk {
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(245, 158, 11, 0.2);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.4);
+    }
+
+    .tag-fk {
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(6, 182, 212, 0.2);
+      color: #38bdf8;
+      border: 1px solid rgba(6, 182, 212, 0.4);
+    }
+
+    .field-type {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .view-section {
+      display: none;
+    }
+
+    .view-section.active {
+      display: block;
+    }
+
+    @media (max-width: 768px) {
+      h1 { font-size: 1.8rem; }
+      .toolbar { flex-direction: column; align-items: stretch; }
+      .tab-group { width: 100%; justify-content: center; }
+      .schema-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="container">
+      <div class="badge-pill">
+        <i data-lucide="car" style="width: 16px; height: 16px;"></i>
+        Uber & Rapido System Architecture
+      </div>
+      <h1>Cab & Ride Booking Database Design</h1>
+      <p>Comprehensive ER Model & Realtime Data Pipeline for Riders, Drivers, GPS Tracking, Pricing Surge, OTP Trips, Payments & Reviews.</p>
+
+      <!-- Relationship Badges -->
+      <div class="relationship-types-bar">
+        <div class="rel-card">
+          <div class="rel-header">
+            <span class="rel-badge one-to-many">1 : N</span>
+            <span class="rel-title">One-to-Many</span>
+          </div>
+          <div class="rel-desc">Riders ➔ Rides, Drivers ➔ Rides, Vehicle Types ➔ Vehicles.</div>
+        </div>
+
+        <div class="rel-card">
+          <div class="rel-header">
+            <span class="rel-badge many-to-many">M : N</span>
+            <span class="rel-title">Many-to-Many</span>
+          </div>
+          <div class="rel-desc">Riders ➔ Rider_Coupons ➔ Promo Coupons redemption.</div>
+        </div>
+
+        <div class="rel-card">
+          <div class="rel-header">
+            <span class="rel-badge one-to-one">1 : 1</span>
+            <span class="rel-title">One-to-One</span>
+          </div>
+          <div class="rel-desc">Rides ➔ Payments (Each trip generates 1 transaction ledger).</div>
+        </div>
+
+        <div class="rel-card">
+          <div class="rel-header">
+            <span class="rel-badge geo-tracking">Geospatial 1:N</span>
+            <span class="rel-title">Live Tracking</span>
+          </div>
+          <div class="rel-desc">Rides ➔ Ride_Locations (High-frequency GPS ping log).</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- View Switcher -->
+    <div class="toolbar">
+      <div style="font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
+        <i data-lucide="layers" style="color: var(--accent-yellow);"></i>
+        Database Diagrams
+      </div>
+
+      <div class="tab-group">
+        <button class="tab-btn active" onclick="switchView('er-view', this)">
+          <i data-lucide="network" style="width: 16px; height: 16px;"></i> ER Diagram (Mermaid.js)
+        </button>
+        <button class="tab-btn" onclick="switchView('matrix-view', this)">
+          <i data-lucide="table-properties" style="width: 16px; height: 16px;"></i> Relationship Matrix
+        </button>
+        <button class="tab-btn" onclick="switchView('flow-view', this)">
+          <i data-lucide="workflow" style="width: 16px; height: 16px;"></i> Ride Lifecycle Pipeline
+        </button>
+        <button class="tab-btn" onclick="switchView('schema-view', this)">
+          <i data-lucide="database" style="width: 16px; height: 16px;"></i> Table Dictionary
+        </button>
+      </div>
+    </div>
+
+    <!-- VIEW 1: Mermaid ER Diagram -->
+    <section id="er-view" class="view-section active">
+      <div class="diagram-card">
+        <div class="diagram-title">
+          <i data-lucide="network" style="color: var(--accent-yellow);"></i>
+          Complete Uber/Rapido Entity-Relationship Diagram (ERD)
+        </div>
+        <div class="diagram-sub">
+          Symbols: <code>||--o{</code> (1 to Many) | <code>||--||</code> (1 to 1) | <code>PK</code> Primary Key | <code>FK</code> Foreign Key
+        </div>
+
+        <pre class="mermaid">
+erDiagram
+    RIDERS ||--o{ RIDES : "1:N (books rides)"
+    DRIVERS ||--o{ VEHICLES : "1:N (owns registered vehicles)"
+    VEHICLE_TYPES ||--o{ VEHICLES : "1:N (categorizes vehicle)"
+    VEHICLE_TYPES ||--o{ RIDES : "1:N (selected fare rate)"
+    DRIVERS ||--o{ RIDES : "1:N (accepts and drives)"
+    DRIVERS ||--o{ DRIVER_DOCUMENTS : "1:N (uploads KYC docs)"
+    SURGE_ZONES ||--o{ RIDES : "1:N (applies multiplier)"
+    
+    RIDES ||--|| PAYMENTS : "1:1 (generates payment transaction)"
+    RIDES ||--o{ RIDE_LOCATIONS : "1:N (realtime GPS pings)"
+    RIDES ||--o{ RATINGS_REVIEWS : "1:N (receives rider/driver reviews)"
+    RIDES ||--o{ SUPPORT_TICKETS : "1:N (logs support tickets)"
+    
+    RIDERS ||--o{ RIDER_COUPONS : "M:N (claims coupons)"
+    COUPONS_PROMOS ||--o{ RIDER_COUPONS : "M:N (redeemed by riders)"
+
+    RIDERS {
+        int rider_id PK
+        string name
+        string email
+        string phone
+        decimal rating
+        decimal wallet_balance
+        string status
+    }
+
+    DRIVERS {
+        int driver_id PK
+        string name
+        string email
+        string phone
+        string license_number
+        decimal rating
+        boolean is_online
+        boolean is_available
+        decimal current_latitude
+        decimal current_longitude
+        string verification_status
+    }
+
+    VEHICLES {
+        int vehicle_id PK
+        int driver_id FK
+        int vehicle_type_id FK
+        string make
+        string model
+        string plate_number
+        string color
+    }
+
+    VEHICLE_TYPES {
+        int vehicle_type_id PK
+        string type_name
+        decimal base_fare
+        decimal per_km_rate
+        decimal per_minute_rate
+        int capacity
+    }
+
+    RIDES {
+        int ride_id PK
+        int rider_id FK
+        int driver_id FK
+        int vehicle_id FK
+        int vehicle_type_id FK
+        int zone_id FK
+        string pickup_address
+        decimal pickup_latitude
+        decimal pickup_longitude
+        string dropoff_address
+        decimal dropoff_latitude
+        decimal dropoff_longitude
+        decimal distance_km
+        decimal fare_amount
+        string otp
+        string status
+        datetime requested_at
+        datetime completed_at
+    }
+
+    PAYMENTS {
+        int payment_id PK
+        int ride_id FK
+        int rider_id FK
+        decimal amount
+        string payment_mode
+        string payment_status
+        string transaction_ref
+        datetime paid_at
+    }
+
+    RIDE_LOCATIONS {
+        int tracking_id PK
+        int ride_id FK
+        decimal latitude
+        decimal longitude
+        decimal speed
+        datetime recorded_at
+    }
+
+    RATINGS_REVIEWS {
+        int review_id PK
+        int ride_id FK
+        string reviewer_type
+        int given_by_id FK
+        int given_to_id FK
+        int rating_stars
+        text comments
+    }
+
+    DRIVER_DOCUMENTS {
+        int document_id PK
+        int driver_id FK
+        string document_type
+        string document_url
+        string verification_status
+        date expiry_date
+    }
+
+    COUPONS_PROMOS {
+        int coupon_id PK
+        string code
+        string discount_type
+        decimal discount_value
+        decimal min_ride_amount
+        date valid_until
+    }
+
+    RIDER_COUPONS {
+        int rider_id PK_FK
+        int coupon_id PK_FK
+        boolean is_used
+        datetime used_at
+    }
+
+    SURGE_ZONES {
+        int zone_id PK
+        string zone_name
+        decimal center_latitude
+        decimal center_longitude
+        decimal radius_km
+        decimal surge_multiplier
+    }
+
+    SUPPORT_TICKETS {
+        int ticket_id PK
+        int ride_id FK
+        int user_id FK
+        string issue_category
+        text description
+        string status
+    }
+        </pre>
+      </div>
+    </section>
+
+    <!-- VIEW 2: Relationship Matrix -->
+    <section id="matrix-view" class="view-section">
+      <div class="rel-table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Parent / Source Table</th>
+              <th>Child / Target Table</th>
+              <th style="width: 150px;">Cardinality Type</th>
+              <th>Foreign Key (FK) Field</th>
+              <th>Business Logic & System Flow</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>riders</code></td>
+              <td><code>rides</code></td>
+              <td><span class="rel-badge one-to-many">1 : N</span></td>
+              <td><code>rides.rider_id</code></td>
+              <td>A rider places multiple cab/bike trip requests over time.</td>
+            </tr>
+            <tr>
+              <td><code>drivers</code></td>
+              <td><code>rides</code></td>
+              <td><span class="rel-badge one-to-many">1 : N</span></td>
+              <td><code>rides.driver_id</code></td>
+              <td>A driver accepts, picks up, and completes multiple rides.</td>
+            </tr>
+            <tr>
+              <td><code>drivers</code></td>
+              <td><code>vehicles</code></td>
+              <td><span class="rel-badge one-to-many">1 : N</span></td>
+              <td><code>vehicles.driver_id</code></td>
+              <td>A driver can register multiple vehicles (Bike, Auto, Sedan), 1 active.</td>
+            </tr>
+            <tr>
+              <td><code>vehicle_types</code></td>
+              <td><code>vehicles</code></td>
+              <td><span class="rel-badge one-to-many">1 : N</span></td>
+              <td><code>vehicles.vehicle_type_id</code></td>
+              <td>Category (e.g. Rapido Bike, Uber Go, UberXL) groups vehicles.</td>
+            </tr>
+            <tr>
+              <td><code>drivers</code></td>
+              <td><code>driver_documents</code></td>
+              <td><span class="rel-badge one-to-many">1 : N</span></td>
+              <td><code>driver_documents.driver_id</code></td>
+              <td>Driver uploads KYC docs (Driving License, RC, Insurance, Police Verification).</td>
+            </tr>
+            <tr>
+              <td><code>surge_zones</code></td>
+              <td><code>rides</code></td>
+              <td><span class="rel-badge one-to-many">1 : N</span></td>
+              <td><code>rides.zone_id</code></td>
+              <td>High demand geographic zones apply 1.2x - 2.5x fare multipliers.</td>
+            </tr>
+            <tr>
+              <td><code>rides</code></td>
+              <td><code>payments</code></td>
+              <td><span class="rel-badge one-to-one">1 : 1</span></td>
+              <td><code>payments.sale_id / ride_id</code></td>
+              <td>Each completed ride generates exactly 1 payment transaction ledger.</td>
+            </tr>
+            <tr>
+              <td><code>rides</code></td>
+              <td><code>ride_locations</code></td>
+              <td><span class="rel-badge geo-tracking">Geospatial 1:N</span></td>
+              <td><code>ride_locations.ride_id</code></td>
+              <td>Realtime GPS tracking pings logged every 5 seconds during active trip.</td>
+            </tr>
+            <tr>
+              <td><code>rides</code></td>
+              <td><code>ratings_reviews</code></td>
+              <td><span class="rel-badge one-to-many">1 : N</span></td>
+              <td><code>ratings_reviews.ride_id</code></td>
+              <td>Two-way review system: Rider rates Driver & Driver rates Rider.</td>
+            </tr>
+            <tr>
+              <td><code>coupons_promos</code></td>
+              <td><code>riders</code></td>
+              <td><span class="rel-badge many-to-many">M : N</span></td>
+              <td><code>rider_coupons (Junction)</code></td>
+              <td>Promotional codes (e.g. RAPIDO50, UBERNEW) claimed and redeemed by riders.</td>
+            </tr>
+            <tr>
+              <td><code>rides</code></td>
+              <td><code>support_tickets</code></td>
+              <td><span class="rel-badge one-to-many">1 : N</span></td>
+              <td><code>support_tickets.ride_id</code></td>
+              <td>Rider or Driver logs customer support issues (lost item, fare dispute).</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- VIEW 3: Lifecycle Pipeline -->
+    <section id="flow-view" class="view-section">
+      <div class="diagram-card">
+        <div class="diagram-title">
+          <i data-lucide="workflow" style="color: var(--accent-cyan);"></i>
+          Uber/Rapido Ride Booking & Execution Pipeline
+        </div>
+        <div class="diagram-sub">
+          Shows step-by-step data movement from Rider Search ➔ Driver Dispatch ➔ Live Tracking ➔ Fare Payment ➔ Rating Feedback.
+        </div>
+
+        <pre class="mermaid">
+graph TD
+    subgraph 1. Onboarding & Driver Verification
+        D[Drivers] -->|Uploads Docs| DD[Driver Documents]
+        DD -->|Admin Verified| DV[Verified Driver & Vehicle]
+        VT[Vehicle Types] -->|Categorizes| DV
+    end
+
+    subgraph 2. Ride Request & Dispatch Engine
+        R[Riders] -->|Selects Pickup/Drop & Vehicle Type| RR[Request Ride]
+        SZ[Surge Zones Engine] -->|Calculates Dynamic Fare| RR
+        RR -->|Broadcasts to Nearby Online Drivers| D
+        D -->|Accepts Request| RA[Accepted Ride & OTP Generated]
+    end
+
+    subgraph 3. Trip Execution & Realtime Tracking
+        RA -->|Driver Reaches Pickup| AP[Arrived at Pickup]
+        AP -->|Rider Verifies OTP| TS[Trip Started]
+        TS -->|High-Frequency GPS Pings| RL[Ride Locations Tracking]
+    end
+
+    subgraph 4. Completion, Payment & Review
+        TS -->|Reaches Destination| TC[Trip Completed]
+        TC -->|Generates Invoice| P[Payment Transaction]
+        R -->|Pay via UPI/Cash/Wallet| P
+        TC -->|Two-Way Feedback| RRV[Ratings & Reviews]
+        P -->|Driver Earnings Credit| DE[Driver Wallet Payout]
+    end
+        </pre>
+      </div>
+    </section>
+
+    <!-- VIEW 4: Table Schema Dictionary -->
+    <section id="schema-view" class="view-section">
+      <div class="schema-grid">
+        <!-- Riders -->
+        <div class="table-card">
+          <div class="table-name"><i data-lucide="user"></i> riders</div>
+          <ul class="field-list">
+            <li class="field-item"><div class="field-left"><span class="field-name">rider_id</span> <span class="tag-pk">PK</span></div><span class="field-type">INT AUTO_INC</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">name</span></div><span class="field-type">VARCHAR(150)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">phone</span></div><span class="field-type">VARCHAR(20) UNIQUE</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">email</span></div><span class="field-type">VARCHAR(150)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">rating</span></div><span class="field-type">DECIMAL(3,2)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">wallet_balance</span></div><span class="field-type">DECIMAL(10,2)</span></li>
+          </ul>
+        </div>
+
+        <!-- Drivers -->
+        <div class="table-card">
+          <div class="table-name"><i data-lucide="user-check"></i> drivers</div>
+          <ul class="field-list">
+            <li class="field-item"><div class="field-left"><span class="field-name">driver_id</span> <span class="tag-pk">PK</span></div><span class="field-type">INT AUTO_INC</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">name</span></div><span class="field-type">VARCHAR(150)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">phone</span></div><span class="field-type">VARCHAR(20)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">license_number</span></div><span class="field-type">VARCHAR(50)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">is_online</span></div><span class="field-type">BOOLEAN</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">current_latitude</span></div><span class="field-type">DECIMAL(10,8)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">current_longitude</span></div><span class="field-type">DECIMAL(11,8)</span></li>
+          </ul>
+        </div>
+
+        <!-- Vehicles -->
+        <div class="table-card">
+          <div class="table-name"><i data-lucide="car"></i> vehicles</div>
+          <ul class="field-list">
+            <li class="field-item"><div class="field-left"><span class="field-name">vehicle_id</span> <span class="tag-pk">PK</span></div><span class="field-type">INT AUTO_INC</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">driver_id</span> <span class="tag-fk">FK</span></div><span class="field-type">INT</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">vehicle_type_id</span> <span class="tag-fk">FK</span></div><span class="field-type">INT</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">make</span></div><span class="field-type">VARCHAR(50)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">model</span></div><span class="field-type">VARCHAR(50)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">plate_number</span></div><span class="field-type">VARCHAR(30)</span></li>
+          </ul>
+        </div>
+
+        <!-- Vehicle Types -->
+        <div class="table-card">
+          <div class="table-name"><i data-lucide="truck"></i> vehicle_types</div>
+          <ul class="field-list">
+            <li class="field-item"><div class="field-left"><span class="field-name">vehicle_type_id</span> <span class="tag-pk">PK</span></div><span class="field-type">INT AUTO_INC</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">type_name</span></div><span class="field-type">VARCHAR(50)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">base_fare</span></div><span class="field-type">DECIMAL(8,2)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">per_km_rate</span></div><span class="field-type">DECIMAL(8,2)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">per_minute_rate</span></div><span class="field-type">DECIMAL(8,2)</span></li>
+          </ul>
+        </div>
+
+        <!-- Rides -->
+        <div class="table-card">
+          <div class="table-name"><i data-lucide="navigation"></i> rides</div>
+          <ul class="field-list">
+            <li class="field-item"><div class="field-left"><span class="field-name">ride_id</span> <span class="tag-pk">PK</span></div><span class="field-type">INT AUTO_INC</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">rider_id</span> <span class="tag-fk">FK</span></div><span class="field-type">INT</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">driver_id</span> <span class="tag-fk">FK</span></div><span class="field-type">INT</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">vehicle_type_id</span> <span class="tag-fk">FK</span></div><span class="field-type">INT</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">pickup_latitude</span></div><span class="field-type">DECIMAL(10,8)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">dropoff_latitude</span></div><span class="field-type">DECIMAL(10,8)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">otp</span></div><span class="field-type">VARCHAR(6)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">status</span></div><span class="field-type">ENUM</span></li>
+          </ul>
+        </div>
+
+        <!-- Payments -->
+        <div class="table-card">
+          <div class="table-name"><i data-lucide="credit-card"></i> payments</div>
+          <ul class="field-list">
+            <li class="field-item"><div class="field-left"><span class="field-name">payment_id</span> <span class="tag-pk">PK</span></div><span class="field-type">INT AUTO_INC</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">ride_id</span> <span class="tag-fk">FK</span></div><span class="field-type">INT</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">rider_id</span> <span class="tag-fk">FK</span></div><span class="field-type">INT</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">amount</span></div><span class="field-type">DECIMAL(10,2)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">payment_mode</span></div><span class="field-type">VARCHAR(30)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">payment_status</span></div><span class="field-type">VARCHAR(30)</span></li>
+          </ul>
+        </div>
+
+        <!-- Ride Locations -->
+        <div class="table-card">
+          <div class="table-name"><i data-lucide="map-pin"></i> ride_locations</div>
+          <ul class="field-list">
+            <li class="field-item"><div class="field-left"><span class="field-name">tracking_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">ride_id</span> <span class="tag-fk">FK</span></div><span class="field-type">INT</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">latitude</span></div><span class="field-type">DECIMAL(10,8)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">longitude</span></div><span class="field-type">DECIMAL(11,8)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">recorded_at</span></div><span class="field-type">TIMESTAMP</span></li>
+          </ul>
+        </div>
+
+        <!-- Ratings Reviews -->
+        <div class="table-card">
+          <div class="table-name"><i data-lucide="star"></i> ratings_reviews</div>
+          <ul class="field-list">
+            <li class="field-item"><div class="field-left"><span class="field-name">review_id</span> <span class="tag-pk">PK</span></div><span class="field-type">INT AUTO_INC</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">ride_id</span> <span class="tag-fk">FK</span></div><span class="field-type">INT</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">reviewer_type</span></div><span class="field-type">ENUM</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">given_by_id</span> <span class="tag-fk">FK</span></div><span class="field-type">INT</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">rating_stars</span></div><span class="field-type">INT</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      themeVariables: {
+        darkMode: true,
+        background: '#121a2b',
+        primaryColor: '#f59e0b',
+        secondaryColor: '#38bdf8',
+        tertiaryColor: '#6366f1',
+        lineColor: '#fbbf24',
+        fontFamily: 'Plus Jakarta Sans',
+        fontSize: '14px'
+      }
+    });
+
+    function switchView(viewId, btn) {
+      document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      
+      document.getElementById(viewId).classList.add('active');
+      btn.classList.add('active');
+    }
+
+    lucide.createIcons();
+  </script>
+</body>
+</html>
