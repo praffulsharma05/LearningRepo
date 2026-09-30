@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ACID Properties — Simplified Database Concepts</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --bg-card: rgba(30, 41, 59, 0.7);
+      --border-color: rgba(255, 255, 255, 0.1);
+      
+      --atomicity: #ef4444;    /* Red */
+      --consistency: #3b82f6;  /* Blue */
+      --isolation: #f59e0b;    /* Yellow */
+      --durability: #10b981;   /* Green */
+
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(239, 68, 68, 0.1) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.1) 0px, transparent 50%);
+      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      line-height: 1.6;
+      padding: 60px 20px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 50px;
+      max-width: 800px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 6px 16px;
+      border-radius: 9999px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      font-size: 3rem;
+      font-weight: 800;
+      letter-spacing: -1px;
+      margin-bottom: 16px;
+    }
+
+    h1 span {
+      background: linear-gradient(135deg, #fff 0%, #cbd5e1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    header p {
+      font-size: 1.15rem;
+      color: var(--text-muted);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+      width: 100%;
+      max-width: 1100px;
+    }
+
+    .acid-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 32px;
+      backdrop-filter: blur(12px);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .acid-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .icon-box {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+    }
+
+    .acid-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      margin-bottom: 6px;
+      color: #fff;
+    }
+
+    .acid-subtitle {
+      font-size: 0.9rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 16px;
+    }
+
+    .acid-desc {
+      color: var(--text-muted);
+      font-size: 1rem;
+      margin-bottom: 20px;
+    }
+
+    .example-box {
+      background: rgba(0,0,0,0.3);
+      border-radius: 12px;
+      padding: 16px;
+      border-left: 4px solid;
+    }
+
+    .example-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .example-text {
+      font-size: 0.95rem;
+      color: #cbd5e1;
+    }
+
+    /* Individual Card Styles */
+    /* A - Atomicity */
+    .card-a { box-shadow: 0 10px 30px rgba(239, 68, 68, 0.05); }
+    .card-a:hover { border-color: rgba(239, 68, 68, 0.4); box-shadow: 0 10px 30px rgba(239, 68, 68, 0.15); }
+    .card-a .icon-box { background: rgba(239, 68, 68, 0.15); color: var(--atomicity); }
+    .card-a .acid-subtitle { color: var(--atomicity); }
+    .card-a .example-box { border-left-color: var(--atomicity); }
+    .card-a .example-title { color: var(--atomicity); }
+
+    /* C - Consistency */
+    .card-c { box-shadow: 0 10px 30px rgba(59, 130, 246, 0.05); }
+    .card-c:hover { border-color: rgba(59, 130, 246, 0.4); box-shadow: 0 10px 30px rgba(59, 130, 246, 0.15); }
+    .card-c .icon-box { background: rgba(59, 130, 246, 0.15); color: var(--consistency); }
+    .card-c .acid-subtitle { color: var(--consistency); }
+    .card-c .example-box { border-left-color: var(--consistency); }
+    .card-c .example-title { color: var(--consistency); }
+
+    /* I - Isolation */
+    .card-i { box-shadow: 0 10px 30px rgba(245, 158, 11, 0.05); }
+    .card-i:hover { border-color: rgba(245, 158, 11, 0.4); box-shadow: 0 10px 30px rgba(245, 158, 11, 0.15); }
+    .card-i .icon-box { background: rgba(245, 158, 11, 0.15); color: var(--isolation); }
+    .card-i .acid-subtitle { color: var(--isolation); }
+    .card-i .example-box { border-left-color: var(--isolation); }
+    .card-i .example-title { color: var(--isolation); }
+
+    /* D - Durability */
+    .card-d { box-shadow: 0 10px 30px rgba(16, 185, 129, 0.05); }
+    .card-d:hover { border-color: rgba(16, 185, 129, 0.4); box-shadow: 0 10px 30px rgba(16, 185, 129, 0.15); }
+    .card-d .icon-box { background: rgba(16, 185, 129, 0.15); color: var(--durability); }
+    .card-d .acid-subtitle { color: var(--durability); }
+    .card-d .example-box { border-left-color: var(--durability); }
+    .card-d .example-title { color: var(--durability); }
+
+    @media (max-width: 768px) {
+      h1 { font-size: 2.2rem; }
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="badge">Relational Databases 101</div>
+    <h1>The <span>ACID</span> Properties</h1>
+    <p>The 4 golden rules that guarantee your database transactions are processed reliably, even in the event of errors, power failures, or crashes.</p>
+  </header>
+
+  <div class="grid">
+    
+    <!-- Atomicity -->
+    <div class="acid-card card-a">
+      <div class="icon-box">
+        <i data-lucide="shield-check" style="width: 28px; height: 28px;"></i>
+      </div>
+      <div class="acid-title">Atomicity</div>
+      <div class="acid-subtitle">"All or Nothing"</div>
+      <p class="acid-desc">A transaction must complete 100% successfully. If any single part of the transaction fails, the entire transaction is cancelled (rolled back) as if it never happened.</p>
+      
+      <div class="example-box">
+        <div class="example-title"><i data-lucide="lightbulb" style="width: 14px; height: 14px;"></i> Bank Transfer Example</div>
+        <p class="example-text">You send $100 to a friend. The database deducts $100 from you, but then crashes before adding it to your friend. <strong>Atomicity</strong> ensures the $100 is returned to you. No money is lost in the void.</p>
+      </div>
+    </div>
+
+    <!-- Consistency -->
+    <div class="acid-card card-c">
+      <div class="icon-box">
+        <i data-lucide="scale" style="width: 28px; height: 28px;"></i>
+      </div>
+      <div class="acid-title">Consistency</div>
+      <div class="acid-subtitle">"Rule-Abiding"</div>
+      <p class="acid-desc">The database must always obey its own rules, constraints, and triggers. A transaction can only bring the database from one valid state to another valid state.</p>
+      
+      <div class="example-box">
+        <div class="example-title"><i data-lucide="lightbulb" style="width: 14px; height: 14px;"></i> Bank Transfer Example</div>
+        <p class="example-text">Your account rule says "Balance cannot go below $0". If you have $50 and try to send $100, <strong>Consistency</strong> immediately blocks the transaction because it breaks the valid balance rule.</p>
+      </div>
+    </div>
+
+    <!-- Isolation -->
+    <div class="acid-card card-i">
+      <div class="icon-box">
+        <i data-lucide="lock" style="width: 28px; height: 28px;"></i>
+      </div>
+      <div class="acid-title">Isolation</div>
+      <div class="acid-subtitle">"No Interference"</div>
+      <p class="acid-desc">When hundreds of users make requests at the exact same time, transactions execute independently. One transaction cannot read data from another "half-finished" transaction.</p>
+      
+      <div class="example-box">
+        <div class="example-title"><i data-lucide="lightbulb" style="width: 14px; height: 14px;"></i> Bank Transfer Example</div>
+        <p class="example-text">You have $100. You try to buy a $100 shoe on your phone AND a $100 watch on your laptop at the exact same millisecond. <strong>Isolation</strong> forces the database to process them sequentially in an invisible queue. One succeeds, the other fails. No double-spending!</p>
+      </div>
+    </div>
+
+    <!-- Durability -->
+    <div class="acid-card card-d">
+      <div class="icon-box">
+        <i data-lucide="hard-drive" style="width: 28px; height: 28px;"></i>
+      </div>
+      <div class="acid-title">Durability</div>
+      <div class="acid-subtitle">"Permanent & Safe"</div>
+      <p class="acid-desc">Once a transaction is successfully completed (committed), the changes are saved to the physical hard drive permanently. They will survive server crashes or power outages.</p>
+      
+      <div class="example-box">
+        <div class="example-title"><i data-lucide="lightbulb" style="width: 14px; height: 14px;"></i> Bank Transfer Example</div>
+        <p class="example-text">You see the green "Transfer Successful" screen. One second later, the bank's data center loses power. Because of <strong>Durability</strong>, when the servers boot back up, your friend still has the $100.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>
