@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JavaScript Code Standards Quiz</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --bg-card: rgba(30, 41, 59, 0.7);
+      --bg-card-hover: rgba(30, 41, 59, 0.9);
+      --border-color: rgba(255, 255, 255, 0.1);
+      
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --success: #10b981;
+      --success-glow: rgba(16, 185, 129, 0.2);
+      --danger: #ef4444;
+      --danger-glow: rgba(239, 68, 68, 0.2);
+      --warning: #f59e0b;
+      
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      
+      --font-sans: 'Plus Jakarta Sans', sans-serif;
+      --font-mono: 'Fira Code', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.1) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(16, 185, 129, 0.05) 0px, transparent 50%);
+      background-attachment: fixed;
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      padding-bottom: 80px;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* Header */
+    header {
+      padding: 50px 0 30px;
+      text-align: center;
+      position: relative;
+    }
+
+    .badge-pill {
+      display: inline-block;
+      padding: 6px 16px;
+      border-radius: 9999px;
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: #60a5fa;
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      font-size: 3rem;
+      font-weight: 800;
+      letter-spacing: -1px;
+      margin-bottom: 12px;
+      background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* Dashboard Stats */
+    .stats-container {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      backdrop-filter: blur(10px);
+    }
+
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .stat-icon.blue { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+    .stat-icon.green { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+    .stat-icon.yellow { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+
+    .stat-info h3 {
+      font-size: 2rem;
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .stat-info p {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Filters */
+    .filters-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 30px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      scrollbar-width: none;
+    }
+
+    .filters-bar::-webkit-scrollbar { display: none; }
+
+    .tab-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 10px 20px;
+      border-radius: 9999px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn:hover {
+      background: rgba(255,255,255,0.05);
+      color: #fff;
+    }
+
+    .tab-btn.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    /* Questions Grid */
+    .questions-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .question-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 18px;
+      padding: 24px 28px;
+      backdrop-filter: blur(12px);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      position: relative;
+    }
+
+    .question-card:hover {
+      border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .q-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+
+    .q-meta {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .q-id {
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-weight: 700;
+    }
+
+    .q-category {
+      color: var(--primary);
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .q-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    .q-title code, .option-text code {
+      background: rgba(0,0,0,0.3);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.9em;
+      color: #93c5fd;
+    }
+
+    .options-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .option-btn {
+      background: rgba(0,0,0,0.2);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: left;
+      font-family: inherit;
+      color: var(--text-main);
+      font-size: 1rem;
+    }
+
+    .option-btn:hover:not(:disabled) {
+      background: rgba(255,255,255,0.05);
+      border-color: rgba(255,255,255,0.2);
+    }
+
+    .option-letter {
+      background: rgba(255,255,255,0.1);
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+      color: var(--text-muted);
+    }
+
+    /* States */
+    .option-btn.selected {
+      border-color: var(--primary);
+      background: rgba(59, 130, 246, 0.1);
+    }
+
+    .option-btn.correct {
+      border-color: var(--success);
+      background: rgba(16, 185, 129, 0.1);
+    }
+    
+    .option-btn.correct .option-letter {
+      background: var(--success);
+      color: #fff;
+    }
+
+    .option-btn.wrong {
+      border-color: var(--danger);
+      background: rgba(239, 68, 68, 0.1);
+      opacity: 0.8;
+    }
+    
+    .option-btn.wrong .option-letter {
+      background: var(--danger);
+      color: #fff;
+    }
+
+    .explanation {
+      margin-top: 20px;
+      padding: 16px 20px;
+      border-radius: 12px;
+      background: rgba(16, 185, 129, 0.05);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .explanation.visible {
+      display: flex;
+      gap: 12px;
+    }
+
+    .explanation i {
+      color: var(--success);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .explanation-content {
+      font-size: 0.95rem;
+      color: #cbd5e1;
+    }
+
+    .explanation-content code {
+      background: rgba(0,0,0,0.3);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.9em;
+      color: #fbbf24;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 768px) {
+      .stats-container { grid-template-columns: 1fr; }
+      h1 { font-size: 2.2rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="container">
+      <div class="badge-pill">Professional Development</div>
+      <h1>JavaScript Code Standards Quiz</h1>
+      <p>Test your knowledge on meaningful naming, DRY principles, immutability, async/await, and clean code practices.</p>
+    </div>
+  </header>
+
+  <main class="container">
+    
+    <!-- Stats -->
+    <div class="stats-container">
+      <div class="stat-card">
+        <div class="stat-icon blue"><i data-lucide="help-circle"></i></div>
+        <div class="stat-info">
+          <h3 id="total-count">20</h3>
+          <p>Total Questions</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon yellow"><i data-lucide="target"></i></div>
+        <div class="stat-info">
+          <h3 id="answered-count">0</h3>
+          <p>Answered</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon green"><i data-lucide="check-circle"></i></div>
+        <div class="stat-info">
+          <h3 id="score-count">0</h3>
+          <p>Correct Answers</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-bar" id="filter-tabs">
+      <!-- Injected by JS -->
+    </div>
+
+    <!-- Questions Grid -->
+    <div class="questions-grid" id="questions-grid">
+      <!-- Injected by JS -->
+    </div>
+
+  </main>
+
+  <script>
+    // Dataset of 20 MCQs based on user's Answer Sheet
+    const questionsData = [
+      { id: 1, part: "Easy", category: "Meaningful Naming", question: "Which of the following is the best example of meaningful variable naming?", options: ["let p = 150;", "let price1 = 150;", "let productPrice = 150;", "let data_val = 150;"], answer: 2, explanation: "`productPrice` clearly explains what the variable contains." },
+      { id: 2, part: "Easy", category: "const vs let", question: "When should you use `const` instead of `let`?", options: ["For variables inside loops only", "When the variable will be reassigned", "When the variable isn't reassigned", "Only for global variables"], answer: 2, explanation: "Use `const` when the variable isn't reassigned." },
+      { id: 3, part: "Easy", category: "Magic Numbers", question: "How should you handle magic numbers like '18' in your code?", options: ["Keep it as 18 so it's shorter", "Assign it to a constant like `MINIMUM_AGE`", "Add a comment next to 18", "Use a string '18' instead"], answer: 1, explanation: "`MINIMUM_AGE` gives the number 18 a meaningful name." },
+      { id: 4, part: "Easy", category: "Strict Equality", question: "What is the primary benefit of using strict equality `===` over loose equality `==`?", options: ["It is faster to execute", "It ignores variable types entirely", "It checks both value and type", "It automatically converts types for you"], answer: 2, explanation: "`===` checks both value and type, preventing unexpected type coercion bugs." },
+      { id: 5, part: "Easy", category: "Function Naming", question: "Which of the following function names is the most descriptive?", options: ["doStuff()", "get()", "getUserById()", "executeUserQuery()"], answer: 2, explanation: "`getUserById()` clearly describes the function's specific action." },
+      { id: 6, part: "Medium", category: "DRY Principle", question: "What is the best way to apply the DRY (Don't Repeat Yourself) principle to a tax calculation repeated 5 times?", options: ["Copy and paste the formula to ensure it works everywhere", "Place the common calculation in one reusable function", "Create a new class for every calculation", "Use a global variable for the tax amount"], answer: 1, explanation: "Common calculation is placed in one reusable function." },
+      { id: 7, part: "Medium", category: "Single Responsibility", question: "According to the Single Responsibility Principle, a function should:", options: ["Perform multiple complex tasks", "Be at least 100 lines long", "Have one clear responsibility like `validateUser()`", "Always return an object"], answer: 2, explanation: "`validateUser()` has one clear responsibility." },
+      { id: 8, part: "Medium", category: "Useful Comments", question: "What is the most useful way to write code comments?", options: ["Explain exactly what the code is doing line-by-line", "Explain obvious things like `count++`", "Explain the **why** and business logic behind complex code", "Add ASCII art to make the code look nice"], answer: 2, explanation: "Good comments explain **why**, not obvious things like `count++`." },
+      { id: 9, part: "Medium", category: "Early Return", question: "Why is the 'Early Return' pattern useful in functions?", options: ["It makes the function run slower", "It reduces unnecessary nesting and improves readability", "It forces the function to always return a boolean", "It prevents the use of switch statements"], answer: 1, explanation: "Early returns reduce unnecessary nesting." },
+      { id: 10, part: "Medium", category: "Optional Chaining", question: "Which syntax safely accesses a nested property (like `user.profile.age`) that might be undefined?", options: ["user && user.profile && user.profile.age", "user::profile::age", "user?.profile?.age", "user->profile->age"], answer: 2, explanation: "`?.` safely accesses nested properties without throwing errors." },
+      { id: 11, part: "Medium", category: "Nullish Coalescing", question: "What will `0 ?? 10` evaluate to?", options: ["null", "0", "10", "undefined"], answer: 1, explanation: "`0 ?? 10` returns `0`. `??` only uses the fallback for `null` or `undefined`, unlike `||` which falls back on falsy values like `0`." },
+      { id: 12, part: "Medium", category: "Array Methods", question: "What does the array `filter()` method do?", options: ["Modifies the original array elements", "Returns a single aggregated value", "Returns a new array with all elements matching a condition", "Returns the first element that matches a condition"], answer: 2, explanation: "`filter()` returns all elements matching a condition." },
+      { id: 13, part: "Medium", category: "Array Methods", question: "What is the difference between `find()` and `filter()`?", options: ["`find()` returns a boolean, `filter()` returns an array", "`find()` modifies the array, `filter()` does not", "`find()` returns the first matching object, `filter()` returns an array of all matches", "There is no difference"], answer: 2, explanation: "`find()` returns the first matching object; `filter()` returns an array." },
+      { id: 14, part: "Medium", category: "Error Handling", question: "Why is leaving an empty `catch(e) {}` block considered bad practice?", options: ["It causes a syntax error", "It silently hides errors making debugging difficult", "It stops the server from running", "It automatically throws a new error"], answer: 1, explanation: "An empty `catch` silently hides errors." },
+      { id: 15, part: "Hard", category: "Immutability", question: "How can you add a property to an object immutably (without modifying the original object)?", options: ["obj.newProp = value;", "const newObj = { ...obj, newProp: value };", "Object.assign(obj, { newProp: value });", "obj['newProp'] = value;"], answer: 1, explanation: "The spread operator creates a new object instead of modifying the original." },
+      { id: 16, part: "Hard", category: "Environment Variables", question: "Where should environment-specific configuration (like API keys) be stored?", options: ["Hardcoded in the source file", "In the database", "In environment variables (e.g. .env file)", "In local storage"], answer: 2, explanation: "Environment-specific configuration should come from environment variables." },
+      { id: 17, part: "Hard", category: "Async/Await", question: "What is the benefit of using `async/await` over raw Promises (`.then().catch()`)?", options: ["It runs code synchronously, blocking the main thread", "It provides a clear sequential flow and easier error handling with `try/catch`", "It completely replaces the need for Promises", "It makes HTTP requests faster"], answer: 1, explanation: "`async/await` with `try/catch` provides a clear sequential flow and error handling." },
+      { id: 18, part: "Hard", category: "KISS Principle", question: "According to the KISS (Keep It Simple, Stupid) principle, how should you simplify: `if (age >= 18) { return true; } else { return false; }`?", options: ["return age > 18 ? true : false;", "return Boolean(age >= 18);", "return age >= 18;", "if (age >= 18) return true; return false;"], answer: 2, explanation: "`age >= 18` already produces a boolean, so extra conversions or if-statements are unnecessary." },
+      { id: 19, part: "Hard", category: "Code Design", question: "When should you NOT apply the DRY principle?", options: ["When writing CSS", "When the code is less than 10 lines", "When forcing DRY merges two pieces of code that represent different business concepts", "You should always apply DRY unconditionally"], answer: 2, explanation: "DRY shouldn't be forced when two pieces of code represent different business concepts (Over-abstraction)." },
+      { id: 20, part: "Hard", category: "Code Review", question: "Which of the following issues are common red flags to look for during a code review?", options: ["Using `const`, early returns, and pure functions", "Using `var`, poor naming, `==`, and unnecessary nested `if`s", "Using strict equality and descriptive variables", "Using array methods like `map` and `filter`"], answer: 1, explanation: "Multiple issues exist: `var`, poor naming, `==`, and unnecessary nested `if`s." }
+    ];
+
+    let userAnswers = {};
+    let selectedCategory = 'ALL';
+
+    const categories = ['ALL', 'Easy', 'Medium', 'Hard'];
+
+    function init() {
+      renderCategoryTabs();
+      renderQuestions();
+      updateStats();
+      lucide.createIcons();
+    }
+
+    function renderCategoryTabs() {
+      const filterTabsContainer = document.getElementById('filter-tabs');
+      filterTabsContainer.innerHTML = categories.map(cat => `
+        <button class="tab-btn ${cat === selectedCategory ? 'active' : ''}" onclick="selectCategory('${cat}')">
+          ${cat === 'ALL' ? 'All (20)' : cat}
+        </button>
+      `).join('');
+    }
+
+    window.selectCategory = function(cat) {
+      selectedCategory = cat;
+      renderCategoryTabs();
+      renderQuestions();
+    };
+
+    function formatCodeInText(text) {
+      return text.replace(/`([^`]+)`/g, '<code>$1</code>');
+    }
+
+    function renderQuestions() {
+      const questionsGrid = document.getElementById('questions-grid');
+      const filtered = selectedCategory === 'ALL' 
+        ? questionsData 
+        : questionsData.filter(q => q.part === selectedCategory);
+
+      let html = '';
+      const letters = ['A', 'B', 'C', 'D'];
+
+      filtered.forEach((q, index) => {
+        const hasAnswered = userAnswers[q.id] !== undefined;
+        const userAnswer = userAnswers[q.id];
+        
+        let optionsHtml = '';
+        q.options.forEach((opt, optIndex) => {
+          let btnClass = 'option-btn';
+          if (hasAnswered) {
+            if (optIndex === q.answer) btnClass += ' correct';
+            else if (optIndex === userAnswer) btnClass += ' wrong';
+          }
+          
+          optionsHtml += `
+            <button class="${btnClass}" onclick="handleAnswer(${q.id}, ${optIndex})" ${hasAnswered ? 'disabled' : ''}>
+              <div class="option-letter">${letters[optIndex]}</div>
+              <div class="option-text">${formatCodeInText(opt)}</div>
+            </button>
+          `;
+        });
+
+        html += `
+          <div class="question-card" id="q-${q.id}">
+            <div class="q-header">
+              <div class="q-meta">
+                <span class="q-id">Q${q.id}</span>
+                <span class="q-category">${q.category}</span>
+              </div>
+            </div>
+            <div class="q-title">${formatCodeInText(q.question)}</div>
+            <div class="options-grid">
+              ${optionsHtml}
+            </div>
+            <div class="explanation ${hasAnswered ? 'visible' : ''}">
+              <i data-lucide="${userAnswer === q.answer ? 'check-circle' : 'info'}"></i>
+              <div class="explanation-content">
+                <strong>${userAnswer === q.answer ? 'Correct!' : 'Incorrect.'}</strong> 
+                ${formatCodeInText(q.explanation)}
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      questionsGrid.innerHTML = html;
+      lucide.createIcons();
+    }
+
+    window.handleAnswer = function(questionId, optionIndex) {
+      if (userAnswers[questionId] !== undefined) return;
+      userAnswers[questionId] = optionIndex;
+      renderQuestions();
+      updateStats();
+    };
+
+    function updateStats() {
+      const total = questionsData.length;
+      const answered = Object.keys(userAnswers).length;
+      let correct = 0;
+
+      for (const [qId, ans] of Object.entries(userAnswers)) {
+        const q = questionsData.find(x => x.id === parseInt(qId));
+        if (q && q.answer === ans) correct++;
+      }
+
+      document.getElementById('total-count').textContent = total;
+      document.getElementById('answered-count').textContent = answered;
+      document.getElementById('score-count').textContent = correct;
+    }
+
+    // Run Initialization
+    init();
+  </script>
+</body>
+</html>
