@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Railway ER Diagram</title>
+    <!-- Include Mermaid JS -->
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ startOnLoad: true });
+    </script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 40px 20px;
+            background-color: #f0f2f5;
+            margin: 0;
+        }
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .mermaid {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            overflow-x: auto;
+            max-width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Railway Database ER Diagram</h2>
+
+    <pre class="mermaid">
+erDiagram
+    USERS {
+        bigint user_id PK
+        varchar name
+        varchar email UK
+        varchar phone UK
+        varchar password
+        enum gender
+        date date_of_birth
+        timestamp created_at
+    }
+
+    TRAINS {
+        bigint train_id PK
+        varchar train_number UK
+        varchar train_name
+        enum train_type
+        int total_coaches
+        boolean active
+    }
+
+    STATIONS {
+        bigint station_id PK
+        varchar station_code UK
+        varchar station_name
+        varchar city
+        varchar state
+    }
+
+    TRAIN_ROUTES {
+        bigint route_id PK
+        bigint train_id FK
+        bigint station_id FK
+        int stop_number
+        time arrival_time
+        time departure_time
+        int distance_km
+        int halt_minutes
+    }
+
+    COACHES {
+        bigint coach_id PK
+        bigint train_id FK
+        varchar coach_number
+        enum coach_type
+        int total_seats
+    }
+
+    SEATS {
+        bigint seat_id PK
+        bigint coach_id FK
+        varchar seat_number
+        enum berth_type
+        enum seat_status
+    }
+
+    BOOKINGS {
+        bigint booking_id PK
+        bigint user_id FK
+        bigint train_id FK
+        bigint from_station_id FK
+        bigint to_station_id FK
+        varchar pnr_number UK
+        date journey_date
+        varchar booking_status
+        decimal total_amount
+        timestamp booked_at
+    }
+
+    PASSENGERS {
+        bigint passenger_id PK
+        bigint booking_id FK
+        varchar name
+        int age
+        enum gender
+        varchar id_proof_type
+        varchar id_proof_number
+        varchar seat_preference
+    }
+
+    TICKETS {
+        bigint ticket_id PK
+        bigint booking_id FK
+        bigint passenger_id FK
+        bigint seat_id FK
+        enum ticket_status
+        varchar coach_number
+        varchar seat_number
+        decimal fare
+    }
+
+    PAYMENTS {
+        bigint payment_id PK
+        bigint booking_id FK
+        varchar transaction_id UK
+        decimal amount
+        enum payment_method
+        enum payment_status
+        timestamp paid_at
+    }
+
+    CANCELLATIONS {
+        bigint cancellation_id PK
+        bigint booking_id FK
+        varchar reason
+        decimal cancellation_charge
+        decimal refund_amount
+        timestamp cancelled_at
+    }
+
+    USERS ||--o{ BOOKINGS : makes
+
+    TRAINS ||--o{ TRAIN_ROUTES : has
+    STATIONS ||--o{ TRAIN_ROUTES : included_in
+
+    TRAINS ||--o{ COACHES : contains
+    COACHES ||--o{ SEATS : contains
+
+    TRAINS ||--o{ BOOKINGS : booked_for
+
+    STATIONS ||--o{ BOOKINGS : "source station"
+    STATIONS ||--o{ BOOKINGS : "destination station"
+
+    BOOKINGS ||--o{ PASSENGERS : contains
+    BOOKINGS ||--o{ TICKETS : generates
+
+    PASSENGERS ||--o| TICKETS : gets
+    SEATS ||--o{ TICKETS : assigned_to
+
+    BOOKINGS ||--|| PAYMENTS : has
+    BOOKINGS ||--o| CANCELLATIONS : may_have
+    </pre>
+
+</body>
+</html>

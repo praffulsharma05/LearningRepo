@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BookMyShow System Architecture — DB Design & ER Diagram Analysis</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Mermaid.js -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.8/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --bg-dark: #090d16;
+      --bg-card: rgba(18, 25, 41, 0.78);
+      --bg-card-hover: rgba(28, 38, 62, 0.9);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-active: rgba(240, 44, 86, 0.5);
+      
+      --primary: #f02c56; /* BookMyShow signature red accent */
+      --primary-glow: rgba(240, 44, 86, 0.35);
+      --accent-yellow: #ffb703;
+      --accent-cyan: #06b6d4;
+      --accent-purple: #8b5cf6;
+      --success: #10b981;
+      --danger: #ef4444;
+
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --text-dim: #6b7280;
+      
+      --font-sans: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      --font-mono: 'Fira Code', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(at 10% 10%, rgba(240, 44, 86, 0.15) 0px, transparent 45%),
+        radial-gradient(at 90% 85%, rgba(139, 92, 246, 0.12) 0px, transparent 45%);
+      background-attachment: fixed;
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      padding-bottom: 60px;
+    }
+
+    .container {
+      max-width: 1380px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Header */
+    header {
+      padding: 45px 0 28px;
+      text-align: center;
+    }
+
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 18px;
+      border-radius: 9999px;
+      background: rgba(240, 44, 86, 0.15);
+      border: 1px solid rgba(240, 44, 86, 0.35);
+      color: #ff5277;
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
+    h1 {
+      font-size: 2.7rem;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      background: linear-gradient(135deg, #ffffff 0%, #ff5277 45%, #ffb703 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 14px;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    /* Relationship & Feature Badges Bar */
+    .relationship-types-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin: 28px 0;
+    }
+
+    .rel-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 16px 20px;
+      backdrop-filter: blur(12px);
+      transition: all 0.25s ease;
+    }
+
+    .rel-card:hover {
+      border-color: var(--border-active);
+      transform: translateY(-2px);
+    }
+
+    .rel-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+
+    .rel-badge {
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .rel-badge.one-to-many { background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); }
+    .rel-badge.many-to-many { background: rgba(192, 132, 252, 0.2); color: #c084fc; border: 1px solid rgba(192, 132, 252, 0.4); }
+    .rel-badge.transient-lock { background: rgba(255, 183, 3, 0.2); color: #ffb703; border: 1px solid rgba(255, 183, 3, 0.4); }
+    .rel-badge.polymorphic { background: rgba(240, 44, 86, 0.2); color: #ff5277; border: 1px solid rgba(240, 44, 86, 0.4); }
+
+    .rel-title {
+      font-weight: 700;
+      color: #fff;
+      font-size: 0.95rem;
+    }
+
+    .rel-desc {
+      font-size: 0.825rem;
+      color: var(--text-muted);
+    }
+
+    /* Toolbar */
+    .toolbar {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 14px 20px;
+      backdrop-filter: blur(12px);
+      margin-bottom: 26px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 15px;
+      z-index: 100;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+    }
+
+    .tab-group {
+      display: flex;
+      gap: 6px;
+      background: rgba(12, 17, 29, 0.85);
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      padding: 9px 16px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn.active {
+      background: linear-gradient(135deg, var(--primary) 0%, #d91b42 100%);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(240, 44, 86, 0.4);
+    }
+
+    /* Section & Cards */
+    .diagram-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 28px;
+      backdrop-filter: blur(12px);
+      margin-bottom: 30px;
+      overflow-x: auto;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    .diagram-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .diagram-sub {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-bottom: 24px;
+    }
+
+    .mermaid {
+      display: flex;
+      justify-content: center;
+      min-width: 950px;
+      margin: 0 auto;
+    }
+
+    /* Comparison Table & Grid */
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    .analysis-box {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 24px;
+    }
+
+    .analysis-box h3 {
+      font-size: 1.1rem;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #fff;
+    }
+
+    .analysis-box.image-box h3 { color: var(--accent-yellow); }
+    .analysis-box.url-box h3 { color: #ff5277; }
+
+    .analysis-box ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .analysis-box li {
+      position: relative;
+      padding-left: 24px;
+      font-size: 0.925rem;
+      color: var(--text-main);
+    }
+
+    .analysis-box li::before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      top: 0;
+      font-weight: 700;
+    }
+
+    .image-box li::before { color: var(--accent-yellow); }
+    .url-box li::before { color: #ff5277; }
+
+    /* Table Container */
+    .rel-table-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 18px;
+      overflow: hidden;
+      backdrop-filter: blur(12px);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th {
+      background: rgba(12, 17, 29, 0.95);
+      padding: 16px 20px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    td {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 0.925rem;
+      color: var(--text-main);
+    }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    code {
+      font-family: var(--font-mono);
+      background: rgba(12, 17, 29, 0.9);
+      color: #ffb703;
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-size: 0.875em;
+      border: 1px solid rgba(255, 183, 3, 0.2);
+    }
+
+    /* Schema Grid */
+    .schema-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 20px;
+    }
+
+    .table-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 20px 24px;
+      backdrop-filter: blur(12px);
+      transition: border-color 0.2s ease;
+    }
+
+    .table-card:hover {
+      border-color: rgba(240, 44, 86, 0.35);
+    }
+
+    .table-name {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #ff5277;
+      font-family: var(--font-mono);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .field-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .field-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      padding: 6px 10px;
+      background: rgba(12, 17, 29, 0.65);
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .field-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .field-name {
+      font-family: var(--font-mono);
+      color: var(--text-main);
+      font-weight: 500;
+    }
+
+    .tag-pk {
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(255, 183, 3, 0.2);
+      color: #ffb703;
+      border: 1px solid rgba(255, 183, 3, 0.4);
+    }
+
+    .tag-fk {
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(6, 182, 212, 0.2);
+      color: #38bdf8;
+      border: 1px solid rgba(6, 182, 212, 0.4);
+    }
+
+    .field-type {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* DDL Code Block */
+    .sql-code-block {
+      background: #060911;
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 20px;
+      font-family: var(--font-mono);
+      font-size: 0.875rem;
+      color: #7dd3fc;
+      overflow-x: auto;
+      line-height: 1.6;
+    }
+
+    .view-section {
+      display: none;
+    }
+
+    .view-section.active {
+      display: block;
+    }
+
+    .verdict-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      margin-bottom: 12px;
+    }
+    .verdict-badge.different {
+      background: rgba(240, 44, 86, 0.2);
+      color: #ff5277;
+      border: 1px solid rgba(240, 44, 86, 0.4);
+    }
+
+    @media (max-width: 900px) {
+      .comparison-grid { grid-template-columns: 1fr; }
+      h1 { font-size: 1.9rem; }
+      .toolbar { flex-direction: column; align-items: stretch; }
+      .tab-group { width: 100%; justify-content: center; }
+      .schema-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="container">
+      <div class="badge-pill">
+        <i data-lucide="ticket" style="width: 16px; height: 16px;"></i>
+        BookMyShow Enterprise Database Architecture
+      </div>
+      <h1>BookMyShow DB Design & Image vs Website Analysis</h1>
+      <p>Comprehensive ER Diagram, Comparative Website Audit (bookmyshow.com vs Provided Image), Concurrency & Seat Locking Engine, Relationship Matrix, and Production SQL Schema.</p>
+
+      <!-- Relationship Badges -->
+      <div class="relationship-types-bar">
+        <div class="rel-card">
+          <div class="rel-header">
+            <span class="rel-badge one-to-many">1 : N</span>
+            <span class="rel-title">Shows ➔ Show Seats</span>
+          </div>
+          <div class="rel-desc">Screen seats instantiated per showtime with dynamic tier pricing & real-time availability.</div>
+        </div>
+
+        <div class="rel-card">
+          <div class="rel-header">
+            <span class="rel-badge transient-lock">TTL Lock</span>
+            <span class="rel-title">Seat Concurrency Engine</span>
+          </div>
+          <div class="rel-desc">10-minute temporary seat reservation with Redis lock expiry to prevent double bookings.</div>
+        </div>
+
+        <div class="rel-card">
+          <div class="rel-header">
+            <span class="rel-badge many-to-many">M : N</span>
+            <span class="rel-title">Movies ➔ Languages & Formats</span>
+          </div>
+          <div class="rel-desc">Movies mapped to 2D, 3D, IMAX 3D, 4DX & multi-lingual audio/subtitle tracks.</div>
+        </div>
+
+        <div class="rel-card">
+          <div class="rel-header">
+            <span class="rel-badge polymorphic">Polymorphic</span>
+            <span class="rel-title">Ticketing Engine</span>
+          </div>
+          <div class="rel-desc">Unified booking core for Cinema Seats, Live Event Tickets, F&B Addons & Stream Content.</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- View Switcher -->
+    <div class="toolbar">
+      <div style="font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
+        <i data-lucide="layers" style="color: var(--primary);"></i>
+        Architecture Explorer
+      </div>
+
+      <div class="tab-group">
+        <button class="tab-btn active" onclick="switchView('er-view', this)">
+          <i data-lucide="network" style="width: 16px; height: 16px;"></i> Enterprise ER Diagram
+        </button>
+        <button class="tab-btn" onclick="switchView('comparison-view', this)">
+          <i data-lucide="sparkles" style="width: 16px; height: 16px;"></i> Image vs Website Audit
+        </button>
+        <button class="tab-btn" onclick="switchView('matrix-view', this)">
+          <i data-lucide="table-properties" style="width: 16px; height: 16px;"></i> Relationship Matrix
+        </button>
+        <button class="tab-btn" onclick="switchView('flow-view', this)">
+          <i data-lucide="workflow" style="width: 16px; height: 16px;"></i> Concurrency & Booking Flow
+        </button>
+        <button class="tab-btn" onclick="switchView('schema-view', this)">
+          <i data-lucide="database" style="width: 16px; height: 16px;"></i> Table Dictionary
+        </button>
+        <button class="tab-btn" onclick="switchView('sql-view', this)">
+          <i data-lucide="code" style="width: 16px; height: 16px;"></i> Production SQL DDL
+        </button>
+      </div>
+    </div>
+
+    <!-- VIEW 1: Enterprise ER Diagram (Default Active for immediate rendering) -->
+    <section id="er-view" class="view-section active">
+      <div class="diagram-card">
+        <div class="diagram-title">
+          <i data-lucide="network" style="color: var(--primary);"></i>
+          Full Enterprise BookMyShow ER Diagram (Incorporating Web & Image Features)
+        </div>
+        <div class="diagram-sub">
+          Symbols: <code>||--o{</code> (1 to Many) | <code>||--||</code> (1 to 1) | <code>PK</code> Primary Key | <code>FK</code> Foreign Key
+        </div>
+
+        <pre class="mermaid">
+erDiagram
+    CITIES ||--o{ THEATRES : "has cinemas in city"
+    CITIES ||--o{ USERS : "user primary location"
+    
+    MOVIES ||--o{ MOVIE_LANGUAGES_FORMATS : "available in formats and languages"
+    LANGUAGES ||--o{ MOVIE_LANGUAGES_FORMATS : "supported audio and subtitles"
+    FORMATS ||--o{ MOVIE_LANGUAGES_FORMATS : "screen format"
+    
+    MOVIES ||--o{ SHOWS : "screened in showtimes"
+    THEATRES ||--o{ SCREENS : "contains screens"
+    SCREENS ||--o{ SHOWS : "hosts showtimes"
+    SCREENS ||--o{ SEATS : "physical seat arrangement"
+    SEAT_CATEGORIES ||--o{ SEATS : "seat tier"
+    
+    SHOWS ||--o{ SHOW_SEATS : "instantiates seat grid for show"
+    SEATS ||--o{ SHOW_SEATS : "mapped to specific show seat"
+    SHOWS ||--o{ SHOW_SEAT_PRICING : "defines price per seat tier"
+    SEAT_CATEGORIES ||--o{ SHOW_SEAT_PRICING : "tier pricing"
+    
+    USERS ||--o{ BOOKINGS : "places ticket bookings"
+    SHOWS ||--o{ BOOKINGS : "booked showtime"
+    BOOKINGS ||--o{ BOOKED_SEATS : "contains booked seats"
+    SHOW_SEATS ||--|| BOOKED_SEATS : "locks seat"
+    
+    BOOKINGS ||--|| PAYMENTS : "1:1 payment ledger"
+    BOOKINGS ||--o{ BOOKING_FOOD_ITEMS : "adds food items"
+    FOOD_ITEMS ||--o{ BOOKING_FOOD_ITEMS : "ordered item"
+    
+    OFFERS_PROMOS ||--o{ USER_OFFER_REDEMPTIONS : "redeemed codes"
+    USERS ||--o{ USER_OFFER_REDEMPTIONS : "uses promo"
+    BOOKINGS ||--o{ USER_OFFER_REDEMPTIONS : "discount applied"
+    
+    MOVIES ||--o{ MOVIE_CAST_CREW : "cast and crew credits"
+    PEOPLE ||--o{ MOVIE_CAST_CREW : "actors or directors"
+    
+    EVENTS ||--o{ EVENT_TICKET_TYPES : "ticket tiers"
+    EVENT_VENUES ||--o{ EVENTS : "hosts live events"
+    USERS ||--o{ EVENT_BOOKINGS : "purchases event passes"
+    EVENT_TICKET_TYPES ||--o{ EVENT_BOOKINGS : "reserves ticket tier"
+    
+    MOVIES ||--o{ REVIEWS_RATINGS : "receives ratings"
+    USERS ||--o{ REVIEWS_RATINGS : "writes reviews"
+        </pre>
+      </div>
+    </section>
+
+    <!-- VIEW 2: Image vs Website Audit -->
+    <section id="comparison-view" class="view-section">
+      <div class="diagram-card">
+        <div class="verdict-badge different">ANALYSIS VERDICT: SUBSTANTIAL EXTENSIONS IDENTIFIED ON LIVE WEBSITE</div>
+        <div class="diagram-title">
+          <i data-lucide="git-compare" style="color: var(--primary);"></i>
+          Comparing Provided Image ER Diagram vs Live <code>in.bookmyshow.com</code> Platform
+        </div>
+        <div class="diagram-sub">
+          The image provides a strong academic / core database schema for event and movie ticketing. However, analyzing the live website <strong>https://in.bookmyshow.com/</strong> reveals several critical real-world architectural requirements missing in the image diagram.
+        </div>
+
+        <div class="comparison-grid">
+          <!-- Image Analysis -->
+          <div class="analysis-box image-box">
+            <h3><i data-lucide="image"></i> Provided Image ER Diagram Features</h3>
+            <ul>
+              <li><strong>Core Entities Covered:</strong> Users, Movies, Shows, Theatres, Screens, Seats, Show_Seats, Bookings, Payments.</li>
+              <li><strong>Cast & Crew Mapping:</strong> People, Cast/Crew roles, Director & Actor associations.</li>
+              <li><strong>Event Module:</strong> Basic Events, Event Venues, Performers, Categories.</li>
+              <li><strong>F&B Add-on:</strong> Meals / Food Items linked to Bookings.</li>
+              <li><strong>Offers & Discounts:</strong> Offers, Coupons, Gift Cards, Wallet transactions.</li>
+              <li><strong>Basic Stream Content:</strong> Stream Movies, Buy/Rent pricing models.</li>
+            </ul>
+          </div>
+
+          <!-- URL Analysis -->
+          <div class="analysis-box url-box">
+            <h3><i data-lucide="globe"></i> Insights Discovered from Live <code>bookmyshow.com</code> URL</h3>
+            <ul>
+              <li><strong>Multi-Format & Multi-Language Matrix:</strong> A single movie has distinct showtimes based on <em>Format (2D, 3D, IMAX 3D, 4DX, ScreenX, ICE, Dolby Atmos)</em> AND <em>Language (Hindi, English, Telugu, Tamil, Kannada)</em>.</li>
+              <li><strong>Geographic Location Scoping:</strong> Shows are contextual to selected <code>City / Location</code> (e.g. Mumbai, Bengaluru, NCR) with city-specific theatre availability.</li>
+              <li><strong>Transient Seat Locking (Concurrency Engine):</strong> When selecting seats, BookMyShow locks them for <strong>10 minutes (TTL countdown)</strong> using Redis/DB locks with <code>locked_at</code> and <code>locked_by_user_id</code>.</li>
+              <li><strong>Cancellation Protect Policy:</strong> Optional add-on insurance per booking enabling 75%-100% refund upon cancellation before deadline.</li>
+              <li><strong>F&B Seat Delivery vs Pickup Counter:</strong> Food can be delivered directly to seat during interval or kept ready at express pickup counter.</li>
+              <li><strong>Ticket Types for Live Events:</strong> Events do NOT use screen seat grids; they use tiered inventory passes (Early Bird, Phase 1, Phase 2, VIP, Fan Pit) with stock counts.</li>
+              <li><strong>M-Ticket (QR Code) & Gate Scanner Usher App:</strong> Digital QR token with validation state tracking for entry ushers.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Summary Table of Key Gaps -->
+        <div class="rel-table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Domain Feature</th>
+                <th>In Provided Image?</th>
+                <th>In Live Website (bookmyshow.com)?</th>
+                <th>DB Schema Impact & New Entities Required</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>City / Location Hierarchy</strong></td>
+                <td><span style="color: var(--danger);">❌ Missing</span></td>
+                <td><span style="color: var(--success);">✔ Core Navigation Filter</span></td>
+                <td>Requires <code>CITIES</code> table linked to <code>THEATRES</code> and <code>EVENTS</code>.</td>
+              </tr>
+              <tr>
+                <td><strong>Format & Language Combination</strong></td>
+                <td><span style="color: var(--accent-yellow);">⚡ Simplified</span></td>
+                <td><span style="color: var(--success);">✔ Multi-Matrix Filtering</span></td>
+                <td>Requires <code>LANGUAGES</code>, <code>FORMATS</code>, and <code>SHOW_FORMAT_LANG</code> junction.</td>
+              </tr>
+              <tr>
+                <td><strong>Concurrency & Seat Locking</strong></td>
+                <td><span style="color: var(--danger);">❌ Static States Only</span></td>
+                <td><span style="color: var(--success);">✔ Real-time 10-min TTL Lock</span></td>
+                <td>Requires <code>lock_expires_at</code>, <code>locked_by_user_id</code> & Redis lock state.</td>
+              </tr>
+              <tr>
+                <td><strong>Event Tiered Tickets</strong></td>
+                <td><span style="color: var(--accent-yellow);">⚡ Screen-like</span></td>
+                <td><span style="color: var(--success);">✔ Phase / Tier Stock Inventory</span></td>
+                <td>Requires <code>EVENT_TICKET_TYPES</code> with dynamic stock control.</td>
+              </tr>
+              <tr>
+                <td><strong>Cancellation Insurance</strong></td>
+                <td><span style="color: var(--danger);">❌ Missing</span></td>
+                <td><span style="color: var(--success);">✔ BMS Cancellation Protect</span></td>
+                <td>Requires <code>CANCELLATION_POLICIES</code> & <code>BOOKING_CANCELLATIONS</code>.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 3: Relationship Matrix -->
+    <section id="matrix-view" class="view-section">
+      <div class="rel-table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Parent / Source Table</th>
+              <th>Child / Target Table</th>
+              <th style="width: 160px;">Cardinality</th>
+              <th>Foreign Key (FK) Field</th>
+              <th>Business Logic & Concurrency Control</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>cities</code></td>
+              <td><code>theatres</code></td>
+              <td><span class="rel-badge one-to-many">1 : N</span></td>
+              <td><code>theatres.city_id</code></td>
+              <td>Filters cinema venues based on the user's selected city location.</td>
+            </tr>
+            <tr>
+              <td><code>movies</code></td>
+              <td><code>shows</code></td>
+              <td><span class="rel-badge one-to-many">1 : N</span></td>
+              <td><code>shows.movie_id</code></td>
+              <td>A movie is scheduled for multiple showtimes across cinemas & dates.</td>
+            </tr>
+            <tr>
+              <td><code>screens</code></td>
+              <td><code>seats</code></td>
+              <td><span class="rel-badge one-to-many">1 : N</span></td>
+              <td><code>seats.screen_id</code></td>
+              <td>Physical grid layout (Row A-N, Seat 1-30) fixed inside a cinema screen.</td>
+            </tr>
+            <tr>
+              <td><code>shows</code></td>
+              <td><code>show_seats</code></td>
+              <td><span class="rel-badge one-to-many">1 : N</span></td>
+              <td><code>show_seats.show_id</code></td>
+              <td>Dynamic seat status engine (Available ➔ Locked ➔ Booked) created per showtime.</td>
+            </tr>
+            <tr>
+              <td><code>users</code></td>
+              <td><code>show_seats</code></td>
+              <td><span class="rel-badge transient-lock">TTL Lock 1:N</span></td>
+              <td><code>show_seats.locked_by_user_id</code></td>
+              <td>Temporary seat reservation hold with 10-minute timeout during checkout.</td>
+            </tr>
+            <tr>
+              <td><code>bookings</code></td>
+              <td><code>payments</code></td>
+              <td><span class="rel-badge one-to-one">1 : 1</span></td>
+              <td><code>payments.booking_id</code></td>
+              <td>Each confirmed booking generates exactly one payment transaction ledger.</td>
+            </tr>
+            <tr>
+              <td><code>bookings</code></td>
+              <td><code>booking_food_items</code></td>
+              <td><span class="rel-badge many-to-many">M : N</span></td>
+              <td><code>booking_food_items.booking_id</code></td>
+              <td>Popcorn combos & drinks bundled into movie booking with seat delivery flags.</td>
+            </tr>
+            <tr>
+              <td><code>events</code></td>
+              <td><code>event_ticket_types</code></td>
+              <td><span class="rel-badge one-to-many">1 : N</span></td>
+              <td><code>event_ticket_types.event_id</code></td>
+              <td>Inventory ticket categories (VIP, Early Bird, General Access) with stock control.</td>
+            </tr>
+            <tr>
+              <td><code>offers_promos</code></td>
+              <td><code>user_offer_redemptions</code></td>
+              <td><span class="rel-badge many-to-many">M : N</span></td>
+              <td><code>user_offer_redemptions.offer_id</code></td>
+              <td>Bank credit card discounts (e.g. ICICI Buy 1 Get 1) applied at checkout.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- VIEW 4: Concurrency & Booking Flow -->
+    <section id="flow-view" class="view-section">
+      <div class="diagram-card">
+        <div class="diagram-title">
+          <i data-lucide="workflow" style="color: var(--accent-cyan);"></i>
+          BookMyShow Real-time Seat Concurrency & Ticket Booking Pipeline
+        </div>
+        <div class="diagram-sub">
+          Architectural pipeline handling high-demand flash sales (e.g., ColdPlay, IPL, Marvel Premieres) preventing double-booking race conditions.
+        </div>
+
+        <pre class="mermaid">
+graph TD
+    subgraph S1["1. Discovery and Selection"]
+        U["User"] -->|Selects City and Movie| C["City and Movie Catalog"]
+        C -->|Filters Showtime and Format| S["Shows and Screens"]
+        S -->|Fetches Live Seat Grid| SG["Show Seats Layout"]
+    end
+
+    subgraph S2["2. Distributed Seat Concurrency and Locking"]
+        SG -->|User selects Seats| RL{"Redis Lock Engine"}
+        RL -->|Acquire Lock Success| SL["Seat Status: LOCKED (TTL 10 Mins)"]
+        RL -->|Already Locked by Other User| ER["Error: Seat unavailable, Pick another"]
+    end
+
+    subgraph S3["3. Order Creation and Food Addons"]
+        SL -->|Bundles Snacks and Beverages| BK["Create Draft Booking"]
+        BK -->|Applies Coupon or Bank Offer| AP["Calculate Net Total Amount"]
+    end
+
+    subgraph S4["4. Payment Gateway and Webhook Execution"]
+        AP -->|Redirects to Gateway| PG["Payment Gateway - UPI / Cards"]
+        PG -->|Payment Success Webhook| DB["Commit Booking and Mark Seats BOOKED"]
+        PG -->|Payment Timeout or Failure| EXP["Release Redis Lock and Mark Seats AVAILABLE"]
+    end
+
+    subgraph S5["5. Ticket Issuance and Entry Scan"]
+        DB -->|Generates M-Ticket QR Token| QR["M-Ticket Sent via WhatsApp / SMS / App"]
+        QR -->|Scanned at Cinema Entry Gate| USH["Usher Scanner App Validates QR"]
+    end
+        </pre>
+      </div>
+    </section>
+
+    <!-- VIEW 5: Data Dictionary / Schema Cards -->
+    <section id="schema-view" class="view-section">
+      <div class="schema-grid">
+        <!-- Cities -->
+        <div class="table-card">
+          <div class="table-name"><i data-lucide="map-pin"></i> cities</div>
+          <ul class="field-list">
+            <li class="field-item"><div class="field-left"><span class="field-name">city_id</span> <span class="tag-pk">PK</span></div><span class="field-type">INT AUTO_INC</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">name</span></div><span class="field-type">VARCHAR(100)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">state</span></div><span class="field-type">VARCHAR(100)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">is_active</span></div><span class="field-type">BOOLEAN</span></li>
+          </ul>
+        </div>
+
+        <!-- Users -->
+        <div class="table-card">
+          <div class="table-name"><i data-lucide="user"></i> users</div>
+          <ul class="field-list">
+            <li class="field-item"><div class="field-left"><span class="field-name">user_id</span> <span class="tag-pk">PK</span></div><span class="field-type">INT AUTO_INC</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">full_name</span></div><span class="field-type">VARCHAR(150)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">email</span></div><span class="field-type">VARCHAR(150) UNIQUE</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">phone</span></div><span class="field-type">VARCHAR(20) UNIQUE</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">city_id</span> <span class="tag-fk">FK</span></div><span class="field-type">INT</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">is_superstar</span></div><span class="field-type">BOOLEAN</span></li>
+          </ul>
+        </div>
+
+        <!-- Movies -->
+        <div class="table-card">
+          <div class="table-name"><i data-lucide="film"></i> movies</div>
+          <ul class="field-list">
+            <li class="field-item"><div class="field-left"><span class="field-name">movie_id</span> <span class="tag-pk">PK</span></div><span class="field-type">INT AUTO_INC</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">title</span></div><span class="field-type">VARCHAR(200)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">duration_mins</span></div><span class="field-type">INT</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">censor_rating</span></div><span class="field-type">VARCHAR(10)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">release_date</span></div><span class="field-type">DATE</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">user_rating_pct</span></div><span class="field-type">DECIMAL(5,2)</span></li>
+          </ul>
+        </div>
+
+        <!-- Theatres -->
+        <div class="table-card">
+          <div class="table-name"><i data-lucide="building-2"></i> theatres</div>
+          <ul class="field-list">
+            <li class="field-item"><div class="field-left"><span class="field-name">theatre_id</span> <span class="tag-pk">PK</span></div><span class="field-type">INT AUTO_INC</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">name</span></div><span class="field-type">VARCHAR(150)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">city_id</span> <span class="tag-fk">FK</span></div><span class="field-type">INT</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">address</span></div><span class="field-type">TEXT</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">cancellation_supported</span></div><span class="field-type">BOOLEAN</span></li>
+          </ul>
+        </div>
+
+        <!-- Screens -->
+        <div class="table-card">
+          <div class="table-name"><i data-lucide="tv"></i> screens</div>
+          <ul class="field-list">
+            <li class="field-item"><div class="field-left"><span class="field-name">screen_id</span> <span class="tag-pk">PK</span></div><span class="field-type">INT AUTO_INC</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">theatre_id</span> <span class="tag-fk">FK</span></div><span class="field-type">INT</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">screen_name</span></div><span class="field-type">VARCHAR(50)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">total_seats</span></div><span class="field-type">INT</span></li>
+          </ul>
+        </div>
+
+        <!-- Shows -->
+        <div class="table-card">
+          <div class="table-name"><i data-lucide="clock"></i> shows</div>
+          <ul class="field-list">
+            <li class="field-item"><div class="field-left"><span class="field-name">show_id</span> <span class="tag-pk">PK</span></div><span class="field-type">INT AUTO_INC</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">movie_id</span> <span class="tag-fk">FK</span></div><span class="field-type">INT</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">screen_id</span> <span class="tag-fk">FK</span></div><span class="field-type">INT</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">start_time</span></div><span class="field-type">DATETIME</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">format</span></div><span class="field-type">VARCHAR(20)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">language</span></div><span class="field-type">VARCHAR(50)</span></li>
+          </ul>
+        </div>
+
+        <!-- Show Seats -->
+        <div class="table-card">
+          <div class="table-name"><i data-lucide="armchair"></i> show_seats</div>
+          <ul class="field-list">
+            <li class="field-item"><div class="field-left"><span class="field-name">show_seat_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">show_id</span> <span class="tag-fk">FK</span></div><span class="field-type">INT</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">seat_id</span> <span class="tag-fk">FK</span></div><span class="field-type">INT</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">status</span></div><span class="field-type">ENUM(AVAIL, LOCK, BOOK)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">lock_expires_at</span></div><span class="field-type">DATETIME</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">locked_by_user_id</span> <span class="tag-fk">FK</span></div><span class="field-type">INT</span></li>
+          </ul>
+        </div>
+
+        <!-- Bookings -->
+        <div class="table-card">
+          <div class="table-name"><i data-lucide="ticket"></i> bookings</div>
+          <ul class="field-list">
+            <li class="field-item"><div class="field-left"><span class="field-name">booking_id</span> <span class="tag-pk">PK</span></div><span class="field-type">INT AUTO_INC</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">booking_ref_no</span></div><span class="field-type">VARCHAR(30) UNIQUE</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">user_id</span> <span class="tag-fk">FK</span></div><span class="field-type">INT</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">show_id</span> <span class="tag-fk">FK</span></div><span class="field-type">INT</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">total_amount</span></div><span class="field-type">DECIMAL(10,2)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">qr_code_token</span></div><span class="field-type">VARCHAR(255)</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 6: Production SQL DDL -->
+    <section id="sql-view" class="view-section">
+      <div class="diagram-card">
+        <div class="diagram-title">
+          <i data-lucide="code" style="color: var(--accent-yellow);"></i>
+          Production Relational Database DDL Schema (PostgreSQL Dialect)
+        </div>
+        <div class="diagram-sub">
+          Includes foreign key constraints, high-concurrency seat locking indexes, and ENUM types for BookMyShow backend deployment.
+        </div>
+
+        <pre class="sql-code-block">
+-- 1. CITIES TABLE
+CREATE TABLE cities (
+    city_id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    state VARCHAR(100) NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE
+);
+
+-- 2. USERS TABLE
+CREATE TABLE users (
+    user_id SERIAL PRIMARY KEY,
+    full_name VARCHAR(150) NOT NULL,
+    email VARCHAR(150) UNIQUE NOT NULL,
+    phone VARCHAR(20) UNIQUE NOT NULL,
+    city_id INT REFERENCES cities(city_id),
+    is_superstar BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 3. MOVIES TABLE
+CREATE TABLE movies (
+    movie_id SERIAL PRIMARY KEY,
+    title VARCHAR(200) NOT NULL,
+    duration_mins INT NOT NULL,
+    censor_rating VARCHAR(10) CHECK (censor_rating IN ('U', 'UA', 'A', 'S')),
+    release_date DATE NOT NULL,
+    user_rating_pct DECIMAL(5,2) DEFAULT 0.00
+);
+
+-- 4. THEATRES & SCREENS
+CREATE TABLE theatres (
+    theatre_id SERIAL PRIMARY KEY,
+    city_id INT REFERENCES cities(city_id) ON DELETE CASCADE,
+    name VARCHAR(150) NOT NULL,
+    address TEXT NOT NULL,
+    cancellation_supported BOOLEAN DEFAULT TRUE
+);
+
+CREATE TABLE screens (
+    screen_id SERIAL PRIMARY KEY,
+    theatre_id INT REFERENCES theatres(theatre_id) ON DELETE CASCADE,
+    screen_name VARCHAR(50) NOT NULL,
+    total_seats INT NOT NULL
+);
+
+-- 5. SEATS & SHOWS
+CREATE TABLE seat_categories (
+    category_id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL -- Recliner, Club, Executive
+);
+
+CREATE TABLE seats (
+    seat_id SERIAL PRIMARY KEY,
+    screen_id INT REFERENCES screens(screen_id) ON DELETE CASCADE,
+    category_id INT REFERENCES seat_categories(category_id),
+    row_name VARCHAR(5) NOT NULL,
+    seat_number INT NOT NULL,
+    UNIQUE(screen_id, row_name, seat_number)
+);
+
+CREATE TABLE shows (
+    show_id SERIAL PRIMARY KEY,
+    movie_id INT REFERENCES movies(movie_id),
+    screen_id INT REFERENCES screens(screen_id),
+    start_time TIMESTAMP NOT NULL,
+    end_time TIMESTAMP NOT NULL,
+    format VARCHAR(20) NOT NULL, -- 2D, 3D, IMAX 3D, 4DX
+    language VARCHAR(50) NOT NULL
+);
+
+-- 6. SHOW SEATS & CONCURRENCY SEAT LOCKING
+TYPE SEAT_STATUS AS ENUM ('AVAILABLE', 'LOCKED', 'BOOKED');
+
+CREATE TABLE show_seats (
+    show_seat_id BIGSERIAL PRIMARY KEY,
+    show_id INT REFERENCES shows(show_id) ON DELETE CASCADE,
+    seat_id INT REFERENCES seats(seat_id),
+    status SEAT_STATUS DEFAULT 'AVAILABLE',
+    lock_expires_at TIMESTAMP NULL,
+    locked_by_user_id INT REFERENCES users(user_id) NULL,
+    UNIQUE(show_id, seat_id)
+);
+
+-- High Performance Index for Real-time Seat Lock Lookup
+CREATE INDEX idx_show_seat_concurrency ON show_seats(show_id, status, lock_expires_at);
+
+-- 7. BOOKINGS & PAYMENTS
+CREATE TABLE bookings (
+    booking_id SERIAL PRIMARY KEY,
+    booking_ref_no VARCHAR(30) UNIQUE NOT NULL,
+    user_id INT REFERENCES users(user_id),
+    show_id INT REFERENCES shows(show_id),
+    total_amount DECIMAL(10,2) NOT NULL,
+    discount_amount DECIMAL(10,2) DEFAULT 0.00,
+    net_amount DECIMAL(10,2) NOT NULL,
+    status VARCHAR(30) DEFAULT 'CONFIRMED',
+    qr_code_token VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE payments (
+    payment_id SERIAL PRIMARY KEY,
+    booking_id INT UNIQUE REFERENCES bookings(booking_id),
+    transaction_ref VARCHAR(100) UNIQUE NOT NULL,
+    payment_mode VARCHAR(50) NOT NULL, -- UPI, CREDIT_CARD, NET_BANKING, BMS_WALLET
+    amount DECIMAL(10,2) NOT NULL,
+    status VARCHAR(30) DEFAULT 'SUCCESS',
+    paid_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+        </pre>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      themeVariables: {
+        darkMode: true,
+        background: '#121929',
+        primaryColor: '#f02c56',
+        secondaryColor: '#ffb703',
+        tertiaryColor: '#38bdf8',
+        lineColor: '#ff5277',
+        fontFamily: 'Plus Jakarta Sans',
+        fontSize: '14px'
+      }
+    });
+
+    function switchView(viewId, btn) {
+      document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      
+      const targetSec = document.getElementById(viewId);
+      if (targetSec) {
+        targetSec.classList.add('active');
+        if (typeof mermaid !== 'undefined' && mermaid.run) {
+          mermaid.run({
+            nodes: targetSec.querySelectorAll('.mermaid')
+          }).catch(function(err) {
+            console.log('Mermaid render info:', err);
+          });
+        }
+      }
+      btn.classList.add('active');
+    }
+
+    lucide.createIcons();
+  </script>
+</body>
+</html>
