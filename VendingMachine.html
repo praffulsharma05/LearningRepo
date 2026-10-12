@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vending Machine ER Diagram</title>
+    <!-- Include Mermaid JS -->
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ startOnLoad: true });
+    </script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            padding: 40px 20px;
+            background-color: #f0f2f5;
+            margin: 0;
+        }
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .mermaid {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            overflow-x: auto;
+            max-width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Vending Machine Database ER Diagram</h2>
+
+    <pre class="mermaid">
+erDiagram
+
+    LOCATIONS ||--o{ VENDING_MACHINES : contains
+
+    VENDING_MACHINES ||--o{ MACHINE_SLOTS : has
+    PRODUCTS ||--o{ MACHINE_SLOTS : stored_in
+
+    PRODUCT_CATEGORIES ||--o{ PRODUCTS : contains
+
+    VENDING_MACHINES ||--o{ INVENTORY : maintains
+    PRODUCTS ||--o{ INVENTORY : stocked_as
+
+    PRODUCTS ||--o{ PRICES : has
+
+    USERS ||--o{ ORDERS : places
+    ORDERS ||--o{ ORDER_ITEMS : contains
+    PRODUCTS ||--o{ ORDER_ITEMS : purchased
+
+    ORDERS ||--o{ PAYMENTS : has
+    PAYMENTS ||--o{ REFUNDS : generates
+
+    VENDING_MACHINES ||--o{ TRANSACTIONS : records
+
+    VENDING_MACHINES ||--o{ MACHINE_MAINTENANCE : requires
+    VENDING_MACHINES ||--o{ MACHINE_ALERTS : generates
+
+
+    USERS {
+        int user_id PK
+        varchar name
+        varchar email
+        varchar phone
+        datetime created_at
+    }
+
+    LOCATIONS {
+        int location_id PK
+        varchar building_name
+        varchar address
+        varchar city
+        varchar state
+        varchar pincode
+    }
+
+    VENDING_MACHINES {
+        int machine_id PK
+        int location_id FK
+        varchar machine_code
+        varchar status
+        datetime installed_at
+    }
+
+    PRODUCT_CATEGORIES {
+        int category_id PK
+        varchar category_name
+        varchar description
+    }
+
+    PRODUCTS {
+        int product_id PK
+        int category_id FK
+        varchar product_name
+        varchar brand
+        decimal default_price
+        int expiry_days
+        varchar status
+    }
+
+    MACHINE_SLOTS {
+        int slot_id PK
+        int machine_id FK
+        int product_id FK
+        varchar slot_code
+        int capacity
+        int current_quantity
+    }
+
+    INVENTORY {
+        int inventory_id PK
+        int machine_id FK
+        int product_id FK
+        int quantity
+        int minimum_quantity
+        datetime updated_at
+    }
+
+    PRICES {
+        int price_id PK
+        int product_id FK
+        decimal price
+        date start_date
+        date end_date
+    }
+
+    ORDERS {
+        int order_id PK
+        int user_id FK
+        int machine_id FK
+        decimal total_amount
+        varchar order_status
+        datetime created_at
+    }
+
+    ORDER_ITEMS {
+        int order_item_id PK
+        int order_id FK
+        int product_id FK
+        int quantity
+        decimal unit_price
+        decimal subtotal
+    }
+
+    PAYMENTS {
+        int payment_id PK
+        int order_id FK
+        decimal amount
+        varchar payment_method
+        varchar transaction_id
+        varchar payment_status
+        datetime paid_at
+    }
+
+    REFUNDS {
+        int refund_id PK
+        int payment_id FK
+        decimal amount
+        varchar reason
+        varchar refund_status
+        datetime refunded_at
+    }
+
+    TRANSACTIONS {
+        int transaction_id PK
+        int machine_id FK
+        varchar transaction_type
+        decimal amount
+        datetime created_at
+    }
+
+    MACHINE_MAINTENANCE {
+        int maintenance_id PK
+        int machine_id FK
+        varchar maintenance_type
+        text description
+        varchar status
+        datetime maintenance_date
+    }
+
+    MACHINE_ALERTS {
+        int alert_id PK
+        int machine_id FK
+        varchar alert_type
+        varchar message
+        varchar severity
+        boolean resolved
+        datetime created_at
+    } 
+    </pre>
+
+</body>
+</html>
