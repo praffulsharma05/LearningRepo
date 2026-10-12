@@ -1,0 +1,2715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Instagram Database Design — Beginner to Practical Enterprise Level. Comprehensive ER diagrams, entity relationships, workflows, views architecture, and SQL DDL.">
+  <title>Instagram Database Design & Architecture — Beginner to Practical ER Model</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Mermaid.js -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.8/dist/mermaid.min.js"></script>
+
+  <style>
+    :root {
+      --bg-dark: #0b0f19;
+      --bg-surface: #111827;
+      --bg-card: rgba(17, 24, 39, 0.78);
+      --bg-card-hover: rgba(31, 41, 55, 0.9);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-active: rgba(225, 48, 108, 0.5);
+
+      /* Instagram signature brand colors */
+      --ig-pink: #e1306c;
+      --ig-purple: #833ab4;
+      --ig-orange: #f56040;
+      --ig-yellow: #fccc63;
+      --ig-blue: #405de6;
+
+      --primary-gradient: linear-gradient(135deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%);
+      --accent-cyan: #06b6d4;
+      --accent-green: #10b981;
+      --accent-purple: #a855f7;
+      --accent-amber: #f59e0b;
+      --accent-red: #ef4444;
+
+      --text-main: #f9fafb;
+      --text-muted: #9ca3af;
+      --text-dim: #6b7280;
+
+      --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'Fira Code', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(at 10% 10%, rgba(131, 58, 180, 0.18) 0px, transparent 50%),
+        radial-gradient(at 90% 20%, rgba(225, 48, 108, 0.15) 0px, transparent 50%),
+        radial-gradient(at 50% 90%, rgba(245, 96, 64, 0.12) 0px, transparent 50%);
+      background-attachment: fixed;
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      padding-bottom: 70px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Header */
+    header {
+      padding: 48px 0 28px;
+      text-align: center;
+    }
+
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 18px;
+      border-radius: 9999px;
+      background: rgba(225, 48, 108, 0.15);
+      border: 1px solid rgba(225, 48, 108, 0.35);
+      color: #ff5e9c;
+      font-size: 0.825rem;
+      font-weight: 700;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
+    h1 {
+      font-size: 2.85rem;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      background: linear-gradient(135deg, #ffffff 0%, #ff6b8b 35%, #fccc63 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 14px;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 1.125rem;
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    /* Quick Stats Bar */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin: 32px 0 24px;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 18px 20px;
+      backdrop-filter: blur(12px);
+      transition: all 0.25s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .stat-card:hover {
+      border-color: var(--border-active);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(225, 48, 108, 0.15);
+    }
+
+    .stat-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .stat-badge {
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .stat-badge.one-to-many { background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); }
+    .stat-badge.many-to-many { background: rgba(192, 132, 252, 0.2); color: #c084fc; border: 1px solid rgba(192, 132, 252, 0.4); }
+    .stat-badge.ttl-event { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
+    .stat-badge.analytics { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
+
+    .stat-val {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .stat-desc {
+      font-size: 0.825rem;
+      color: var(--text-muted);
+    }
+
+    /* Toolbar & Navigation */
+    .toolbar {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 18px;
+      padding: 12px 18px;
+      backdrop-filter: blur(14px);
+      margin-bottom: 28px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 15px;
+      z-index: 100;
+      box-shadow: 0 16px 32px rgba(0, 0, 0, 0.45);
+    }
+
+    .toolbar-brand {
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.95rem;
+    }
+
+    .tab-group {
+      display: flex;
+      gap: 6px;
+      background: rgba(15, 23, 42, 0.85);
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      padding: 9px 16px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .tab-btn.active {
+      background: var(--primary-gradient);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(225, 48, 108, 0.4);
+    }
+
+    /* View Sections */
+    .view-section {
+      display: none;
+      animation: fadeIn 0.25s ease-out;
+    }
+
+    .view-section.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Diagram Card */
+    .diagram-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 28px;
+      backdrop-filter: blur(12px);
+      margin-bottom: 30px;
+      overflow-x: auto;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    .diagram-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .diagram-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .diagram-sub {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .diagram-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      background: rgba(225, 48, 108, 0.15);
+      border: 1px solid rgba(225, 48, 108, 0.3);
+      color: #ff5e9c;
+    }
+
+    .mermaid {
+      display: flex;
+      justify-content: center;
+      min-width: 950px;
+      margin: 10px auto;
+    }
+
+    /* Table Container */
+    .rel-table-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 18px;
+      overflow-x: auto;
+      backdrop-filter: blur(12px);
+      margin-bottom: 24px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th {
+      background: rgba(15, 23, 42, 0.95);
+      padding: 16px 20px;
+      font-size: 0.825rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    td {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 0.92rem;
+      color: var(--text-main);
+      vertical-align: middle;
+    }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    code {
+      font-family: var(--font-mono);
+      background: rgba(15, 23, 42, 0.9);
+      color: #fccc63;
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-size: 0.85em;
+      border: 1px solid rgba(252, 204, 99, 0.2);
+    }
+
+    /* Badges in Table */
+    .badge-cardinality {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .badge-cardinality.one-to-many { background: rgba(56, 189, 248, 0.18); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); }
+    .badge-cardinality.many-to-many { background: rgba(192, 132, 252, 0.18); color: #c084fc; border: 1px solid rgba(192, 132, 252, 0.4); }
+    .badge-cardinality.one-to-one { background: rgba(52, 211, 153, 0.18); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.4); }
+    .badge-cardinality.self-ref { background: rgba(245, 158, 11, 0.18); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
+
+    /* Schema Grid */
+    .schema-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 20px;
+    }
+
+    .table-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 18px;
+      padding: 22px 24px;
+      backdrop-filter: blur(12px);
+      transition: all 0.2s ease;
+    }
+
+    .table-card:hover {
+      border-color: rgba(225, 48, 108, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .table-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 10px;
+    }
+
+    .table-name {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #ff6b8b;
+      font-family: var(--font-mono);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .table-purpose {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      font-style: italic;
+    }
+
+    .field-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .field-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      padding: 6px 10px;
+      background: rgba(15, 23, 42, 0.65);
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .field-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .field-name {
+      font-family: var(--font-mono);
+      color: var(--text-main);
+      font-weight: 500;
+    }
+
+    .tag-pk {
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 2px 5px;
+      border-radius: 4px;
+      background: rgba(245, 158, 11, 0.2);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.4);
+    }
+
+    .tag-fk {
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 2px 5px;
+      border-radius: 4px;
+      background: rgba(6, 182, 212, 0.2);
+      color: #38bdf8;
+      border: 1px solid rgba(6, 182, 212, 0.4);
+    }
+
+    .tag-uk {
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 2px 5px;
+      border-radius: 4px;
+      background: rgba(168, 85, 247, 0.2);
+      color: #c084fc;
+      border: 1px solid rgba(168, 85, 247, 0.4);
+    }
+
+    .field-type {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    /* Comparison & Architectural Decision Grid */
+    .decision-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
+      gap: 24px;
+      margin-bottom: 28px;
+    }
+
+    .decision-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 18px;
+      padding: 24px;
+      backdrop-filter: blur(12px);
+    }
+
+    .decision-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .decision-box {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+
+    .decision-box h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .decision-box p {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .decision-verdict {
+      padding: 12px 16px;
+      border-radius: 10px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #34d399;
+      font-size: 0.875rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* SQL Block */
+    .sql-code-block {
+      background: #070a13;
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 22px;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: #93c5fd;
+      overflow-x: auto;
+      line-height: 1.65;
+      position: relative;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .copy-btn:hover {
+      background: var(--primary-gradient);
+      border-color: transparent;
+    }
+
+    /* API Design Styles */
+    .badge-method {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .badge-method.get { background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); }
+    .badge-method.post { background: rgba(52, 211, 153, 0.2); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.4); }
+    .badge-method.put { background: rgba(251, 191, 36, 0.2); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.4); }
+    .badge-method.delete { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); }
+    .badge-method.ws { background: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4); }
+
+    .api-category-header {
+      margin: 32px 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 8px;
+    }
+
+    .api-category-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .api-count-tag {
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(225, 48, 108, 0.2);
+      color: #ff5e9c;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      border: 1px solid rgba(225, 48, 108, 0.4);
+    }
+
+    /* Server Infrastructure & Capacity Styles */
+    .infra-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+
+    .infra-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 26px;
+      backdrop-filter: blur(14px);
+      transition: all 0.25s ease;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .infra-card:hover {
+      border-color: var(--border-active);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .infra-card.highlight {
+      border-color: rgba(225, 48, 108, 0.6);
+      background: linear-gradient(180deg, rgba(225, 48, 108, 0.08) 0%, rgba(17, 24, 39, 0.85) 100%);
+    }
+
+    .infra-tier-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+    }
+
+    .infra-card h3 {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+
+    .infra-sub {
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      margin-bottom: 20px;
+    }
+
+    .infra-spec-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .infra-spec-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 0.875rem;
+      color: var(--text-main);
+      padding: 8px 12px;
+      background: rgba(15, 23, 42, 0.6);
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .infra-spec-icon {
+      color: var(--ig-pink);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .infra-cost-banner {
+      padding: 12px 16px;
+      border-radius: 12px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .infra-cost-val {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #34d399;
+      font-family: var(--font-mono);
+    }
+
+    .math-callout {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .math-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .math-card {
+      background: rgba(11, 15, 25, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .math-card h4 {
+      font-size: 0.9rem;
+      color: #fccc63;
+      margin-bottom: 6px;
+    }
+
+    .math-card p {
+      font-size: 0.825rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      h1 { font-size: 2rem; }
+      .toolbar { flex-direction: column; align-items: stretch; }
+      .tab-group { width: 100%; justify-content: center; }
+      .decision-grid { grid-template-columns: 1fr; }
+      .schema-grid { grid-template-columns: 1fr; }
+      .infra-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="container">
+      <div class="badge-pill">
+        <i data-lucide="instagram" style="width: 16px; height: 16px;"></i>
+        Instagram Database Engineering Architecture
+      </div>
+      <h1>Instagram DB Design — Beginner to Practical Level</h1>
+      <p>Mastering Social Media Relational Schemas: Entity-Relationship Diagrams, Cardinality, Follow Graphs, Event-Logging vs Denormalized Views, and High-Scale Workflows.</p>
+
+      <!-- Stats Bar -->
+      <div class="stats-bar">
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-badge one-to-many">1 : N</span>
+            <i data-lucide="layers" style="width: 16px; height: 16px; color: #38bdf8;"></i>
+          </div>
+          <div class="stat-val">Media & Content</div>
+          <div class="stat-desc">Users ➔ Posts, Posts ➔ Post_Media (Carousels), Users ➔ Reels</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-badge many-to-many">M : N Graph</span>
+            <i data-lucide="users" style="width: 16px; height: 16px; color: #c084fc;"></i>
+          </div>
+          <div class="stat-val">Social Graph</div>
+          <div class="stat-desc">Users ➔ Follows ➔ Users (Self-Referential M:N Follower/Following)</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-badge analytics">Row vs Column</span>
+            <i data-lucide="eye" style="width: 16px; height: 16px; color: #34d399;"></i>
+          </div>
+          <div class="stat-val">Views Engine</div>
+          <div class="stat-desc"><code>post_views</code> rows (history audit) + <code>views_count</code> (cached counter)</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-badge ttl-event">24h TTL</span>
+            <i data-lucide="clock" style="width: 16px; height: 16px; color: #fbbf24;"></i>
+          </div>
+          <div class="stat-val">Ephemeral Stories</div>
+          <div class="stat-desc">Stories ➔ Story_Views with automatic expiration time horizon</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Navigation Toolbar -->
+    <div class="toolbar" id="main-toolbar">
+      <div class="toolbar-brand">
+        <i data-lucide="database" style="color: var(--ig-pink);"></i>
+        Schema Explorer
+      </div>
+
+      <div class="tab-group" role="tablist">
+        <button class="tab-btn active" id="tab-btn-erd" onclick="switchView('view-erd', this)">
+          <i data-lucide="network" style="width: 15px; height: 15px;"></i> Enterprise ER Diagram
+        </button>
+        <button class="tab-btn" id="tab-btn-core" onclick="switchView('view-core', this)">
+          <i data-lucide="box" style="width: 15px; height: 15px;"></i> Beginner 6-Table Model
+        </button>
+        <button class="tab-btn" id="tab-btn-workflows" onclick="switchView('view-workflows', this)">
+          <i data-lucide="workflow" style="width: 15px; height: 15px;"></i> Lifecycle & Workflows
+        </button>
+        <button class="tab-btn" id="tab-btn-matrix" onclick="switchView('view-matrix', this)">
+          <i data-lucide="table-properties" style="width: 15px; height: 15px;"></i> Relationship Matrix
+        </button>
+        <button class="tab-btn" id="tab-btn-decisions" onclick="switchView('view-decisions', this)">
+          <i data-lucide="cpu" style="width: 15px; height: 15px;"></i> Architectural Decisions
+        </button>
+        <button class="tab-btn" id="tab-btn-schema" onclick="switchView('view-schema', this)">
+          <i data-lucide="layout-grid" style="width: 15px; height: 15px;"></i> Table Dictionary
+        </button>
+        <button class="tab-btn" id="tab-btn-ddl" onclick="switchView('view-ddl', this)">
+          <i data-lucide="code" style="width: 15px; height: 15px;"></i> Production SQL DDL
+        </button>
+        <button class="tab-btn" id="tab-btn-apis" onclick="switchView('view-apis', this)">
+          <i data-lucide="webhook" style="width: 15px; height: 15px;"></i> API Design (42 Endpoints)
+        </button>
+        <button class="tab-btn" id="tab-btn-infra" onclick="switchView('view-infra', this)">
+          <i data-lucide="server" style="width: 15px; height: 15px;"></i> Server & Capacity Planning
+        </button>
+      </div>
+    </div>
+
+    <!-- VIEW 1: Enterprise ER Diagram (Full 16 Tables) -->
+    <section id="view-erd" class="view-section active">
+      <div class="diagram-card">
+        <div class="diagram-header">
+          <div>
+            <div class="diagram-title">
+              <i data-lucide="network" style="color: var(--ig-pink);"></i>
+              Complete Practical Instagram ER Diagram (Mermaid.js)
+            </div>
+            <div class="diagram-sub">
+              Full relational schema encompassing User Graph, Multi-media Carousels, Reels, Follows, Likes, Comments, Saves, Ephemeral Stories, Hashtags, and Direct Messages.
+            </div>
+          </div>
+          <span class="diagram-badge">16 RELATIONAL TABLES</span>
+        </div>
+
+        <pre class="mermaid">
+erDiagram
+    USERS ||--o{ POSTS : "creates (1:N)"
+    USERS ||--o{ POST_MEDIA : "uploads via post (1:N)"
+    USERS ||--o{ REELS : "uploads short video (1:N)"
+    USERS ||--o{ FOLLOWS : "initiates following (1:N)"
+    USERS ||--o{ FOLLOWS : "receives follower (1:N)"
+    USERS ||--o{ POST_LIKES : "gives like (1:N)"
+    USERS ||--o{ REEL_LIKES : "likes reel (1:N)"
+    USERS ||--o{ COMMENTS : "writes comments (1:N)"
+    USERS ||--o{ SAVES : "bookmarks post (1:N)"
+    USERS ||--o{ POST_VIEWS : "logs view event (1:N)"
+    USERS ||--o{ STORIES : "publishes 24h story (1:N)"
+    USERS ||--o{ STORY_VIEWS : "watches story (1:N)"
+    USERS ||--o{ SUGGESTIONS : "receives recommendations (1:N)"
+    USERS ||--o{ SUGGESTIONS : "is recommended account (1:N)"
+    USERS ||--o{ NOTIFICATIONS : "receives alerts (1:N)"
+    USERS ||--o{ CONVERSATION_MEMBERS : "participates in chat (1:N)"
+    USERS ||--o{ MESSAGES : "sends direct message (1:N)"
+
+    POSTS ||--o{ POST_MEDIA : "contains carousel items (1:N)"
+    POSTS ||--o{ POST_LIKES : "receives likes (1:N)"
+    POSTS ||--o{ COMMENTS : "has discussion thread (1:N)"
+    POSTS ||--o{ SAVES : "saved by users (1:N)"
+    POSTS ||--o{ POST_VIEWS : "records view history (1:N)"
+    POSTS ||--o{ POST_HASHTAGS : "tagged with hashtags (M:N)"
+    HASHTAGS ||--o{ POST_HASHTAGS : "groups tagged posts (M:N)"
+
+    REELS ||--o{ REEL_LIKES : "receives likes (1:N)"
+
+    COMMENTS ||--o{ COMMENTS : "nested reply to parent (1:N)"
+
+    STORIES ||--o{ STORY_VIEWS : "accumulates viewers (1:N)"
+
+    CONVERSATIONS ||--o{ CONVERSATION_MEMBERS : "has member participants (1:N)"
+    CONVERSATIONS ||--o{ MESSAGES : "contains chat history (1:N)"
+
+    USERS {
+        int user_id PK
+        string username UK
+        string email UK
+        string password_hash
+        string full_name
+        string profile_picture
+        string bio
+        string website
+        boolean is_verified
+        boolean is_private
+        datetime created_at
+    }
+
+    POSTS {
+        int post_id PK
+        int user_id FK
+        string caption
+        string location
+        int views_count "Denormalized counter"
+        int likes_count "Denormalized counter"
+        int comments_count "Denormalized counter"
+        datetime created_at
+    }
+
+    POST_MEDIA {
+        int media_id PK
+        int post_id FK
+        string media_url
+        string media_type "IMAGE or VIDEO"
+        int carousel_order
+    }
+
+    POST_VIEWS {
+        int view_id PK
+        int user_id FK
+        int post_id FK
+        datetime viewed_at
+        int duration_seconds
+    }
+
+    REELS {
+        int reel_id PK
+        int user_id FK
+        string video_url
+        string caption
+        string audio_title
+        int views_count
+        int likes_count
+        int duration_seconds
+        datetime created_at
+    }
+
+    FOLLOWS {
+        int follow_id PK
+        int follower_id FK "Users.user_id"
+        int following_id FK "Users.user_id"
+        string status "ACCEPTED or PENDING"
+        datetime created_at
+    }
+
+    POST_LIKES {
+        int like_id PK
+        int user_id FK
+        int post_id FK
+        datetime created_at
+    }
+
+    REEL_LIKES {
+        int like_id PK
+        int user_id FK
+        int reel_id FK
+        datetime created_at
+    }
+
+    COMMENTS {
+        int comment_id PK
+        int user_id FK
+        int post_id FK
+        int parent_comment_id FK "Self-ref reply"
+        string comment_text
+        datetime created_at
+    }
+
+    SAVES {
+        int save_id PK
+        int user_id FK
+        int post_id FK
+        datetime created_at
+    }
+
+    STORIES {
+        int story_id PK
+        int user_id FK
+        string media_url
+        string media_type
+        datetime created_at
+        datetime expires_at "created_at + 24 hours"
+    }
+
+    STORY_VIEWS {
+        int view_id PK
+        int story_id FK
+        int viewer_id FK "Users.user_id"
+        datetime viewed_at
+    }
+
+    SUGGESTIONS {
+        int suggestion_id PK
+        int user_id FK "Target user"
+        int suggested_user_id FK "Candidate user"
+        string reason "e.g. Mutuals, Contacts"
+        float score
+        datetime created_at
+    }
+
+    HASHTAGS {
+        int hashtag_id PK
+        string tag_name UK
+        int post_count
+        datetime created_at
+    }
+
+    POST_HASHTAGS {
+        int post_id PK,FK
+        int hashtag_id PK,FK
+    }
+
+    CONVERSATIONS {
+        int conversation_id PK
+        string type "DIRECT or GROUP"
+        string group_name
+        datetime created_at
+    }
+
+    CONVERSATION_MEMBERS {
+        int conversation_id PK,FK
+        int user_id PK,FK
+        datetime joined_at
+    }
+
+    MESSAGES {
+        int message_id PK
+        int conversation_id FK
+        int sender_id FK
+        string message_text
+        string media_url
+        boolean is_read
+        datetime sent_at
+    }
+        </pre>
+      </div>
+    </section>
+
+    <!-- VIEW 2: Beginner 6-Table Model -->
+    <section id="view-core" class="view-section">
+      <div class="diagram-card">
+        <div class="diagram-header">
+          <div>
+            <div class="diagram-title">
+              <i data-lucide="box" style="color: var(--accent-amber);"></i>
+              Beginner Core Model (The 6 Foundational Tables)
+            </div>
+            <div class="diagram-sub">
+              When starting from scratch, don't build all 16 tables at once. Focus on understanding primary keys, foreign keys, and 1:N vs M:N cardinality across these core 6 tables first.
+            </div>
+          </div>
+          <span class="diagram-badge" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border-color: rgba(245, 158, 11, 0.3);">
+            BEGINNER MILESTONE
+          </span>
+        </div>
+
+        <pre class="mermaid">
+erDiagram
+    USERS ||--o{ POSTS : "creates (1:N)"
+    USERS ||--o{ REELS : "uploads (1:N)"
+    USERS ||--o{ FOLLOWS : "follower (1:N)"
+    USERS ||--o{ FOLLOWS : "following (1:N)"
+    USERS ||--o{ POST_LIKES : "likes (1:N)"
+    USERS ||--o{ COMMENTS : "writes (1:N)"
+    POSTS ||--o{ POST_LIKES : "receives (1:N)"
+    POSTS ||--o{ COMMENTS : "has (1:N)"
+
+    USERS {
+        int user_id PK
+        string username UK
+        string email UK
+        string password_hash
+        datetime created_at
+    }
+
+    POSTS {
+        int post_id PK
+        int user_id FK
+        string caption
+        datetime created_at
+    }
+
+    FOLLOWS {
+        int follow_id PK
+        int follower_id FK "FK to users.user_id"
+        int following_id FK "FK to users.user_id"
+        datetime created_at
+    }
+
+    POST_LIKES {
+        int like_id PK
+        int user_id FK
+        int post_id FK
+        datetime created_at
+    }
+
+    COMMENTS {
+        int comment_id PK
+        int user_id FK
+        int post_id FK
+        string comment_text
+        datetime created_at
+    }
+
+    REELS {
+        int reel_id PK
+        int user_id FK
+        string video_url
+        string caption
+        datetime created_at
+    }
+        </pre>
+
+        <!-- Why this core model matters -->
+        <div style="margin-top: 24px; padding: 18px 22px; background: rgba(15, 23, 42, 0.7); border-radius: 14px; border: 1px solid var(--border-color);">
+          <h3 style="color: #fbbf24; font-size: 1.05rem; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+            <i data-lucide="lightbulb" style="width: 18px; height: 18px;"></i> Why Build These 6 Tables First?
+          </h3>
+          <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
+            1. <strong>Master One-to-Many (1:N):</strong> <code>USERS ➔ POSTS</code> and <code>POSTS ➔ COMMENTS</code> show how a foreign key in the child table references the parent table.<br>
+            2. <strong>Master Self-Referential Many-to-Many (M:N):</strong> <code>FOLLOWS</code> teaches you how one entity (Users) relates to itself through a bridge table with two foreign keys (<code>follower_id</code> and <code>following_id</code>).<br>
+            3. <strong>Master Composite Unique Constraints:</strong> A user shouldn't be able to like the same post twice, nor follow the same account twice. <code>UNIQUE(user_id, post_id)</code> enforces this at the DB engine level.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 3: Workflows & Data Pipelines -->
+    <section id="view-workflows" class="view-section">
+      <!-- Workflow 1: Posting & Feed Generation -->
+      <div class="diagram-card">
+        <div class="diagram-title">
+          <i data-lucide="upload-cloud" style="color: var(--ig-pink);"></i>
+          Workflow 1: Post Publishing, Multi-Media Carousel & Feed Fanout
+        </div>
+        <div class="diagram-sub">
+          How images/videos are uploaded to S3/CDN, records stored in DB, and distributed to followers' timeline feeds.
+        </div>
+
+        <pre class="mermaid">
+graph TD
+    subgraph Client["1. Client App (Creator)"]
+        A["User selects 1 to 10 Images or Videos + Caption"] --> B["Upload binary media directly to S3 or Object Store"]
+        B --> C["Obtain CDN media URLs"]
+    end
+
+    subgraph DB_Write["2. Database Transaction"]
+        C --> D["BEGIN TRANSACTION"]
+        D --> E["INSERT INTO posts"]
+        E --> F["INSERT INTO post_media"]
+        F --> G["Parse hashtags and INSERT INTO post_hashtags"]
+        G --> H["COMMIT TRANSACTION"]
+    end
+
+    subgraph Fanout_Engine["3. Feed Delivery Pipeline"]
+        H --> I["Publish PostCreated event to Message Queue"]
+        I --> J{"Creator Follower Count"}
+        J -->|Standard User under 25k followers| K["Fanout-on-Write: Push post_id to Redis Timelines"]
+        J -->|Celebrity over 500k followers| L["Fanout-on-Read: Query creator posts on demand"]
+    end
+        </pre>
+      </div>
+
+      <!-- Workflow 2: Story 24-Hour Expiry & Analytics -->
+      <div class="diagram-card">
+        <div class="diagram-title">
+          <i data-lucide="clock" style="color: var(--accent-amber);"></i>
+          Workflow 2: Ephemeral 24-Hour Story Lifecycle & View Tracking
+        </div>
+        <div class="diagram-sub">
+          How stories auto-expire after 24 hours, viewer tracking prevents duplicates, and background cleanup runs.
+        </div>
+
+        <pre class="mermaid">
+graph LR
+    subgraph Upload_Story["1. Story Creation"]
+        S1["User uploads story media"] --> S2["INSERT INTO stories with 24 Hour Expiration"]
+    end
+
+    subgraph View_Event["2. Friend Views Story"]
+        S2 --> V1["Viewer opens story tray"]
+        V1 --> V2{"Has user already viewed?"}
+        V2 -->|No| V3["INSERT INTO story_views"]
+        V2 -->|Yes| V4["Do nothing (Unique constraint ignores duplicate)"]
+    end
+
+    subgraph Expiration_Engine["3. Expiration Query"]
+        V3 --> Q1["SELECT stories WHERE active within 24 hours"]
+        Q1 --> Q2["Expired stories hidden from feed and archived"]
+    end
+        </pre>
+      </div>
+
+      <!-- Workflow 3: View Tracking Engine: post_views Row vs views_count Column -->
+      <div class="diagram-card">
+        <div class="diagram-title">
+          <i data-lucide="eye" style="color: var(--accent-green);"></i>
+          Workflow 3: Realtime View Pipeline — High Throughput Logging vs Fast UI Read
+        </div>
+        <div class="diagram-sub">
+          Balancing row-level analytics audit trail with millisecond feed rendering performance.
+        </div>
+
+        <pre class="mermaid">
+graph TD
+    U["User scrolls feed and watches Post for 3+ seconds"] --> API["API Gateway receives view beacon ping"]
+    API --> REDIS["Redis Cache: Increment views_count and add User ID to HyperLogLog"]
+    
+    subgraph Read_Path["Fast UI Read Path"]
+        REDIS --> FEED["Instantly serves feed with cached view count (1ms latency)"]
+    end
+
+    subgraph Batch_Worker["Async Batch Persistence"]
+        REDIS --> WORKER["Background Worker flushes aggregated views"]
+        WORKER --> DB1["UPDATE posts SET views_count in database"]
+        WORKER --> DB2["INSERT INTO post_views for Analytics and History"]
+    end
+        </pre>
+      </div>
+    </section>
+
+    <!-- VIEW 4: Relationship Matrix -->
+    <section id="view-matrix" class="view-section">
+      <div class="rel-table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Parent Table</th>
+              <th>Child Table</th>
+              <th style="width: 140px;">Cardinality</th>
+              <th>Foreign Key (FK) Field</th>
+              <th>On Delete Action</th>
+              <th>Business Rule & Query Logic</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>users</code></td>
+              <td><code>posts</code></td>
+              <td><span class="badge-cardinality one-to-many">1 : N</span></td>
+              <td><code>posts.user_id</code></td>
+              <td><code>CASCADE</code></td>
+              <td>One user publishes multiple posts. Deleting a user deletes all their posts.</td>
+            </tr>
+            <tr>
+              <td><code>posts</code></td>
+              <td><code>post_media</code></td>
+              <td><span class="badge-cardinality one-to-many">1 : N</span></td>
+              <td><code>post_media.post_id</code></td>
+              <td><code>CASCADE</code></td>
+              <td>A post can have 1 to 10 media files (photos/videos) ordered by <code>carousel_order</code>.</td>
+            </tr>
+            <tr>
+              <td><code>users</code></td>
+              <td><code>reels</code></td>
+              <td><span class="badge-cardinality one-to-many">1 : N</span></td>
+              <td><code>reels.user_id</code></td>
+              <td><code>CASCADE</code></td>
+              <td>One creator uploads multiple short-form vertical videos.</td>
+            </tr>
+            <tr>
+              <td><code>users</code> (as follower)</td>
+              <td><code>follows</code></td>
+              <td><span class="badge-cardinality one-to-many">1 : N</span></td>
+              <td><code>follows.follower_id</code></td>
+              <td><code>CASCADE</code></td>
+              <td>Identifies who clicked "Follow". Composite UNIQUE on <code>(follower_id, following_id)</code>.</td>
+            </tr>
+            <tr>
+              <td><code>users</code> (as following)</td>
+              <td><code>follows</code></td>
+              <td><span class="badge-cardinality one-to-many">1 : N</span></td>
+              <td><code>follows.following_id</code></td>
+              <td><code>CASCADE</code></td>
+              <td>Identifies who received the follower. Prevents self-follow via <code>CHECK (follower_id != following_id)</code>.</td>
+            </tr>
+            <tr>
+              <td><code>users</code></td>
+              <td><code>post_likes</code></td>
+              <td><span class="badge-cardinality one-to-many">1 : N</span></td>
+              <td><code>post_likes.user_id</code></td>
+              <td><code>CASCADE</code></td>
+              <td>User expresses like reaction. Unique constraint prevents liking the same post twice.</td>
+            </tr>
+            <tr>
+              <td><code>posts</code></td>
+              <td><code>post_likes</code></td>
+              <td><span class="badge-cardinality one-to-many">1 : N</span></td>
+              <td><code>post_likes.post_id</code></td>
+              <td><code>CASCADE</code></td>
+              <td>Post receives likes from many users.</td>
+            </tr>
+            <tr>
+              <td><code>users</code></td>
+              <td><code>comments</code></td>
+              <td><span class="badge-cardinality one-to-many">1 : N</span></td>
+              <td><code>comments.user_id</code></td>
+              <td><code>CASCADE</code></td>
+              <td>User authors a comment on a post.</td>
+            </tr>
+            <tr>
+              <td><code>posts</code></td>
+              <td><code>comments</code></td>
+              <td><span class="badge-cardinality one-to-many">1 : N</span></td>
+              <td><code>comments.post_id</code></td>
+              <td><code>CASCADE</code></td>
+              <td>Post collects comments from community members.</td>
+            </tr>
+            <tr>
+              <td><code>comments</code> (parent)</td>
+              <td><code>comments</code> (reply)</td>
+              <td><span class="badge-cardinality self-ref">Self 1 : N</span></td>
+              <td><code>comments.parent_comment_id</code></td>
+              <td><code>SET NULL</code></td>
+              <td>Enables nested replies (thread discussion). Top-level comments have <code>NULL</code> parent.</td>
+            </tr>
+            <tr>
+              <td><code>users</code></td>
+              <td><code>post_views</code></td>
+              <td><span class="badge-cardinality one-to-many">1 : N</span></td>
+              <td><code>post_views.user_id</code></td>
+              <td><code>CASCADE</code></td>
+              <td>Event logging tracking who watched the post and watch duration for analytics.</td>
+            </tr>
+            <tr>
+              <td><code>posts</code></td>
+              <td><code>post_views</code></td>
+              <td><span class="badge-cardinality one-to-many">1 : N</span></td>
+              <td><code>post_views.post_id</code></td>
+              <td><code>CASCADE</code></td>
+              <td>Audits view timestamps and frequency per post.</td>
+            </tr>
+            <tr>
+              <td><code>users</code></td>
+              <td><code>saves</code></td>
+              <td><span class="badge-cardinality one-to-many">1 : N</span></td>
+              <td><code>saves.user_id</code></td>
+              <td><code>CASCADE</code></td>
+              <td>Private user bookmarks. Only visible to the owner.</td>
+            </tr>
+            <tr>
+              <td><code>users</code></td>
+              <td><code>stories</code></td>
+              <td><span class="badge-cardinality one-to-many">1 : N</span></td>
+              <td><code>stories.user_id</code></td>
+              <td><code>CASCADE</code></td>
+              <td>User posts 24h temporary media with indexed <code>expires_at</code> timestamp.</td>
+            </tr>
+            <tr>
+              <td><code>stories</code></td>
+              <td><code>story_views</code></td>
+              <td><span class="badge-cardinality one-to-many">1 : N</span></td>
+              <td><code>story_views.story_id</code></td>
+              <td><code>CASCADE</code></td>
+              <td>Stores who looked at the story with <code>UNIQUE(story_id, viewer_id)</code> constraint.</td>
+            </tr>
+            <tr>
+              <td><code>posts</code> ↔ <code>hashtags</code></td>
+              <td><code>post_hashtags</code></td>
+              <td><span class="badge-cardinality many-to-many">M : N</span></td>
+              <td><code>post_id</code> & <code>hashtag_id</code></td>
+              <td><code>CASCADE</code></td>
+              <td>Junction table connecting posts to searchable tags (e.g. #travel, #coding).</td>
+            </tr>
+            <tr>
+              <td><code>users</code> ↔ <code>users</code></td>
+              <td><code>suggestions</code></td>
+              <td><span class="badge-cardinality many-to-many">M : N</span></td>
+              <td><code>user_id</code> & <code>suggested_user_id</code></td>
+              <td><code>CASCADE</code></td>
+              <td>Calculated recommendation output with score and reason ("Followed by your friend").</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- VIEW 5: Architectural Decisions Deep-Dive -->
+    <section id="view-decisions" class="view-section">
+      <div class="decision-grid">
+        <!-- Decision 1: post_views Rows vs posts.views_count Column -->
+        <div class="decision-card">
+          <div class="decision-title">
+            <i data-lucide="eye" style="color: var(--ig-pink);"></i>
+            1. Tracking Views: Row-Level Events vs Counter Column
+          </div>
+          
+          <div class="decision-box">
+            <h4>Approach A: Adding columns (view_1, view_2...) ❌</h4>
+            <p><strong>Anti-pattern:</strong> Impossible to predict columns, alters table structure with every view, breaks 1st Normal Form (1NF), and causes catastrophic schema bloat.</p>
+          </div>
+
+          <div class="decision-box">
+            <h4>Approach B: Separate Rows in <code>post_views</code> ✔️</h4>
+            <p><strong>Best for Analytics:</strong> Each view is an event record with <code>user_id</code>, <code>post_id</code>, and <code>viewed_at</code>. Allows queries like <em>"Did user X watch post Y?"</em> and <em>"What hour has highest reach?"</em></p>
+          </div>
+
+          <div class="decision-box">
+            <h4>Approach C: Denormalized <code>posts.views_count</code> ✔️</h4>
+            <p><strong>Best for Feed UI:</strong> Fetching a feed of 20 posts doing <code>COUNT(*) FROM post_views</code> for each post kills database IOPS. Storing an integer counter column gives <strong>O(1)</strong> instant display.</p>
+          </div>
+
+          <div class="decision-verdict">
+            <i data-lucide="check-circle-2" style="width: 18px; height: 18px;"></i>
+            <strong>Hybrid Production Pattern:</strong> Use <code>post_views</code> rows for event intelligence + <code>posts.views_count</code> cached column updated via background workers.
+          </div>
+        </div>
+
+        <!-- Decision 2: Follows Table Design -->
+        <div class="decision-card">
+          <div class="decision-title">
+            <i data-lucide="user-plus" style="color: var(--accent-purple);"></i>
+            2. Follower Table: <code>followers</code> vs <code>follows</code>
+          </div>
+
+          <div class="decision-box">
+            <h4>Why name it <code>follows</code>?</h4>
+            <p>The table represents the <strong>action / relationship verb</strong> between two equal user entities. Both sides are users!</p>
+          </div>
+
+          <div class="decision-box">
+            <h4>Self-Referential Foreign Keys:</h4>
+            <p>
+              • <code>follower_id</code>: The user who clicks "Follow" (e.g. Sweety)<br>
+              • <code>following_id</code>: The account being followed (e.g. Prafful)<br>
+              Both columns reference <code>users.user_id</code>.
+            </p>
+          </div>
+
+          <div class="decision-box">
+            <h4>Crucial Constraints:</h4>
+            <p>
+              1. <code>UNIQUE(follower_id, following_id)</code> prevents accidental double following.<br>
+              2. <code>CHECK (follower_id &lt;&gt; following_id)</code> stops a user from following themselves.
+            </p>
+          </div>
+
+          <div class="decision-verdict">
+            <i data-lucide="check-circle-2" style="width: 18px; height: 18px;"></i>
+            <strong>Index Tip:</strong> Create index on <code>follower_id</code> (to get who I follow) AND index on <code>following_id</code> (to get who follows me).
+          </div>
+        </div>
+
+        <!-- Decision 3: Separate Likes Tables vs Polymorphic Likes -->
+        <div class="decision-card">
+          <div class="decision-title">
+            <i data-lucide="heart" style="color: var(--accent-red);"></i>
+            3. Likes Architecture: Separate Tables vs Polymorphic Table
+          </div>
+
+          <div class="decision-box">
+            <h4>Option A: Polymorphic (Single <code>likes</code> Table)</h4>
+            <p>Columns: <code>like_id, user_id, target_id, target_type ('POST' or 'REEL')</code>.<br>
+            <strong>Downside:</strong> Cannot use relational Foreign Key constraints in SQL without custom triggers or partial checks. Harder for relational integrity.</p>
+          </div>
+
+          <div class="decision-box">
+            <h4>Option B: Distinct Tables (<code>post_likes</code>, <code>reel_likes</code>)</h4>
+            <p>Provides strict <strong>Foreign Key</strong> referential integrity, clean indexes, separate disk partitioning, and zero table locking contention between Reels and Feed.</p>
+          </div>
+
+          <div class="decision-verdict">
+            <i data-lucide="check-circle-2" style="width: 18px; height: 18px;"></i>
+            <strong>Verdict:</strong> Distinct tables (<code>post_likes</code> & <code>reel_likes</code>) are recommended for clean relational integrity and beginner-to-intermediate architecture.
+          </div>
+        </div>
+
+        <!-- Decision 4: Suggestions — Database Table vs Algorithm Engine -->
+        <div class="decision-card">
+          <div class="decision-title">
+            <i data-lucide="sparkles" style="color: var(--accent-cyan);"></i>
+            4. Suggestions: Dynamic Algorithm vs Stored Table
+          </div>
+
+          <div class="decision-box">
+            <h4>Is <code>suggestions</code> a real-time relation?</h4>
+            <p>No! Suggestions are <strong>ML / Graph Algorithm outputs</strong> calculated based on: mutual followers (friends of friends), phone contact sync, shared hashtags, and location proximity.</p>
+          </div>
+
+          <div class="decision-box">
+            <h4>When to store in DB?</h4>
+            <p>Precomputed recommendations are stored in a caching table with a decay timestamp: <code>user_id, suggested_user_id, reason, score, created_at</code> so the mobile app doesn't run expensive graph traversals on every app open.</p>
+          </div>
+
+          <div class="decision-verdict">
+            <i data-lucide="check-circle-2" style="width: 18px; height: 18px;"></i>
+            <strong>Verdict:</strong> Treat <code>suggestions</code> as a materialized recommendation cache, refreshed periodically via background cron jobs.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 6: Table Dictionary -->
+    <section id="view-schema" class="view-section">
+      <div class="schema-grid">
+        <!-- 1. users -->
+        <div class="table-card">
+          <div class="table-card-header">
+            <div class="table-name"><i data-lucide="user"></i> users</div>
+            <span class="tag-pk">PK: user_id</span>
+          </div>
+          <div class="table-purpose">User accounts, profile credentials, bio, and security settings</div>
+          <ul class="field-list">
+            <li class="field-item"><div class="field-left"><span class="field-name">user_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">username</span> <span class="tag-uk">UK</span></div><span class="field-type">VARCHAR(30)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">email</span> <span class="tag-uk">UK</span></div><span class="field-type">VARCHAR(255)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">password_hash</span></div><span class="field-type">VARCHAR(255)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">full_name</span></div><span class="field-type">VARCHAR(100)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">profile_picture</span></div><span class="field-type">VARCHAR(512)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">bio</span></div><span class="field-type">TEXT (150 chars)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">is_verified</span></div><span class="field-type">BOOLEAN (default false)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">is_private</span></div><span class="field-type">BOOLEAN (default false)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">created_at</span></div><span class="field-type">TIMESTAMP</span></li>
+          </ul>
+        </div>
+
+        <!-- 2. posts -->
+        <div class="table-card">
+          <div class="table-card-header">
+            <div class="table-name"><i data-lucide="image"></i> posts</div>
+            <span class="tag-pk">PK: post_id</span>
+          </div>
+          <div class="table-purpose">Feed posts containing captions, location, and cached counters</div>
+          <ul class="field-list">
+            <li class="field-item"><div class="field-left"><span class="field-name">post_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">user_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT ➔ users</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">caption</span></div><span class="field-type">TEXT (2200 chars)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">location</span></div><span class="field-type">VARCHAR(150)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">views_count</span></div><span class="field-type">BIGINT DEFAULT 0</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">likes_count</span></div><span class="field-type">BIGINT DEFAULT 0</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">comments_count</span></div><span class="field-type">BIGINT DEFAULT 0</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">created_at</span></div><span class="field-type">TIMESTAMP</span></li>
+          </ul>
+        </div>
+
+        <!-- 3. post_media -->
+        <div class="table-card">
+          <div class="table-card-header">
+            <div class="table-name"><i data-lucide="film"></i> post_media</div>
+            <span class="tag-pk">PK: media_id</span>
+          </div>
+          <div class="table-purpose">Supports multi-photo and multi-video carousel sliders</div>
+          <ul class="field-list">
+            <li class="field-item"><div class="field-left"><span class="field-name">media_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">post_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT ➔ posts</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">media_url</span></div><span class="field-type">VARCHAR(512)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">media_type</span></div><span class="field-type">ENUM('IMAGE','VIDEO')</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">carousel_order</span></div><span class="field-type">INT (1 to 10)</span></li>
+          </ul>
+        </div>
+
+        <!-- 4. post_views -->
+        <div class="table-card">
+          <div class="table-card-header">
+            <div class="table-name"><i data-lucide="eye"></i> post_views</div>
+            <span class="tag-pk">PK: view_id</span>
+          </div>
+          <div class="table-purpose">Granular row-level analytics event tracking for every post impression</div>
+          <ul class="field-list">
+            <li class="field-item"><div class="field-left"><span class="field-name">view_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">user_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT ➔ users</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">post_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT ➔ posts</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">viewed_at</span></div><span class="field-type">TIMESTAMP</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">duration_seconds</span></div><span class="field-type">INT DEFAULT 0</span></li>
+          </ul>
+        </div>
+
+        <!-- 5. follows -->
+        <div class="table-card">
+          <div class="table-card-header">
+            <div class="table-name"><i data-lucide="users"></i> follows</div>
+            <span class="tag-pk">PK: follow_id</span>
+          </div>
+          <div class="table-purpose">Follower / Following directional social graph relationship</div>
+          <ul class="field-list">
+            <li class="field-item"><div class="field-left"><span class="field-name">follow_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">follower_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT ➔ users</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">following_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT ➔ users</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">status</span></div><span class="field-type">ENUM('ACCEPTED','PENDING')</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">created_at</span></div><span class="field-type">TIMESTAMP</span></li>
+          </ul>
+        </div>
+
+        <!-- 6. reels -->
+        <div class="table-card">
+          <div class="table-card-header">
+            <div class="table-name"><i data-lucide="video"></i> reels</div>
+            <span class="tag-pk">PK: reel_id</span>
+          </div>
+          <div class="table-purpose">Short-form 9:16 vertical video feed with audio metadata</div>
+          <ul class="field-list">
+            <li class="field-item"><div class="field-left"><span class="field-name">reel_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">user_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT ➔ users</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">video_url</span></div><span class="field-type">VARCHAR(512)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">caption</span></div><span class="field-type">TEXT</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">audio_title</span></div><span class="field-type">VARCHAR(150)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">duration_seconds</span></div><span class="field-type">INT</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">views_count</span></div><span class="field-type">BIGINT DEFAULT 0</span></li>
+          </ul>
+        </div>
+
+        <!-- 7. post_likes -->
+        <div class="table-card">
+          <div class="table-card-header">
+            <div class="table-name"><i data-lucide="heart"></i> post_likes</div>
+            <span class="tag-pk">PK: like_id</span>
+          </div>
+          <div class="table-purpose">Record of likes on posts with composite unique constraint</div>
+          <ul class="field-list">
+            <li class="field-item"><div class="field-left"><span class="field-name">like_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">user_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT ➔ users</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">post_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT ➔ posts</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">created_at</span></div><span class="field-type">TIMESTAMP</span></li>
+          </ul>
+        </div>
+
+        <!-- 8. comments -->
+        <div class="table-card">
+          <div class="table-card-header">
+            <div class="table-name"><i data-lucide="message-circle"></i> comments</div>
+            <span class="tag-pk">PK: comment_id</span>
+          </div>
+          <div class="table-purpose">Threaded comments supporting replies via parent_comment_id</div>
+          <ul class="field-list">
+            <li class="field-item"><div class="field-left"><span class="field-name">comment_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">user_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT ➔ users</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">post_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT ➔ posts</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">parent_comment_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT (Self-Ref NULLable)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">comment_text</span></div><span class="field-type">TEXT</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">created_at</span></div><span class="field-type">TIMESTAMP</span></li>
+          </ul>
+        </div>
+
+        <!-- 9. stories -->
+        <div class="table-card">
+          <div class="table-card-header">
+            <div class="table-name"><i data-lucide="clock"></i> stories</div>
+            <span class="tag-pk">PK: story_id</span>
+          </div>
+          <div class="table-purpose">24-hour disappearing photos and video clips</div>
+          <ul class="field-list">
+            <li class="field-item"><div class="field-left"><span class="field-name">story_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">user_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT ➔ users</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">media_url</span></div><span class="field-type">VARCHAR(512)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">media_type</span></div><span class="field-type">ENUM('IMAGE','VIDEO')</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">created_at</span></div><span class="field-type">TIMESTAMP</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">expires_at</span></div><span class="field-type">TIMESTAMP (Indexed)</span></li>
+          </ul>
+        </div>
+
+        <!-- 10. story_views -->
+        <div class="table-card">
+          <div class="table-card-header">
+            <div class="table-name"><i data-lucide="eye"></i> story_views</div>
+            <span class="tag-pk">PK: view_id</span>
+          </div>
+          <div class="table-purpose">Logs who saw a story; unique constraint stops duplicate view rows</div>
+          <ul class="field-list">
+            <li class="field-item"><div class="field-left"><span class="field-name">view_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">story_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT ➔ stories</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">viewer_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT ➔ users</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">viewed_at</span></div><span class="field-type">TIMESTAMP</span></li>
+          </ul>
+        </div>
+
+        <!-- 11. saves -->
+        <div class="table-card">
+          <div class="table-card-header">
+            <div class="table-name"><i data-lucide="bookmark"></i> saves</div>
+            <span class="tag-pk">PK: save_id</span>
+          </div>
+          <div class="table-purpose">Private bookmarks of posts into collections</div>
+          <ul class="field-list">
+            <li class="field-item"><div class="field-left"><span class="field-name">save_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">user_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT ➔ users</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">post_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT ➔ posts</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">created_at</span></div><span class="field-type">TIMESTAMP</span></li>
+          </ul>
+        </div>
+
+        <!-- 12. suggestions -->
+        <div class="table-card">
+          <div class="table-card-header">
+            <div class="table-name"><i data-lucide="sparkles"></i> suggestions</div>
+            <span class="tag-pk">PK: suggestion_id</span>
+          </div>
+          <div class="table-purpose">Precomputed "Suggested for you" recommendations</div>
+          <ul class="field-list">
+            <li class="field-item"><div class="field-left"><span class="field-name">suggestion_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">user_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT ➔ users</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">suggested_user_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT ➔ users</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">reason</span></div><span class="field-type">VARCHAR(100)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">score</span></div><span class="field-type">DECIMAL(5,2)</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 7: Production SQL DDL -->
+    <section id="view-ddl" class="view-section">
+      <div class="diagram-card" style="padding: 0; overflow: hidden;">
+        <div style="padding: 20px 24px; background: rgba(15, 23, 42, 0.95); border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <h3 style="color: #fff; font-size: 1.15rem; margin-bottom: 4px; display: flex; align-items: center; gap: 8px;">
+              <i data-lucide="terminal" style="color: var(--accent-cyan);"></i> PostgreSQL / MySQL Production DDL Script
+            </h3>
+            <p style="color: var(--text-muted); font-size: 0.85rem;">Includes primary keys, foreign keys, cascade deletes, composite unique constraints, checks, and performance indexes.</p>
+          </div>
+          <button class="copy-btn" onclick="copySqlCode()">
+            <i data-lucide="copy" style="width: 14px; height: 14px;"></i> Copy SQL
+          </button>
+        </div>
+
+        <pre class="sql-code-block" id="sql-script">
+-- ========================================================
+-- INSTAGRAM DATABASE SCHEMA (Production-Ready DDL)
+-- Compatible with PostgreSQL & MySQL 8.0+
+-- ========================================================
+
+-- 1. USERS TABLE
+CREATE TABLE users (
+    user_id BIGSERIAL PRIMARY KEY,
+    username VARCHAR(30) UNIQUE NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    full_name VARCHAR(100),
+    profile_picture VARCHAR(512),
+    bio VARCHAR(150),
+    website VARCHAR(255),
+    is_verified BOOLEAN DEFAULT FALSE,
+    is_private BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Index for username lookups and profile searches
+CREATE INDEX idx_users_username ON users(username);
+
+-- 2. POSTS TABLE
+CREATE TABLE posts (
+    post_id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    caption TEXT,
+    location VARCHAR(150),
+    views_count BIGINT DEFAULT 0,
+    likes_count BIGINT DEFAULT 0,
+    comments_count BIGINT DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_posts_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_posts_user_id ON posts(user_id);
+CREATE INDEX idx_posts_created_at ON posts(created_at DESC);
+
+-- 3. POST MEDIA (CAROUSELS SUPPORT)
+CREATE TABLE post_media (
+    media_id BIGSERIAL PRIMARY KEY,
+    post_id BIGINT NOT NULL,
+    media_url VARCHAR(512) NOT NULL,
+    media_type VARCHAR(10) NOT NULL CHECK (media_type IN ('IMAGE', 'VIDEO')),
+    carousel_order INT NOT NULL DEFAULT 1,
+    CONSTRAINT fk_media_post FOREIGN KEY (post_id) REFERENCES posts(post_id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_post_media_post ON post_media(post_id, carousel_order);
+
+-- 4. POST VIEWS (GRANULAR ANALYTICS EVENT LOG)
+CREATE TABLE post_views (
+    view_id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    post_id BIGINT NOT NULL,
+    viewed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    duration_seconds INT DEFAULT 0,
+    CONSTRAINT fk_post_views_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    CONSTRAINT fk_post_views_post FOREIGN KEY (post_id) REFERENCES posts(post_id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_post_views_post_id ON post_views(post_id);
+CREATE INDEX idx_post_views_user_id ON post_views(user_id);
+
+-- 5. REELS TABLE (SHORT-FORM VIDEO)
+CREATE TABLE reels (
+    reel_id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    video_url VARCHAR(512) NOT NULL,
+    caption TEXT,
+    audio_title VARCHAR(150),
+    duration_seconds INT NOT NULL,
+    views_count BIGINT DEFAULT 0,
+    likes_count BIGINT DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_reels_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_reels_user_id ON reels(user_id);
+
+-- 6. FOLLOWS TABLE (SOCIAL GRAPH)
+CREATE TABLE follows (
+    follow_id BIGSERIAL PRIMARY KEY,
+    follower_id BIGINT NOT NULL,
+    following_id BIGINT NOT NULL,
+    status VARCHAR(15) DEFAULT 'ACCEPTED' CHECK (status IN ('ACCEPTED', 'PENDING')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_follows_follower FOREIGN KEY (follower_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    CONSTRAINT fk_follows_following FOREIGN KEY (following_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    -- Prevent following self
+    CONSTRAINT chk_no_self_follow CHECK (follower_id <> following_id),
+    -- Prevent duplicate follows
+    CONSTRAINT uq_follower_following UNIQUE (follower_id, following_id)
+);
+
+CREATE INDEX idx_follows_follower ON follows(follower_id);
+CREATE INDEX idx_follows_following ON follows(following_id);
+
+-- 7. POST LIKES TABLE
+CREATE TABLE post_likes (
+    like_id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    post_id BIGINT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_post_likes_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    CONSTRAINT fk_post_likes_post FOREIGN KEY (post_id) REFERENCES posts(post_id) ON DELETE CASCADE,
+    -- Prevent liking the same post twice
+    CONSTRAINT uq_post_user_like UNIQUE (user_id, post_id)
+);
+
+CREATE INDEX idx_post_likes_post ON post_likes(post_id);
+
+-- 8. COMMENTS TABLE (THREADED / SELF-REFERENTIAL)
+CREATE TABLE comments (
+    comment_id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    post_id BIGINT NOT NULL,
+    parent_comment_id BIGINT,
+    comment_text TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_comments_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    CONSTRAINT fk_comments_post FOREIGN KEY (post_id) REFERENCES posts(post_id) ON DELETE CASCADE,
+    CONSTRAINT fk_comments_parent FOREIGN KEY (parent_comment_id) REFERENCES comments(comment_id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_comments_post ON comments(post_id);
+CREATE INDEX idx_comments_parent ON comments(parent_comment_id);
+
+-- 9. SAVES TABLE (BOOKMARKS)
+CREATE TABLE saves (
+    save_id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    post_id BIGINT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_saves_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    CONSTRAINT fk_saves_post FOREIGN KEY (post_id) REFERENCES posts(post_id) ON DELETE CASCADE,
+    CONSTRAINT uq_user_post_save UNIQUE (user_id, post_id)
+);
+
+CREATE INDEX idx_saves_user ON saves(user_id);
+
+-- 10. STORIES TABLE (EPHEMERAL 24H TTL)
+CREATE TABLE stories (
+    story_id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    media_url VARCHAR(512) NOT NULL,
+    media_type VARCHAR(10) NOT NULL CHECK (media_type IN ('IMAGE', 'VIDEO')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    CONSTRAINT fk_stories_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+-- Fast lookup for non-expired active stories
+CREATE INDEX idx_stories_active ON stories(user_id, expires_at);
+
+-- 11. STORY VIEWS TABLE
+CREATE TABLE story_views (
+    view_id BIGSERIAL PRIMARY KEY,
+    story_id BIGINT NOT NULL,
+    viewer_id BIGINT NOT NULL,
+    viewed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_story_views_story FOREIGN KEY (story_id) REFERENCES stories(story_id) ON DELETE CASCADE,
+    CONSTRAINT fk_story_views_viewer FOREIGN KEY (viewer_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    CONSTRAINT uq_story_viewer UNIQUE (story_id, viewer_id)
+);
+
+-- 12. HASHTAGS & POST_HASHTAGS (MANY-TO-MANY)
+CREATE TABLE hashtags (
+    hashtag_id BIGSERIAL PRIMARY KEY,
+    tag_name VARCHAR(100) UNIQUE NOT NULL,
+    post_count BIGINT DEFAULT 0
+);
+
+CREATE TABLE post_hashtags (
+    post_id BIGINT NOT NULL,
+    hashtag_id BIGINT NOT NULL,
+    PRIMARY KEY (post_id, hashtag_id),
+    CONSTRAINT fk_ph_post FOREIGN KEY (post_id) REFERENCES posts(post_id) ON DELETE CASCADE,
+    CONSTRAINT fk_ph_tag FOREIGN KEY (hashtag_id) REFERENCES hashtags(hashtag_id) ON DELETE CASCADE
+);
+
+-- 13. SUGGESTIONS TABLE (PRECOMPUTED RECOMMENDATIONS)
+CREATE TABLE suggestions (
+    suggestion_id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    suggested_user_id BIGINT NOT NULL,
+    reason VARCHAR(100),
+    score DECIMAL(5,2) DEFAULT 0.0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_sug_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    CONSTRAINT fk_sug_candidate FOREIGN KEY (suggested_user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+        </pre>
+      </div>
+    </section>
+
+    <!-- VIEW 8: API Design (Complete Production Catalogue) -->
+    <section id="view-apis" class="view-section">
+      <div class="diagram-card">
+        <div class="diagram-header">
+          <div>
+            <div class="diagram-title">
+              <i data-lucide="webhook" style="color: var(--accent-cyan);"></i>
+              Instagram REST & Realtime API Architecture (42 Endpoints)
+            </div>
+            <div class="diagram-sub">
+              Complete production API catalogue mapping HTTP verbs, routes, authentication headers, request payloads, response structures, and pagination standards.
+            </div>
+          </div>
+          <span class="diagram-badge" style="background: rgba(6, 182, 212, 0.15); color: #38bdf8; border-color: rgba(6, 182, 212, 0.3);">
+            42 REST & WS ENDPOINTS
+          </span>
+        </div>
+
+        <!-- Architecture Rules Callout -->
+        <div style="margin-bottom: 24px; padding: 18px 22px; background: rgba(15, 23, 42, 0.7); border-radius: 14px; border: 1px solid var(--border-color);">
+          <h4 style="color: #38bdf8; font-size: 1rem; margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+            <i data-lucide="info" style="width: 16px; height: 16px;"></i> High-Scale API Design Standards
+          </h4>
+          <p style="color: var(--text-muted); font-size: 0.875rem; line-height: 1.55;">
+            • <strong>Direct-to-S3 Uploads:</strong> Clients never upload high-resolution 10MB images or 50MB videos through the API servers. Instead, clients call <code>POST /media/presigned-url</code> and PUT binary blobs directly to Amazon S3 / Cloudflare R2.<br>
+            • <strong>Cursor-Based Pagination:</strong> All feeds and comment lists use <code>?cursor=171928372&limit=20</code> rather than <code>?page=50</code> to avoid the costly <code>OFFSET</code> query degradation on billions of rows.<br>
+            • <strong>Stateless JWT + Redis Session Blacklist:</strong> Microservices authenticate requests with short-lived (15 min) JWT access tokens and long-lived refresh tokens stored in Redis.
+          </p>
+        </div>
+
+        <!-- 1. Auth Service -->
+        <div class="api-category-header">
+          <div class="api-category-title"><i data-lucide="shield-check" style="color: #34d399;"></i> 1. Authentication & Security Service</div>
+          <span class="api-count-tag">6 APIs</span>
+        </div>
+        <div class="rel-table-container">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 90px;">Method</th>
+                <th style="width: 280px;">Endpoint Route</th>
+                <th style="width: 90px;">Auth</th>
+                <th>Request Body / Params</th>
+                <th>Success Response</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="badge-method post">POST</span></td>
+                <td><code>/api/v1/auth/register</code></td>
+                <td>Public</td>
+                <td><code>{ username, email, password, full_name }</code></td>
+                <td><code>201 Created { user_id, token, refresh_token }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method post">POST</span></td>
+                <td><code>/api/v1/auth/login</code></td>
+                <td>Public</td>
+                <td><code>{ identifier, password }</code></td>
+                <td><code>200 OK { user, token, refresh_token }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method post">POST</span></td>
+                <td><code>/api/v1/auth/refresh</code></td>
+                <td>Public</td>
+                <td><code>{ refresh_token }</code></td>
+                <td><code>200 OK { token: "new_jwt_access_token" }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method post">POST</span></td>
+                <td><code>/api/v1/auth/logout</code></td>
+                <td>Bearer</td>
+                <td><code>{ refresh_token }</code></td>
+                <td><code>200 OK { message: "Session revoked" }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method post">POST</span></td>
+                <td><code>/api/v1/auth/forgot-password</code></td>
+                <td>Public</td>
+                <td><code>{ email }</code></td>
+                <td><code>200 OK { message: "Password reset OTP sent" }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method post">POST</span></td>
+                <td><code>/api/v1/auth/reset-password</code></td>
+                <td>Public</td>
+                <td><code>{ email, otp, new_password }</code></td>
+                <td><code>200 OK { message: "Password updated successfully" }</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 2. Users Service -->
+        <div class="api-category-header">
+          <div class="api-category-title"><i data-lucide="user" style="color: #38bdf8;"></i> 2. User Profiles & Social Discovery</div>
+          <span class="api-count-tag">5 APIs</span>
+        </div>
+        <div class="rel-table-container">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 90px;">Method</th>
+                <th style="width: 280px;">Endpoint Route</th>
+                <th style="width: 90px;">Auth</th>
+                <th>Request Body / Params</th>
+                <th>Success Response</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="badge-method get">GET</span></td>
+                <td><code>/api/v1/users/:username</code></td>
+                <td>Public</td>
+                <td>None</td>
+                <td><code>200 OK { user_id, bio, followers_count, following_count, is_private }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method put">PATCH</span></td>
+                <td><code>/api/v1/users/me</code></td>
+                <td>Bearer</td>
+                <td><code>{ full_name, bio, website, is_private }</code></td>
+                <td><code>200 OK { user: updated_profile }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method post">POST</span></td>
+                <td><code>/api/v1/users/me/avatar</code></td>
+                <td>Bearer</td>
+                <td><code>{ avatar_url }</code></td>
+                <td><code>200 OK { profile_picture: "https://cdn.ig.com/..." }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method get">GET</span></td>
+                <td><code>/api/v1/users/search</code></td>
+                <td>Bearer</td>
+                <td>Query: <code>?q=sweety&limit=15</code></td>
+                <td><code>200 OK { results: [ { user_id, username, avatar } ] }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method get">GET</span></td>
+                <td><code>/api/v1/users/suggestions</code></td>
+                <td>Bearer</td>
+                <td>None</td>
+                <td><code>200 OK { suggestions: [ { user, reason, score } ] }</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 3. Follows Service -->
+        <div class="api-category-header">
+          <div class="api-category-title"><i data-lucide="user-plus" style="color: #a855f7;"></i> 3. Social Graph & Follows Service</div>
+          <span class="api-count-tag">5 APIs</span>
+        </div>
+        <div class="rel-table-container">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 90px;">Method</th>
+                <th style="width: 280px;">Endpoint Route</th>
+                <th style="width: 90px;">Auth</th>
+                <th>Request Body / Params</th>
+                <th>Success Response</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="badge-method post">POST</span></td>
+                <td><code>/api/v1/users/:id/follow</code></td>
+                <td>Bearer</td>
+                <td>None (Target user ID in URL)</td>
+                <td><code>201 Created { status: "ACCEPTED" | "PENDING" }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method delete">DELETE</span></td>
+                <td><code>/api/v1/users/:id/unfollow</code></td>
+                <td>Bearer</td>
+                <td>None</td>
+                <td><code>200 OK { message: "Unfollowed successfully" }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method get">GET</span></td>
+                <td><code>/api/v1/users/:id/followers</code></td>
+                <td>Bearer</td>
+                <td>Query: <code>?cursor=...&limit=25</code></td>
+                <td><code>200 OK { followers: [...], next_cursor }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method get">GET</span></td>
+                <td><code>/api/v1/users/:id/following</code></td>
+                <td>Bearer</td>
+                <td>Query: <code>?cursor=...&limit=25</code></td>
+                <td><code>200 OK { following: [...], next_cursor }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method put">PATCH</span></td>
+                <td><code>/api/v1/follows/requests/:id/accept</code></td>
+                <td>Bearer</td>
+                <td>None</td>
+                <td><code>200 OK { message: "Follow request approved" }</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 4. Posts Service -->
+        <div class="api-category-header">
+          <div class="api-category-title"><i data-lucide="image" style="color: #ff6b8b;"></i> 4. Post Publishing & Carousel Media Service</div>
+          <span class="api-count-tag">6 APIs</span>
+        </div>
+        <div class="rel-table-container">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 90px;">Method</th>
+                <th style="width: 280px;">Endpoint Route</th>
+                <th style="width: 90px;">Auth</th>
+                <th>Request Body / Params</th>
+                <th>Success Response</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="badge-method post">POST</span></td>
+                <td><code>/api/v1/media/presigned-url</code></td>
+                <td>Bearer</td>
+                <td><code>{ file_type: "image/jpeg", file_size }</code></td>
+                <td><code>200 OK { upload_url: "https://s3...", file_key }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method post">POST</span></td>
+                <td><code>/api/v1/posts</code></td>
+                <td>Bearer</td>
+                <td><code>{ caption, location, media: [{ url, type, order }] }</code></td>
+                <td><code>201 Created { post_id, created_at, media_items }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method get">GET</span></td>
+                <td><code>/api/v1/posts/:id</code></td>
+                <td>Public</td>
+                <td>None</td>
+                <td><code>200 OK { post_id, user, caption, media, likes_count, comments_count }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method put">PATCH</span></td>
+                <td><code>/api/v1/posts/:id</code></td>
+                <td>Bearer</td>
+                <td><code>{ caption, location }</code></td>
+                <td><code>200 OK { post: updated_post }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method delete">DELETE</span></td>
+                <td><code>/api/v1/posts/:id</code></td>
+                <td>Bearer</td>
+                <td>None</td>
+                <td><code>200 OK { message: "Post deleted" }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method get">GET</span></td>
+                <td><code>/api/v1/users/:id/posts</code></td>
+                <td>Public</td>
+                <td>Query: <code>?cursor=...&limit=18</code></td>
+                <td><code>200 OK { posts: [ { post_id, thumbnail_url } ], next_cursor }</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 5. Engagement Service -->
+        <div class="api-category-header">
+          <div class="api-category-title"><i data-lucide="heart" style="color: #ef4444;"></i> 5. Engagement Service (Likes, Comments & Saves)</div>
+          <span class="api-count-tag">8 APIs</span>
+        </div>
+        <div class="rel-table-container">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 90px;">Method</th>
+                <th style="width: 280px;">Endpoint Route</th>
+                <th style="width: 90px;">Auth</th>
+                <th>Request Body / Params</th>
+                <th>Success Response</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="badge-method post">POST</span></td>
+                <td><code>/api/v1/posts/:id/like</code></td>
+                <td>Bearer</td>
+                <td>None</td>
+                <td><code>200 OK { likes_count: 541, is_liked: true }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method delete">DELETE</span></td>
+                <td><code>/api/v1/posts/:id/like</code></td>
+                <td>Bearer</td>
+                <td>None</td>
+                <td><code>200 OK { likes_count: 540, is_liked: false }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method get">GET</span></td>
+                <td><code>/api/v1/posts/:id/likes</code></td>
+                <td>Bearer</td>
+                <td>Query: <code>?cursor=...&limit=25</code></td>
+                <td><code>200 OK { likers: [ { user_id, username } ] }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method post">POST</span></td>
+                <td><code>/api/v1/posts/:id/comments</code></td>
+                <td>Bearer</td>
+                <td><code>{ comment_text }</code></td>
+                <td><code>201 Created { comment_id, user, comment_text, created_at }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method post">POST</span></td>
+                <td><code>/api/v1/comments/:id/reply</code></td>
+                <td>Bearer</td>
+                <td><code>{ reply_text }</code></td>
+                <td><code>201 Created { comment_id, parent_comment_id, reply_text }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method get">GET</span></td>
+                <td><code>/api/v1/posts/:id/comments</code></td>
+                <td>Public</td>
+                <td>Query: <code>?cursor=...&limit=30</code></td>
+                <td><code>200 OK { comments: [ { comment_id, user, replies_count } ], next_cursor }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method delete">DELETE</span></td>
+                <td><code>/api/v1/comments/:id</code></td>
+                <td>Bearer</td>
+                <td>None</td>
+                <td><code>200 OK { message: "Comment deleted" }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method post">POST</span></td>
+                <td><code>/api/v1/posts/:id/save</code></td>
+                <td>Bearer</td>
+                <td>None</td>
+                <td><code>200 OK { is_saved: true }</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 6. Views & Analytics -->
+        <div class="api-category-header">
+          <div class="api-category-title"><i data-lucide="eye" style="color: #10b981;"></i> 6. Realtime Views & Analytics Engine</div>
+          <span class="api-count-tag">3 APIs</span>
+        </div>
+        <div class="rel-table-container">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 90px;">Method</th>
+                <th style="width: 280px;">Endpoint Route</th>
+                <th style="width: 90px;">Auth</th>
+                <th>Request Body / Params</th>
+                <th>Success Response</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="badge-method post">POST</span></td>
+                <td><code>/api/v1/posts/:id/views</code></td>
+                <td>Bearer</td>
+                <td><code>{ duration_seconds: 4 }</code> (Ping beacon on view)</td>
+                <td><code>204 No Content (High throughput fast ack)</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method post">POST</span></td>
+                <td><code>/api/v1/stories/:id/views</code></td>
+                <td>Bearer</td>
+                <td>None</td>
+                <td><code>204 No Content (Story view recorded)</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method get">GET</span></td>
+                <td><code>/api/v1/posts/:id/insights</code></td>
+                <td>Bearer</td>
+                <td>Creator only</td>
+                <td><code>200 OK { reach: 14200, impressions: 18900, avg_watch_time: 4.8 }</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 7. Stories Service -->
+        <div class="api-category-header">
+          <div class="api-category-title"><i data-lucide="clock" style="color: #f59e0b;"></i> 7. Ephemeral 24h Stories Service</div>
+          <span class="api-count-tag">4 APIs</span>
+        </div>
+        <div class="rel-table-container">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 90px;">Method</th>
+                <th style="width: 280px;">Endpoint Route</th>
+                <th style="width: 90px;">Auth</th>
+                <th>Request Body / Params</th>
+                <th>Success Response</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="badge-method post">POST</span></td>
+                <td><code>/api/v1/stories</code></td>
+                <td>Bearer</td>
+                <td><code>{ media_url, media_type }</code></td>
+                <td><code>201 Created { story_id, expires_at: "2026-10-13T..." }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method get">GET</span></td>
+                <td><code>/api/v1/stories/tray</code></td>
+                <td>Bearer</td>
+                <td>None (Returns story circles of friends)</td>
+                <td><code>200 OK { tray: [ { user, has_unseen: true, stories_count } ] }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method get">GET</span></td>
+                <td><code>/api/v1/stories/user/:user_id</code></td>
+                <td>Bearer</td>
+                <td>None</td>
+                <td><code>200 OK { active_stories: [ { story_id, media_url, expires_at } ] }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method delete">DELETE</span></td>
+                <td><code>/api/v1/stories/:id</code></td>
+                <td>Bearer</td>
+                <td>None</td>
+                <td><code>200 OK { message: "Story deleted" }</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 8. Feeds & Direct Chat -->
+        <div class="api-category-header">
+          <div class="api-category-title"><i data-lucide="send" style="color: #6366f1;"></i> 8. Feeds, Reels & Realtime Direct Messaging</div>
+          <span class="api-count-tag">5 APIs</span>
+        </div>
+        <div class="rel-table-container">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 90px;">Method</th>
+                <th style="width: 280px;">Endpoint Route</th>
+                <th style="width: 90px;">Auth</th>
+                <th>Request Body / Params</th>
+                <th>Success Response</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="badge-method get">GET</span></td>
+                <td><code>/api/v1/feed/home</code></td>
+                <td>Bearer</td>
+                <td>Query: <code>?cursor=...&limit=15</code></td>
+                <td><code>200 OK { feed: [ { post, creator, is_liked, is_saved } ], next_cursor }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method get">GET</span></td>
+                <td><code>/api/v1/feed/explore</code></td>
+                <td>Bearer</td>
+                <td>Query: <code>?page=1&limit=24</code></td>
+                <td><code>200 OK { grid: [ { post_id, thumbnail_url, likes_count } ] }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method get">GET</span></td>
+                <td><code>/api/v1/conversations</code></td>
+                <td>Bearer</td>
+                <td>Query: <code>?cursor=...</code></td>
+                <td><code>200 OK { conversations: [ { chat_id, peer_user, last_message, unread } ] }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method post">POST</span></td>
+                <td><code>/api/v1/conversations/:id/messages</code></td>
+                <td>Bearer</td>
+                <td><code>{ message_text, media_url }</code></td>
+                <td><code>201 Created { message_id, sent_at }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method ws">WS</span></td>
+                <td><code>/ws/v1/chat</code></td>
+                <td>Token Query</td>
+                <td>WebSocket Frame <code>{ action: "SEND_DM", recipient_id, text }</code></td>
+                <td>Realtime duplex event stream with typing status & read receipts</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 9: Server & Capacity Planning -->
+    <section id="view-infra" class="view-section">
+      <div class="diagram-card">
+        <div class="diagram-header">
+          <div>
+            <div class="diagram-title">
+              <i data-lucide="server" style="color: var(--accent-amber);"></i>
+              Instagram Cloud Infrastructure & Capacity Sizing Guide
+            </div>
+            <div class="diagram-sub">
+              How many servers, containers, databases, caches, and gigabytes do you actually need to build an Instagram-like platform from prototype to 100,000+ daily active users?
+            </div>
+          </div>
+          <span class="diagram-badge" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border-color: rgba(245, 158, 11, 0.3);">
+            CAPACITY PLANNING
+          </span>
+        </div>
+
+        <!-- Infrastructure Architecture Flowchart -->
+        <pre class="mermaid">
+graph TD
+    CLIENT["Mobile iOS / Android / Web Clients"] --> CDN["Cloudflare CDN and WAF"]
+    CDN --> ALB["AWS Application Load Balancer"]
+    ALB --> APIS["Stateless Node.js or Go API Pods (Docker / K8s)"]
+    
+    subgraph Data_Tier["High-Speed Data Tier"]
+        APIS --> REDIS["Redis Cluster: Feeds, Sessions, Rate Limits"]
+        APIS --> DB_WRITE["PostgreSQL Primary (Writes)"]
+        APIS --> DB_READ["PostgreSQL Read Replicas (Reads)"]
+        DB_WRITE -.->|Replication| DB_READ
+    end
+
+    subgraph Storage_Tier["Object and Media Tier"]
+        CLIENT -->|Direct Binary Upload via Presigned URL| S3["AWS S3 / Cloudflare R2 Media Bucket"]
+        S3 --> CDN
+    end
+
+    subgraph Async_Tier["Background Workers"]
+        APIS --> QUEUE["Message Queue: Kafka / BullMQ"]
+        QUEUE --> WORKERS["Worker Nodes: Fanout Feeds, Transcode, Push Alerts"]
+        WORKERS --> DB_WRITE
+        WORKERS --> REDIS
+    end
+        </pre>
+
+        <!-- 3 Sizing Tiers -->
+        <div class="infra-grid" style="margin-top: 32px;">
+          <!-- Tier 1 -->
+          <div class="infra-card">
+            <div>
+              <span class="infra-tier-badge" style="background: rgba(56, 189, 248, 0.18); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.35);">
+                TIER 1 • MVP / COLLEGE PROJECT
+              </span>
+              <h3>1,000 to 10,000 Users</h3>
+              <div class="infra-sub">Best for learning, portfolio demo, and initial friend testing.</div>
+
+              <ul class="infra-spec-list">
+                <li class="infra-spec-item">
+                  <i data-lucide="cpu" class="infra-spec-icon"></i>
+                  <div><strong>Compute:</strong> 1x VPS (2 vCPU, 4GB RAM) on Hetzner, DigitalOcean or AWS EC2 t4g.medium.</div>
+                </li>
+                <li class="infra-spec-item">
+                  <i data-lucide="database" class="infra-spec-icon"></i>
+                  <div><strong>Database:</strong> Single PostgreSQL 16 instance running on Docker (10GB disk space).</div>
+                </li>
+                <li class="infra-spec-item">
+                  <i data-lucide="hard-drive" class="infra-spec-icon"></i>
+                  <div><strong>Media Storage:</strong> Cloudinary Free Tier or AWS S3 (pay-as-you-go, ~5GB stored).</div>
+                </li>
+                <li class="infra-spec-item">
+                  <i data-lucide="zap" class="infra-spec-icon"></i>
+                  <div><strong>Caching:</strong> Redis on Docker (512MB RAM for sessions & rate limiting).</div>
+                </li>
+              </ul>
+            </div>
+
+            <div class="infra-cost-banner">
+              <div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Estimated Cloud Cost</div>
+                <div class="infra-cost-val">$10 – $20 / month</div>
+              </div>
+              <i data-lucide="check-circle" style="color: #34d399; width: 24px; height: 24px;"></i>
+            </div>
+          </div>
+
+          <!-- Tier 2 -->
+          <div class="infra-card highlight">
+            <div>
+              <span class="infra-tier-badge" style="background: rgba(225, 48, 108, 0.2); color: #ff5e9c; border: 1px solid rgba(225, 48, 108, 0.4);">
+                TIER 2 • PRODUCTION STARTUP
+              </span>
+              <h3>100,000 Daily Active Users (DAU)</h3>
+              <div class="infra-sub">Full high-availability production cluster serving millions of requests daily.</div>
+
+              <ul class="infra-spec-list">
+                <li class="infra-spec-item">
+                  <i data-lucide="cpu" class="infra-spec-icon"></i>
+                  <div><strong>API Servers:</strong> 3x Container Pods (2 vCPU, 4GB RAM each) with auto-scaling to 6 behind an ALB.</div>
+                </li>
+                <li class="infra-spec-item">
+                  <i data-lucide="database" class="infra-spec-icon"></i>
+                  <div><strong>Database:</strong> AWS RDS PostgreSQL (db.t4g.xlarge, 4 vCPU, 16GB RAM) + 1 Read Replica for timelines.</div>
+                </li>
+                <li class="infra-spec-item">
+                  <i data-lucide="zap" class="infra-spec-icon"></i>
+                  <div><strong>Cache:</strong> AWS ElastiCache Redis (cache.m6g.large, 8GB RAM, 2 nodes) for feed inboxes & views.</div>
+                </li>
+                <li class="infra-spec-item">
+                  <i data-lucide="hard-drive" class="infra-spec-icon"></i>
+                  <div><strong>Storage & CDN:</strong> AWS S3 (~2 TB media) + CloudFront CDN (~12 TB monthly egress).</div>
+                </li>
+                <li class="infra-spec-item">
+                  <i data-lucide="play" class="infra-spec-icon"></i>
+                  <div><strong>Workers:</strong> 2x Background worker nodes (BullMQ / Celery) for fanout & thumbnail transcoding.</div>
+                </li>
+              </ul>
+            </div>
+
+            <div class="infra-cost-banner" style="background: rgba(225, 48, 108, 0.12); border-color: rgba(225, 48, 108, 0.35);">
+              <div>
+                <div style="font-size: 0.75rem; color: #ff85b3; text-transform: uppercase;">Estimated Cloud Cost</div>
+                <div class="infra-cost-val" style="color: #ff5e9c;">$900 – $1,400 / month</div>
+              </div>
+              <i data-lucide="trending-up" style="color: #ff5e9c; width: 24px; height: 24px;"></i>
+            </div>
+          </div>
+
+          <!-- Tier 3 -->
+          <div class="infra-card">
+            <div>
+              <span class="infra-tier-badge" style="background: rgba(168, 85, 247, 0.18); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.35);">
+                TIER 3 • INSTAGRAM SCALE
+              </span>
+              <h3>500,000,000+ DAU</h3>
+              <div class="infra-sub">Meta enterprise hyperscale with globally distributed edge points.</div>
+
+              <ul class="infra-spec-list">
+                <li class="infra-spec-item">
+                  <i data-lucide="cpu" class="infra-spec-icon"></i>
+                  <div><strong>Compute:</strong> 25,000+ server CPU cores across multiple multi-region data centers.</div>
+                </li>
+                <li class="infra-spec-item">
+                  <i data-lucide="database" class="infra-spec-icon"></i>
+                  <div><strong>Database:</strong> Sharded PostgreSQL / Cassandra / ScyllaDB partitions keyed by <code>user_id</code>.</div>
+                </li>
+                <li class="infra-spec-item">
+                  <i data-lucide="share-2" class="infra-spec-icon"></i>
+                  <div><strong>Graph Cache:</strong> TAO (Meta distributed graph engine handling billions of follow edges/sec).</div>
+                </li>
+                <li class="infra-spec-item">
+                  <i data-lucide="hard-drive" class="infra-spec-icon"></i>
+                  <div><strong>Blob Store:</strong> Facebook Haystack & f4 storing hundreds of petabytes of photos.</div>
+                </li>
+                <li class="infra-spec-item">
+                  <i data-lucide="globe" class="infra-spec-icon"></i>
+                  <div><strong>CDN:</strong> Multi-CDN edge network serving 100+ Terabits/sec video traffic.</div>
+                </li>
+              </ul>
+            </div>
+
+            <div class="infra-cost-banner" style="background: rgba(168, 85, 247, 0.12); border-color: rgba(168, 85, 247, 0.35);">
+              <div>
+                <div style="font-size: 0.75rem; color: #d8b4fe; text-transform: uppercase;">Infrastructure Level</div>
+                <div class="infra-cost-val" style="color: #c084fc;">Millions / month</div>
+              </div>
+              <i data-lucide="award" style="color: #c084fc; width: 24px; height: 24px;"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- System Engineering Math -->
+        <div class="math-callout">
+          <h4 style="color: #fbbf24; font-size: 1.05rem; display: flex; align-items: center; gap: 8px;">
+            <i data-lucide="calculator" style="width: 18px; height: 18px;"></i>
+            System Capacity Formulas (How to Calculate Server Numbers for 100k DAU)
+          </h4>
+          
+          <div class="math-grid">
+            <div class="math-card">
+              <h4>1. Query Throughput (QPS Math)</h4>
+              <p>
+                • 100,000 users x 60 requests/day = 6,000,000 requests/day.<br>
+                • Average QPS = 6,000,000 / 86,400s ≈ <strong>70 req/sec</strong>.<br>
+                • Peak QPS (evening traffic spike 5x) ≈ <strong>350 – 500 QPS</strong>.<br>
+                • Read-to-Write Ratio = <strong>99:1</strong> (Reads dominate).
+              </p>
+            </div>
+
+            <div class="math-card">
+              <h4>2. Media Storage Sizing</h4>
+              <p>
+                • Assume 20% of users upload 1 photo/video daily = 20,000 uploads.<br>
+                • Avg compressed media size = 1.2 MB.<br>
+                • Daily Storage = 20,000 x 1.2 MB = <strong>24 GB / day</strong>.<br>
+                • Monthly Storage Growth = 24 GB x 30 = <strong>~720 GB / month</strong>.
+              </p>
+            </div>
+
+            <div class="math-card">
+              <h4>3. CDN Egress & Bandwidth</h4>
+              <p>
+                • Each user scrolls through 40 feed images/day.<br>
+                • Total images viewed = 100k x 40 = 4,000,000 images/day.<br>
+                • Optimized WebP image = ~250 KB.<br>
+                • Daily Egress = 4M x 250 KB = <strong>1,000 GB (1 TB / day)</strong>.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // Initialize Mermaid with custom aesthetic dark theme
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      themeVariables: {
+        darkMode: true,
+        background: '#111827',
+        primaryColor: '#e1306c',
+        primaryTextColor: '#ffffff',
+        primaryBorderColor: '#833ab4',
+        secondaryColor: '#f56040',
+        tertiaryColor: '#405de6',
+        lineColor: '#fccc63',
+        fontFamily: 'Plus Jakarta Sans',
+        fontSize: '14px'
+      }
+    });
+
+    // Tab Switching Functionality with dynamic Mermaid rendering
+    function switchView(viewId, btn) {
+      document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      
+      const target = document.getElementById(viewId);
+      if (target) {
+        target.classList.add('active');
+        btn.classList.add('active');
+
+        // Dynamically run Mermaid on elements in newly opened tab if needed
+        if (typeof mermaid !== 'undefined' && mermaid.run) {
+          mermaid.run({
+            nodes: target.querySelectorAll('.mermaid:not([data-processed="true"])')
+          }).catch(function(err) {
+            console.log('Mermaid render info:', err);
+          });
+        }
+      }
+
+      // Re-trigger lucide icons
+      lucide.createIcons();
+    }
+
+    // Copy SQL DDL Script
+    function copySqlCode() {
+      const sqlText = document.getElementById('sql-script').innerText;
+      navigator.clipboard.writeText(sqlText).then(() => {
+        const btn = document.querySelector('.copy-btn');
+        btn.innerHTML = '<i data-lucide="check" style="width: 14px; height: 14px;"></i> Copied!';
+        lucide.createIcons();
+        setTimeout(() => {
+          btn.innerHTML = '<i data-lucide="copy" style="width: 14px; height: 14px;"></i> Copy SQL';
+          lucide.createIcons();
+        }, 2000);
+      });
+    }
+
+    // Initialize Lucide Icons
+    lucide.createIcons();
+  </script>
+</body>
+</html>
