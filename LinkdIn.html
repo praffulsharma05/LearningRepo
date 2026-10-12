@@ -1,0 +1,3243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="LinkedIn Database Architecture & ER Design — Comprehensive relational schema spanning Identity & Profile, The Social Graph, Feed & Engagement, and Direct Messaging & Jobs. Complete Mermaid diagrams, cardinalities, workflows, and production SQL DDL.">
+  <title>LinkedIn Database Design & Architecture — Complete Enterprise ER Model</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Mermaid.js -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.8/dist/mermaid.min.js"></script>
+
+  <style>
+    :root {
+      --bg-dark: #060d17;
+      --bg-surface: #0b1526;
+      --bg-card: rgba(11, 21, 38, 0.78);
+      --bg-card-hover: rgba(18, 32, 58, 0.9);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-active: rgba(10, 102, 194, 0.55);
+
+      /* LinkedIn signature professional brand colors */
+      --li-blue: #0a66c2;
+      --li-blue-light: #388fe6;
+      --li-blue-glow: rgba(10, 102, 194, 0.35);
+      --li-navy: #004182;
+      --li-ice: #70b5f9;
+
+      /* Professional Functional Accents */
+      --accent-gold: #e7a33e;
+      --accent-green: #057642;
+      --accent-emerald: #10b981;
+      --accent-purple: #9333ea;
+      --accent-coral: #ef4444;
+      --accent-cyan: #06b6d4;
+
+      --primary-gradient: linear-gradient(135deg, #0a66c2 0%, #004182 60%, #022044 100%);
+      --badge-gradient: linear-gradient(135deg, rgba(10, 102, 194, 0.25) 0%, rgba(56, 143, 230, 0.15) 100%);
+
+      --text-main: #f3f6f8;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+
+      --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'Fira Code', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(at 10% 12%, rgba(10, 102, 194, 0.18) 0px, transparent 50%),
+        radial-gradient(at 88% 18%, rgba(231, 163, 62, 0.12) 0px, transparent 48%),
+        radial-gradient(at 50% 90%, rgba(5, 118, 66, 0.12) 0px, transparent 50%);
+      background-attachment: fixed;
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      padding-bottom: 70px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Header */
+    header {
+      padding: 46px 0 26px;
+      text-align: center;
+    }
+
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 18px;
+      border-radius: 9999px;
+      background: rgba(10, 102, 194, 0.18);
+      border: 1px solid rgba(10, 102, 194, 0.4);
+      color: var(--li-ice);
+      font-size: 0.825rem;
+      font-weight: 700;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
+    h1 {
+      font-size: 2.85rem;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      background: linear-gradient(135deg, #ffffff 0%, #70b5f9 45%, #e7a33e 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 14px;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 1.125rem;
+      max-width: 890px;
+      margin: 0 auto;
+    }
+
+    /* Stats Bar (The 4 Primary Pillars) */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin: 32px 0 24px;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 18px 20px;
+      backdrop-filter: blur(12px);
+      transition: all 0.25s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--li-blue);
+    }
+
+    .stat-card:hover {
+      border-color: var(--border-active);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 28px rgba(10, 102, 194, 0.22);
+    }
+
+    .stat-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .stat-badge {
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .stat-badge.pillar-identity { background: rgba(10, 102, 194, 0.2); color: #70b5f9; border: 1px solid rgba(10, 102, 194, 0.4); }
+    .stat-badge.pillar-graph { background: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4); }
+    .stat-badge.pillar-feed { background: rgba(231, 163, 62, 0.2); color: #fbbf24; border: 1px solid rgba(231, 163, 62, 0.4); }
+    .stat-badge.pillar-jobs { background: rgba(5, 118, 66, 0.25); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
+
+    .stat-val {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #fff;
+    }
+
+    .stat-desc {
+      font-size: 0.825rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    /* Toolbar & Navigation */
+    .toolbar {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 18px;
+      padding: 12px 18px;
+      backdrop-filter: blur(14px);
+      margin-bottom: 28px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 15px;
+      z-index: 100;
+      box-shadow: 0 16px 32px rgba(0, 0, 0, 0.55);
+    }
+
+    .toolbar-brand {
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.95rem;
+    }
+
+    .tab-group {
+      display: flex;
+      gap: 6px;
+      background: rgba(6, 13, 23, 0.88);
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      padding: 9px 15px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 0.84rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .tab-btn.active {
+      background: var(--primary-gradient);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(10, 102, 194, 0.45);
+      border: 1px solid rgba(112, 181, 249, 0.3);
+    }
+
+    /* View Sections */
+    .view-section {
+      display: none;
+      animation: fadeIn 0.25s ease-out;
+    }
+
+    .view-section.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Diagram Card */
+    .diagram-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 28px;
+      backdrop-filter: blur(12px);
+      margin-bottom: 30px;
+      overflow-x: auto;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+    }
+
+    .diagram-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .diagram-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .diagram-sub {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      max-width: 900px;
+    }
+
+    .diagram-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      background: rgba(10, 102, 194, 0.2);
+      border: 1px solid rgba(10, 102, 194, 0.4);
+      color: #70b5f9;
+    }
+
+    .mermaid {
+      display: flex;
+      justify-content: center;
+      min-width: 950px;
+      margin: 10px auto;
+    }
+
+    /* Callout & Architecture Note Box */
+    .callout-box {
+      margin-top: 24px;
+      padding: 20px 24px;
+      background: rgba(11, 21, 38, 0.9);
+      border-radius: 14px;
+      border: 1px solid var(--border-color);
+      border-left: 4px solid var(--li-blue);
+    }
+
+    .callout-title {
+      color: var(--li-ice);
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .callout-desc {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    /* Subsystems 4 Pillars Grid */
+    .pillars-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 22px;
+      margin-bottom: 28px;
+    }
+
+    .pillar-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 18px;
+      padding: 24px;
+      backdrop-filter: blur(12px);
+      transition: all 0.25s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .pillar-card:hover {
+      border-color: var(--border-active);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+    }
+
+    .pillar-card-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .pillar-icon-box {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+    }
+
+    .pillar-card h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .pillar-card p {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.55;
+      margin-bottom: 16px;
+    }
+
+    .pillar-tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .pillar-tag {
+      font-family: var(--font-mono);
+      font-size: 0.74rem;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(15, 23, 42, 0.85);
+      color: var(--li-ice);
+      border: 1px solid rgba(112, 181, 249, 0.2);
+    }
+
+    /* Relationship Table Container */
+    .rel-table-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 18px;
+      overflow-x: auto;
+      backdrop-filter: blur(12px);
+      margin-bottom: 24px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th {
+      background: rgba(6, 13, 23, 0.95);
+      padding: 16px 20px;
+      font-size: 0.825rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    td {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 0.91rem;
+      color: var(--text-main);
+      vertical-align: middle;
+    }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    code {
+      font-family: var(--font-mono);
+      background: rgba(6, 13, 23, 0.9);
+      color: #70b5f9;
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-size: 0.85em;
+      border: 1px solid rgba(112, 181, 249, 0.25);
+    }
+
+    /* Badges in Table */
+    .badge-cardinality {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .badge-cardinality.one-to-one { background: rgba(52, 211, 153, 0.18); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.4); }
+    .badge-cardinality.one-to-many { background: rgba(56, 189, 248, 0.18); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); }
+    .badge-cardinality.many-to-many { background: rgba(192, 132, 252, 0.18); color: #c084fc; border: 1px solid rgba(192, 132, 252, 0.4); }
+    .badge-cardinality.self-ref { background: rgba(231, 163, 62, 0.18); color: #fbbf24; border: 1px solid rgba(231, 163, 62, 0.4); }
+
+    /* Schema Grid */
+    .schema-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 20px;
+    }
+
+    .table-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 18px;
+      padding: 22px 24px;
+      backdrop-filter: blur(12px);
+      transition: all 0.2s ease;
+    }
+
+    .table-card:hover {
+      border-color: rgba(10, 102, 194, 0.45);
+      transform: translateY(-2px);
+    }
+
+    .table-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 10px;
+    }
+
+    .table-name {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #70b5f9;
+      font-family: var(--font-mono);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .table-category-tag {
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      font-family: var(--font-mono);
+    }
+    .table-category-tag.identity { background: rgba(10, 102, 194, 0.2); color: #70b5f9; border: 1px solid rgba(10, 102, 194, 0.4); }
+    .table-category-tag.graph { background: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4); }
+    .table-category-tag.feed { background: rgba(231, 163, 62, 0.2); color: #fbbf24; border: 1px solid rgba(231, 163, 62, 0.4); }
+    .table-category-tag.jobs { background: rgba(5, 118, 66, 0.25); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
+    .table-category-tag.chat { background: rgba(6, 182, 212, 0.2); color: #38bdf8; border: 1px solid rgba(6, 182, 212, 0.4); }
+
+    .table-purpose {
+      font-size: 0.825rem;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      font-style: italic;
+    }
+
+    .field-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .field-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      padding: 6px 10px;
+      background: rgba(6, 13, 23, 0.7);
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .field-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .field-name {
+      font-family: var(--font-mono);
+      color: var(--text-main);
+      font-weight: 500;
+    }
+
+    .tag-pk {
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 2px 5px;
+      border-radius: 4px;
+      background: rgba(231, 163, 62, 0.2);
+      color: #fbbf24;
+      border: 1px solid rgba(231, 163, 62, 0.4);
+    }
+
+    .tag-fk {
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 2px 5px;
+      border-radius: 4px;
+      background: rgba(10, 102, 194, 0.25);
+      color: #70b5f9;
+      border: 1px solid rgba(10, 102, 194, 0.45);
+    }
+
+    .tag-uk {
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 2px 5px;
+      border-radius: 4px;
+      background: rgba(168, 85, 247, 0.2);
+      color: #c084fc;
+      border: 1px solid rgba(168, 85, 247, 0.4);
+    }
+
+    .field-type {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    /* Comparison & Architectural Decision Grid */
+    .decision-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
+      gap: 24px;
+      margin-bottom: 28px;
+    }
+
+    .decision-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 18px;
+      padding: 24px;
+      backdrop-filter: blur(12px);
+    }
+
+    .decision-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .decision-box {
+      background: rgba(6, 13, 23, 0.75);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+
+    .decision-box h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .decision-box p {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      line-height: 1.55;
+    }
+
+    .decision-verdict {
+      padding: 12px 16px;
+      border-radius: 10px;
+      background: rgba(5, 118, 66, 0.2);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: #34d399;
+      font-size: 0.875rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* SQL Block */
+    .sql-code-block {
+      background: #040810;
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 22px;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: #93c5fd;
+      overflow-x: auto;
+      line-height: 1.65;
+      position: relative;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .copy-btn:hover {
+      background: var(--primary-gradient);
+      border-color: transparent;
+    }
+
+    /* API Design Styles */
+    .badge-method {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .badge-method.get { background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); }
+    .badge-method.post { background: rgba(52, 211, 153, 0.2); color: #34d399; border: 1px solid rgba(52, 211, 153, 0.4); }
+    .badge-method.put { background: rgba(251, 191, 36, 0.2); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.4); }
+    .badge-method.patch { background: rgba(244, 114, 182, 0.2); color: #f472b6; border: 1px solid rgba(244, 114, 182, 0.4); }
+    .badge-method.delete { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); }
+    .badge-method.ws { background: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4); }
+
+    /* Severity badges for Correction Notes */
+    .severity {
+      display: inline-block;
+      padding: 3px 9px;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .severity.critical { background: rgba(239, 68, 68, 0.22); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.5); }
+    .severity.high { background: rgba(249, 115, 22, 0.22); color: #fb923c; border: 1px solid rgba(249, 115, 22, 0.5); }
+    .severity.medium { background: rgba(231, 163, 62, 0.22); color: #fbbf24; border: 1px solid rgba(231, 163, 62, 0.5); }
+    .severity.low { background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.45); }
+    .severity.by-design { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.45); }
+
+    .api-category-header {
+      margin: 32px 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 8px;
+    }
+
+    .api-category-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .api-count-tag {
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(10, 102, 194, 0.2);
+      color: #70b5f9;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      border: 1px solid rgba(10, 102, 194, 0.4);
+    }
+
+    /* Server Infrastructure & Capacity Styles */
+    .infra-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+
+    .infra-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 26px;
+      backdrop-filter: blur(14px);
+      transition: all 0.25s ease;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .infra-card:hover {
+      border-color: var(--border-active);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .infra-card.highlight {
+      border-color: rgba(10, 102, 194, 0.6);
+      background: linear-gradient(180deg, rgba(10, 102, 194, 0.1) 0%, rgba(11, 21, 38, 0.85) 100%);
+    }
+
+    .infra-tier-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+    }
+
+    .infra-card h3 {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+
+    .infra-sub {
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      margin-bottom: 20px;
+    }
+
+    .infra-spec-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .infra-spec-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 0.875rem;
+      color: var(--text-main);
+      padding: 8px 12px;
+      background: rgba(6, 13, 23, 0.65);
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .infra-spec-icon {
+      color: var(--li-blue-light);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .math-callout {
+      background: rgba(6, 13, 23, 0.85);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .math-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .math-card {
+      background: rgba(11, 21, 38, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 16px;
+    }
+
+    .math-card h4 {
+      font-size: 0.9rem;
+      color: #70b5f9;
+      margin-bottom: 6px;
+    }
+
+    .math-card p {
+      font-size: 0.825rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      h1 { font-size: 2rem; }
+      .toolbar { flex-direction: column; align-items: stretch; }
+      .tab-group { width: 100%; justify-content: center; }
+      .decision-grid { grid-template-columns: 1fr; }
+      .schema-grid { grid-template-columns: 1fr; }
+      .infra-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="container">
+      <div class="badge-pill">
+        <i data-lucide="linkedin" style="width: 16px; height: 16px;"></i>
+        LinkedIn Enterprise Database Architecture
+      </div>
+      <h1>LinkedIn Database Design & ER Model</h1>
+      <p>A comprehensive professional relational schema organized across 4 primary domains: <strong>Identity & Profile</strong>, <strong>The Social Graph</strong>, <strong>Feed & Engagement</strong>, and <strong>Direct Messaging & Jobs</strong>.</p>
+
+      <!-- Stats Bar (4 Primary Pillars) -->
+      <div class="stats-bar">
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-badge pillar-identity">Domain 1 &bull; 1:1 & 1:N</span>
+            <i data-lucide="user-check" style="width: 18px; height: 18px; color: #70b5f9;"></i>
+          </div>
+          <div class="stat-val">Identity & Profile</div>
+          <div class="stat-desc"><code>users</code> ➔ <code>profiles</code> (1:1 auth split), <code>experiences</code>, <code>education</code>, and normalized <code>user_skills</code> + endorsements.</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-badge pillar-graph">Domain 2 &bull; M:N Graph</span>
+            <i data-lucide="network" style="width: 18px; height: 18px; color: #c084fc;"></i>
+          </div>
+          <div class="stat-val">The Social Graph</div>
+          <div class="stat-desc">Symmetric 2-way <code>connections</code> (1st/2nd/3rd degree networks) with <code>LEAST/GREATEST</code> unique index + asymmetric <code>follows</code>.</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-badge pillar-feed">Domain 3 &bull; Content & Pulse</span>
+            <i data-lucide="newspaper" style="width: 18px; height: 18px; color: #fbbf24;"></i>
+          </div>
+          <div class="stat-val">Feed & Engagement</div>
+          <div class="stat-desc"><code>posts</code>, multi-reaction telemetry (<code>LIKE, CELEBRATE, INSIGHTFUL</code>), and self-referencing threaded <code>comments</code>.</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-badge pillar-jobs">Domain 4 &bull; Enterprise & Chat</span>
+            <i data-lucide="briefcase" style="width: 18px; height: 18px; color: #34d399;"></i>
+          </div>
+          <div class="stat-val">Messaging & Recruitment</div>
+          <div class="stat-desc">Thread-centric <code>conversations</code> & <code>messages</code> + <code>companies</code>, <code>job_postings</code>, and <code>job_applications</code> pipeline.</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Navigation Toolbar -->
+    <div class="toolbar" id="main-toolbar">
+      <div class="toolbar-brand">
+        <i data-lucide="database" style="color: var(--li-blue-light);"></i>
+        LinkedIn Schema Explorer
+      </div>
+
+      <div class="tab-group" role="tablist">
+        <button class="tab-btn active" id="tab-btn-erd" onclick="switchView('view-erd', this)">
+          <i data-lucide="network" style="width: 15px; height: 15px;"></i> Enterprise ER Diagram
+        </button>
+        <button class="tab-btn" id="tab-btn-pillars" onclick="switchView('view-pillars', this)">
+          <i data-lucide="layers" style="width: 15px; height: 15px;"></i> 4 Core Domain Pillars
+        </button>
+        <button class="tab-btn" id="tab-btn-workflows" onclick="switchView('view-workflows', this)">
+          <i data-lucide="workflow" style="width: 15px; height: 15px;"></i> Workflows & Pipelines
+        </button>
+        <button class="tab-btn" id="tab-btn-matrix" onclick="switchView('view-matrix', this)">
+          <i data-lucide="table-properties" style="width: 15px; height: 15px;"></i> Relationship Matrix
+        </button>
+        <button class="tab-btn" id="tab-btn-decisions" onclick="switchView('view-decisions', this)">
+          <i data-lucide="cpu" style="width: 15px; height: 15px;"></i> Architectural Decisions
+        </button>
+        <button class="tab-btn" id="tab-btn-schema" onclick="switchView('view-schema', this)">
+          <i data-lucide="layout-grid" style="width: 15px; height: 15px;"></i> Table Dictionary (18 Tables)
+        </button>
+        <button class="tab-btn" id="tab-btn-ddl" onclick="switchView('view-ddl', this)">
+          <i data-lucide="code" style="width: 15px; height: 15px;"></i> Production SQL DDL
+        </button>
+        <button class="tab-btn" id="tab-btn-apis" onclick="switchView('view-apis', this)">
+          <i data-lucide="webhook" style="width: 15px; height: 15px;"></i> API Design (42 Endpoints)
+        </button>
+        <button class="tab-btn" id="tab-btn-infra" onclick="switchView('view-infra', this)">
+          <i data-lucide="server" style="width: 15px; height: 15px;"></i> High-Scale Capacity & Graph BFS
+        </button>
+        <button class="tab-btn" id="tab-btn-corrections" onclick="switchView('view-corrections', this)">
+          <i data-lucide="clipboard-check" style="width: 15px; height: 15px;"></i> Correction Notes
+        </button>
+        <button class="tab-btn" id="tab-btn-security" onclick="switchView('view-security', this)">
+          <i data-lucide="shield-check" style="width: 15px; height: 15px;"></i> Security Design &amp; Compliance
+        </button>
+      </div>
+    </div>
+
+    <!-- VIEW 1: Enterprise ER Diagram (Full 18 Tables) -->
+    <section id="view-erd" class="view-section active">
+      <div class="diagram-card">
+        <div class="diagram-header">
+          <div>
+            <div class="diagram-title">
+              <i data-lucide="network" style="color: var(--li-blue-light);"></i>
+              Complete LinkedIn Entity-Relationship Diagram (Mermaid.js)
+            </div>
+            <div class="diagram-sub">
+              Visualizing the complete relational ecosystem: Identity isolation, historical work & education milestones, skills taxonomy, mutual connections graph, activity feed with polymorphic reactions, threaded replies, and recruitment subsystems.
+            </div>
+          </div>
+          <span class="diagram-badge">18 RELATIONAL TABLES &bull; 4 DOMAINS</span>
+        </div>
+
+        <pre class="mermaid">
+erDiagram
+    USERS ||--|| PROFILES : "has profile (1:1)"
+    USERS ||--o{ EXPERIENCES : "has career milestones (1:N)"
+    USERS ||--o{ EDUCATION : "has degrees (1:N)"
+    USERS ||--o{ USER_SKILLS : "possesses (1:N)"
+    USERS ||--o{ POSTS : "authors (1:N)"
+    USERS ||--o{ CONNECTIONS : "initiates request (1:N)"
+    USERS ||--o{ CONNECTIONS : "receives request (1:N)"
+    USERS ||--o{ FOLLOWS : "follows target (1:N)"
+    USERS ||--o{ POST_REACTIONS : "reacts to post (1:N)"
+    USERS ||--o{ COMMENTS : "writes (1:N)"
+    USERS ||--o{ CONVERSATION_PARTICIPANTS : "participates (1:N)"
+    USERS ||--o{ MESSAGES : "sends chat (1:N)"
+    USERS ||--o{ JOB_APPLICATIONS : "applies for job (1:N)"
+    USERS ||--o{ SKILL_ENDORSEMENTS : "endorses skill (1:N)"
+
+    COMPANIES ||--o{ EXPERIENCES : "employs at (1:N)"
+    COMPANIES ||--o{ JOB_POSTINGS : "publishes (1:N)"
+    COMPANIES ||--o{ FOLLOWS : "followed by users (1:N)"
+
+    SKILLS ||--o{ USER_SKILLS : "standardizes (1:N)"
+    USER_SKILLS ||--o{ SKILL_ENDORSEMENTS : "accumulates (1:N)"
+
+    POSTS ||--o{ POST_REACTIONS : "receives reactions (1:N)"
+    POSTS ||--o{ COMMENTS : "has discussion thread (1:N)"
+    COMMENTS ||--o{ COMMENTS : "nested reply to parent (1:N)"
+
+    JOB_POSTINGS ||--o{ JOB_APPLICATIONS : "receives applicants (1:N)"
+
+    CONVERSATIONS ||--o{ CONVERSATION_PARTICIPANTS : "has active members (1:N)"
+    CONVERSATIONS ||--o{ MESSAGES : "contains message logs (1:N)"
+
+    USERS {
+        bigint user_id PK
+        string email UK
+        string password_hash
+        string status "ACTIVE, SUSPENDED, DEACTIVATED"
+        timestamp created_at
+        timestamp last_login_at
+    }
+
+    PROFILES {
+        bigint profile_id PK
+        bigint user_id FK,UK "Strict 1:1 with users"
+        string headline "e.g. Staff Software Engineer"
+        string summary "About bio section"
+        string location "City, Country"
+        string avatar_url
+        string cover_url
+        string industry
+        boolean open_to_work "Hiring signal badge"
+        timestamp updated_at
+    }
+
+    EXPERIENCES {
+        bigint exp_id PK
+        bigint user_id FK
+        bigint company_id FK "Nullable for freelance"
+        string title "Role designation"
+        string employment_type "FULL_TIME, CONTRACT"
+        string location
+        date start_date
+        date end_date "NULL if currently working"
+        boolean is_current
+        string description
+    }
+
+    EDUCATION {
+        bigint edu_id PK
+        bigint user_id FK
+        string school_name
+        string degree "e.g. Bachelor of Science"
+        string field_of_study "Computer Science"
+        int start_year
+        int end_year
+        string grade_gpa
+        string activities_societies
+    }
+
+    SKILLS {
+        bigint skill_id PK
+        string skill_name UK "Standardized lookup name"
+        string category "Engineering, Design, Leadership"
+    }
+
+    USER_SKILLS {
+        bigint id PK
+        bigint user_id FK
+        bigint skill_id FK
+        int endorsement_count "Denormalized counter"
+    }
+
+    SKILL_ENDORSEMENTS {
+        bigint endorsement_id PK
+        bigint user_skill_id FK
+        bigint endorser_id FK "Users.user_id who vouched"
+        timestamp created_at
+    }
+
+    CONNECTIONS {
+        bigint conn_id PK
+        bigint requester_id FK "Users.user_id"
+        bigint receiver_id FK "Users.user_id"
+        string status "PENDING, ACCEPTED, BLOCKED"
+        timestamp created_at
+        timestamp responded_at
+    }
+
+    FOLLOWS {
+        bigint follow_id PK
+        bigint follower_id FK "Users.user_id"
+        bigint target_id "Target entity ID"
+        string target_type "USER or COMPANY"
+        timestamp created_at
+    }
+
+    POSTS {
+        bigint post_id PK
+        bigint author_id FK "Users.user_id"
+        string content
+        string media_url "Image, Video or PDF Slide"
+        string media_type "IMAGE, VIDEO, DOCUMENT, NONE"
+        string visibility "PUBLIC, CONNECTIONS_ONLY"
+        bigint reactions_count "Denormalized counter"
+        bigint comments_count "Denormalized counter"
+        bigint shares_count "Denormalized counter"
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    POST_REACTIONS {
+        bigint react_id PK
+        bigint post_id FK
+        bigint user_id FK
+        string reaction_type "LIKE, CELEBRATE, SUPPORT, INSIGHTFUL, FUNNY"
+        timestamp created_at
+    }
+
+    COMMENTS {
+        bigint comm_id PK
+        bigint post_id FK
+        bigint user_id FK
+        bigint parent_id FK "Self-ref for nested thread (NULLable)"
+        string content
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    COMPANIES {
+        bigint company_id PK
+        string name UK
+        string industry
+        string company_size "1-10, 11-50, 500-1000, 10000+"
+        string website
+        string logo_url
+        string headquarters
+        timestamp created_at
+    }
+
+    JOB_POSTINGS {
+        bigint job_id PK
+        bigint company_id FK
+        bigint poster_id FK "Users.user_id (Recruiter)"
+        string title "Job title"
+        string description "Markdown job requirements"
+        string location "Remote / Hybrid / Onsite"
+        string workplace_type "REMOTE, HYBRID, ONSITE"
+        string salary_range "e.g. $140,000 - $180,000"
+        string status "DRAFT, ACTIVE, CLOSED"
+        timestamp created_at
+        timestamp expires_at
+    }
+
+    JOB_APPLICATIONS {
+        bigint app_id PK
+        bigint job_id FK
+        bigint user_id FK "Applicant"
+        string resume_url "S3 secure PDF link"
+        string status "SUBMITTED, REVIEWING, INTERVIEW, REJECTED, HIRED"
+        timestamp applied_at
+        timestamp updated_at
+    }
+
+    CONVERSATIONS {
+        bigint conv_id PK
+        string type "DIRECT (1:1) or GROUP"
+        string title "Group chat name (NULLable)"
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    CONVERSATION_PARTICIPANTS {
+        bigint conv_id PK,FK
+        bigint user_id PK,FK
+        timestamp joined_at
+        timestamp last_read_at "Unread counter checkpoint"
+    }
+
+    MESSAGES {
+        bigint msg_id PK
+        bigint conv_id FK
+        bigint sender_id FK
+        string body "Encrypted message text"
+        string media_url
+        timestamp sent_at
+    }
+        </pre>
+
+        <div class="callout-box">
+          <div class="callout-title">
+            <i data-lucide="compass" style="width: 18px; height: 18px;"></i>
+            How Cardinality Invariants Protect LinkedIn's Core Value
+          </div>
+          <div class="callout-desc">
+            1. <strong>Auth vs. Public Identity Isolation (1:1):</strong> <code>users.user_id &harr; profiles.user_id</code> guarantees sensitive credentials (password hashes, multi-factor secrets, audit stamps) are never leaked during read-heavy profile lookups.<br>
+            2. <strong>Reciprocal Social Graph (Symmetric M:N):</strong> <code>connections</code> enforces that professional relationship is bilateral (both agreed), protected by a compound unique constraint on <code>(LEAST(requester_id, receiver_id), GREATEST(requester_id, receiver_id))</code> to avoid redundant duplicate rows.<br>
+            3. <strong>Thread-Safe Messaging Architecture:</strong> By separating <code>conversations</code> from <code>messages</code> and bridging through <code>conversation_participants</code>, LinkedIn supports 1-on-1 InMail, recruiter outreach, and enterprise multi-party group chats seamlessly.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 2: 4 Core Domain Pillars Deep Dive -->
+    <section id="view-pillars" class="view-section">
+      <div class="diagram-card">
+        <div class="diagram-header">
+          <div>
+            <div class="diagram-title">
+              <i data-lucide="layers" style="color: var(--li-ice);"></i>
+              The 4 Architectural Pillars of LinkedIn
+            </div>
+            <div class="diagram-sub">
+              A high-level systems breakdown dissecting how each subsystem operates independently while maintaining strict relational integrity.
+            </div>
+          </div>
+        </div>
+
+        <div class="pillars-grid">
+          <!-- Pillar 1 -->
+          <div class="pillar-card">
+            <div>
+              <div class="pillar-card-header">
+                <div class="pillar-icon-box" style="background: rgba(10, 102, 194, 0.2); color: #70b5f9; border: 1px solid rgba(10, 102, 194, 0.4);">
+                  <i data-lucide="user-check"></i>
+                </div>
+                <div>
+                  <h3>1. Identity & Profile Layer</h3>
+                  <span style="font-size: 0.78rem; color: var(--text-dim); font-family: var(--font-mono);">Auth, Bio & Career History</span>
+                </div>
+              </div>
+              <p>
+                Professional credibility requires structured, chronological history. Career roles (<code>experiences</code>) reference canonical company entities to power employer search and alumni networks. <code>skills</code> are deduplicated lookup nodes to avoid fragmenting "React" and "ReactJS", while <code>skill_endorsements</code> records which 1st-degree connection vouched for that competency.
+              </p>
+            </div>
+            <div class="pillar-tag-list">
+              <span class="pillar-tag">users (1:1) profiles</span>
+              <span class="pillar-tag">users (1:N) experiences</span>
+              <span class="pillar-tag">users (1:N) education</span>
+              <span class="pillar-tag">user_skills &bull; endorsements</span>
+            </div>
+          </div>
+
+          <!-- Pillar 2 -->
+          <div class="pillar-card">
+            <div>
+              <div class="pillar-card-header">
+                <div class="pillar-icon-box" style="background: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4);">
+                  <i data-lucide="network"></i>
+                </div>
+                <div>
+                  <h3>2. The Social Graph Layer</h3>
+                  <span style="font-size: 0.78rem; color: var(--text-dim); font-family: var(--font-mono);">1st, 2nd & 3rd Degree Connections</span>
+                </div>
+              </div>
+              <p>
+                Unlike Twitter/Instagram's purely asymmetric follow graph, LinkedIn's core value rests on mutual trust. <code>connections</code> records mutual agreements with states (<code>PENDING &rarr; ACCEPTED</code>). In parallel, <code>follows</code> handles one-way broadcast subscriptions to LinkedIn Top Voices, Creators, and Enterprise Company pages.
+              </p>
+            </div>
+            <div class="pillar-tag-list">
+              <span class="pillar-tag">connections (Self-Ref M:N)</span>
+              <span class="pillar-tag">LEAST/GREATEST Unique Key</span>
+              <span class="pillar-tag">follows (Polymorphic Target)</span>
+              <span class="pillar-tag">Graph BFS Indexing</span>
+            </div>
+          </div>
+
+          <!-- Pillar 3 -->
+          <div class="pillar-card">
+            <div>
+              <div class="pillar-card-header">
+                <div class="pillar-icon-box" style="background: rgba(231, 163, 62, 0.2); color: #fbbf24; border: 1px solid rgba(231, 163, 62, 0.4);">
+                  <i data-lucide="newspaper"></i>
+                </div>
+                <div>
+                  <h3>3. Feed & Engagement Layer</h3>
+                  <span style="font-size: 0.78rem; color: var(--text-dim); font-family: var(--font-mono);">Posts, Reactions & Threaded Trees</span>
+                </div>
+              </div>
+              <p>
+                Content sharing supports text, image carousels, video, and PDF slide decks. Rather than a binary like, <code>post_reactions</code> tracks expressive business sentiments (<code>LIKE, CELEBRATE, SUPPORT, INSIGHTFUL, FUNNY</code>) with a strict <code>UNIQUE(post_id, user_id)</code> constraint. <code>comments</code> uses a self-referencing <code>parent_id</code> for nested replies.
+              </p>
+            </div>
+            <div class="pillar-tag-list">
+              <span class="pillar-tag">posts (1:N) post_reactions</span>
+              <span class="pillar-tag">Reaction Enum Telemetry</span>
+              <span class="pillar-tag">comments.parent_id (Adjacency List)</span>
+              <span class="pillar-tag">Degree-Based Feed Fanout</span>
+            </div>
+          </div>
+
+          <!-- Pillar 4 -->
+          <div class="pillar-card">
+            <div>
+              <div class="pillar-card-header">
+                <div class="pillar-icon-box" style="background: rgba(5, 118, 66, 0.25); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4);">
+                  <i data-lucide="briefcase"></i>
+                </div>
+                <div>
+                  <h3>4. Messaging & Recruitment</h3>
+                  <span style="font-size: 0.78rem; color: var(--text-dim); font-family: var(--font-mono);">Direct Messaging & Talent Pipeline</span>
+                </div>
+              </div>
+              <p>
+                Recruiters post listings via <code>job_postings</code> tied to verified <code>companies</code>. Job seekers submit applications with S3 resume references. Direct communication is handled by a thread-based architecture: <code>conversations &rarr; conversation_participants &rarr; messages</code>, enabling real-time unread badges without locking entire mailboxes.
+              </p>
+            </div>
+            <div class="pillar-tag-list">
+              <span class="pillar-tag">companies (1:N) job_postings</span>
+              <span class="pillar-tag">job_postings (1:N) applications</span>
+              <span class="pillar-tag">conversations &bull; participants</span>
+              <span class="pillar-tag">last_read_at Read Watermark</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pillar Sub-diagram: Visual Domain Architecture -->
+        <pre class="mermaid">
+graph LR
+    subgraph D1["Domain 1: Identity & Profile"]
+        U["USERS (Auth Root)"] --- P["PROFILES (1:1 Display)"]
+        U --- EXP["EXPERIENCES (1:N Roles)"]
+        U --- EDU["EDUCATION (1:N Degrees)"]
+        U --- USK["USER_SKILLS (M:N Bridge)"]
+        SK["SKILLS (Taxonomy)"] --- USK
+        USK --- ENDR["SKILL_ENDORSEMENTS (1:N)"]
+    end
+
+    subgraph D2["Domain 2: Social Graph"]
+        U --- CONN["CONNECTIONS (Mutual 1st Degree)"]
+        U --- FOL["FOLLOWS (1-Way Broadcast)"]
+    end
+
+    subgraph D3["Domain 3: Feed & Engagement"]
+        U --- PST["POSTS (Author 1:N)"]
+        PST --- REACT["POST_REACTIONS (Polymorphic Enum)"]
+        PST --- COMM["COMMENTS (Threaded parent_id)"]
+    end
+
+    subgraph D4["Domain 4: Messaging & Jobs"]
+        COMP["COMPANIES"] --- EXP
+        COMP --- JOB["JOB_POSTINGS (1:N Roles)"]
+        JOB --- APP["JOB_APPLICATIONS (1:N Resumes)"]
+        U --- APP
+        U --- CP["CONVERSATION_PARTICIPANTS"]
+        CONV["CONVERSATIONS"] --- CP
+        CONV --- MSG["MESSAGES (1:N Chat Log)"]
+    end
+
+    style U fill:#0a66c2,stroke:#70b5f9,stroke-width:2px,color:#fff
+    style P fill:#111e38,stroke:#388fe6,stroke-width:1px,color:#fff
+    style CONN fill:#4c1d95,stroke:#c084fc,stroke-width:1px,color:#fff
+    style PST fill:#78350f,stroke:#fbbf24,stroke-width:1px,color:#fff
+    style JOB fill:#064e3b,stroke:#34d399,stroke-width:1px,color:#fff
+        </pre>
+      </div>
+    </section>
+
+    <!-- VIEW 3: Workflows & Data Pipelines -->
+    <section id="view-workflows" class="view-section">
+      <!-- Workflow 1: Connection Request Lifecycle -->
+      <div class="diagram-card">
+        <div class="diagram-header">
+          <div>
+            <div class="diagram-title">
+              <i data-lucide="user-plus" style="color: var(--li-blue-light);"></i>
+              Workflow 1: Connection Request Lifecycle & Mutual Edge Formation
+            </div>
+            <div class="diagram-sub">
+              How connection invitations move from initial dispatch through receiver response, edge creation, and real-time graph index updates.
+            </div>
+          </div>
+        </div>
+
+        <pre class="mermaid">
+sequenceDiagram
+    autonumber
+    actor UserA as Requester (User A)
+    participant API as Connection API
+    participant DB as Relational DB (connections)
+    participant Graph as Social Graph Engine (Neo4j / In-Memory BFS)
+    participant Push as Notification Service
+    actor UserB as Receiver (User B)
+
+    UserA->>API: POST /api/v1/connections/request { receiver_id: B, note: "Hi, let's connect!" }
+    API->>DB: Check if connection exists (LEAST(A,B), GREATEST(A,B))
+    alt Connection already exists
+        DB-->>API: Conflict (409 Already connected / pending)
+        API-->>UserA: "Request already pending or connected"
+    else No duplicate found
+        API->>DB: INSERT INTO connections (requester_id=A, receiver_id=B, status='PENDING')
+        DB-->>API: 201 Created (conn_id)
+        API->>Push: Enqueue Push Notification & Email Alert
+        Push-->>UserB: "User A wants to connect with you!"
+        API-->>UserA: Request Sent Successfully
+    end
+
+    Note over UserB,DB: User B logs in and reviews pending invitations
+    UserB->>API: PATCH /api/v1/connections/:id/respond { action: 'ACCEPT' }
+    API->>DB: UPDATE connections SET status='ACCEPTED', responded_at=NOW() WHERE conn_id=:id
+    DB-->>API: 1 row affected
+    API->>Graph: Invalidate 1st & 2nd degree caches for User A and User B
+    API->>Push: Notify User A ("User B accepted your connection request")
+    Push-->>UserA: Push Notification: You are now connected with User B
+        </pre>
+      </div>
+
+      <!-- Workflow 2: Job Posting & Application Pipeline -->
+      <div class="diagram-card">
+        <div class="diagram-header">
+          <div>
+            <div class="diagram-title">
+              <i data-lucide="briefcase" style="color: var(--accent-emerald);"></i>
+              Workflow 2: Job Listing & Applicant Pipeline Funnel
+            </div>
+            <div class="diagram-sub">
+              From enterprise recruiter publication to candidate resume upload, ATS review stages, and candidate status tracking.
+            </div>
+          </div>
+        </div>
+
+        <pre class="mermaid">
+graph TD
+    subgraph W2_PUBLISH["1. Enterprise Job Publishing"]
+        Recruiter[Company Recruiter] -->|Publishes Opening| PostJob[POST /api/v1/jobs]
+        PostJob -->|Store Record| JobsTable[(job_postings)]
+        JobsTable -->|CDC / Kafka Stream| SearchIndex[(Elasticsearch Job Index)]
+    end
+
+    subgraph W2_APPLY["2. Candidate Discovery & Application"]
+        Candidate[Job Applicant] -->|"Searches 'Backend Engineer'"| SearchIndex
+        SearchIndex -->|Returns Filtered Roles| Candidate
+        Candidate -->|Uploads Resume PDF to S3| S3[(Amazon S3 / Storage CDN)]
+        Candidate -->|Submits Application| SubmitApp[POST /api/v1/jobs/:id/apply]
+        SubmitApp -->|INSERT application| AppTable[(job_applications)]
+    end
+
+    subgraph W2_REVIEW["3. Recruiter Review & Status Pipeline"]
+        AppTable -->|Dashboard View| RecruiterView[Recruiter ATS Dashboard]
+        RecruiterView -->|Status: REVIEWING| AppTable
+        RecruiterView -->|Status: INTERVIEW| AppTable
+        RecruiterView -->|Status: HIRED or REJECTED| AppTable
+        AppTable -->|Trigger Alert| NotifyCandidate[Email & In-App Notification]
+        NotifyCandidate --> Candidate
+    end
+
+    style JobsTable fill:#004182,stroke:#70b5f9,color:#fff
+    style AppTable fill:#064e3b,stroke:#34d399,color:#fff
+    style SearchIndex fill:#78350f,stroke:#fbbf24,color:#fff
+        </pre>
+      </div>
+
+      <!-- Workflow 3: Feed Fanout & Algorithmic Ranking -->
+      <div class="diagram-card">
+        <div class="diagram-header">
+          <div>
+            <div class="diagram-title">
+              <i data-lucide="rss" style="color: var(--accent-gold);"></i>
+              Workflow 3: Feed Publishing & Hybrid Push/Pull Fanout
+            </div>
+            <div class="diagram-sub">
+              How a new post is ingested, decomposed into fanout events across 1st-degree connections and followers, and ranked for timeline retrieval.
+            </div>
+          </div>
+        </div>
+
+        <pre class="mermaid">
+flowchart TD
+    Author[Author Creates Post] -->|POST /api/v1/posts| Ingest[Feed Ingestion API]
+    Ingest -->|Write Master Record| PostsTable[(posts Table)]
+    Ingest -->|Publish Event| KafkaTopic[Kafka Topic: post.created]
+
+    KafkaTopic --> FanoutWorker[Feed Fanout Consumer Service]
+
+    FanoutWorker --> CheckAudience{Author Follower Count?}
+    
+    CheckAudience -->|"Fewer than 25,000 Connections (Push Model)"| PushPath[Push Model: Pre-materialize]
+    CheckAudience -->|"25,000 or more Connections (Celebrity Pull)"| PullPath[Pull Model: On-Demand Fetch]
+
+    PushPath --> QueryGraph[Query 1st-Degree Connections & Followers]
+    QueryGraph --> WriteTimelines[(Write to Redis Timeline Lists of Connections)]
+
+    PullPath --> FlagVIP[Flag as VIP Post in Redis Cache]
+
+    Reader[Connected User Opens App] -->|GET /api/v1/feed| TimelineAPI[Timeline Retrieval Service]
+    TimelineAPI --> ReadCache[Read Pre-computed Timeline from Redis]
+    TimelineAPI --> MergeVIP[Merge Active VIP Posts into Candidate Pool]
+    MergeVIP --> MLRanking[ML Scoring Engine: Relevance, Freshness & Degree Weight]
+    MLRanking --> FinalFeed[Return Ranked Feed JSON to Client]
+
+    style PostsTable fill:#004182,stroke:#70b5f9,color:#fff
+    style KafkaTopic fill:#4c1d95,stroke:#c084fc,color:#fff
+    style WriteTimelines fill:#78350f,stroke:#fbbf24,color:#fff
+        </pre>
+      </div>
+    </section>
+
+    <!-- VIEW 4: Relationship Matrix & Cardinality Rules -->
+    <section id="view-matrix" class="view-section">
+      <div class="diagram-card">
+        <div class="diagram-header">
+          <div>
+            <div class="diagram-title">
+              <i data-lucide="table-properties" style="color: var(--li-ice);"></i>
+              Comprehensive Relational Matrix & Cardinality Rules
+            </div>
+            <div class="diagram-sub">
+              Mapping primary keys, foreign keys, cascade delete policies, and the business rationale governing every entity relationship.
+            </div>
+          </div>
+        </div>
+
+        <div class="rel-table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Parent Entity</th>
+                <th>Child Entity</th>
+                <th style="width: 140px;">Cardinality</th>
+                <th>Foreign Key (FK) Field</th>
+                <th>ON DELETE Action</th>
+                <th>Business Invariant & System Behavior</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>users</code></td>
+                <td><code>profiles</code></td>
+                <td><span class="badge-cardinality one-to-one">1 : 1</span></td>
+                <td><code>profiles.user_id</code></td>
+                <td><code>CASCADE</code></td>
+                <td>Every user has exactly one public profile. Deleting account deletes profile instantly.</td>
+              </tr>
+              <tr>
+                <td><code>users</code></td>
+                <td><code>experiences</code></td>
+                <td><span class="badge-cardinality one-to-many">1 : N</span></td>
+                <td><code>experiences.user_id</code></td>
+                <td><code>CASCADE</code></td>
+                <td>A professional records multiple past and present roles chronologically.</td>
+              </tr>
+              <tr>
+                <td><code>companies</code></td>
+                <td><code>experiences</code></td>
+                <td><span class="badge-cardinality one-to-many">1 : N</span></td>
+                <td><code>experiences.company_id</code></td>
+                <td><code>SET NULL</code></td>
+                <td>Roles link to canonical company pages. If a company deletes its page, historical work experience remains intact.</td>
+              </tr>
+              <tr>
+                <td><code>users</code></td>
+                <td><code>education</code></td>
+                <td><span class="badge-cardinality one-to-many">1 : N</span></td>
+                <td><code>education.user_id</code></td>
+                <td><code>CASCADE</code></td>
+                <td>A user lists all degrees, universities, certifications, and graduation cohorts.</td>
+              </tr>
+              <tr>
+                <td><code>users</code></td>
+                <td><code>user_skills</code></td>
+                <td><span class="badge-cardinality one-to-many">1 : N</span></td>
+                <td><code>user_skills.user_id</code></td>
+                <td><code>CASCADE</code></td>
+                <td>Bridge table linking users to standardized skill IDs.</td>
+              </tr>
+              <tr>
+                <td><code>skills</code></td>
+                <td><code>user_skills</code></td>
+                <td><span class="badge-cardinality one-to-many">1 : N</span></td>
+                <td><code>user_skills.skill_id</code></td>
+                <td><code>RESTRICT</code></td>
+                <td>Standard taxonomy terms (e.g. "Distributed Systems") cannot be deleted if active profiles claim them.</td>
+              </tr>
+              <tr>
+                <td><code>user_skills</code></td>
+                <td><code>skill_endorsements</code></td>
+                <td><span class="badge-cardinality one-to-many">1 : N</span></td>
+                <td><code>skill_endorsements.user_skill_id</code></td>
+                <td><code>CASCADE</code></td>
+                <td>Audit table tracking which 1st-degree connection endorsed a specific skill.</td>
+              </tr>
+              <tr>
+                <td><code>users</code></td>
+                <td><code>connections</code></td>
+                <td><span class="badge-cardinality many-to-many">Self-Ref M:N</span></td>
+                <td><code>requester_id, receiver_id</code></td>
+                <td><code>CASCADE</code></td>
+                <td>Represents two-way professional edges. Compound unique index enforces single reciprocal entry.</td>
+              </tr>
+              <tr>
+                <td><code>users</code></td>
+                <td><code>follows</code></td>
+                <td><span class="badge-cardinality many-to-many">M : N</span></td>
+                <td><code>follower_id, target_id</code></td>
+                <td><code>CASCADE</code></td>
+                <td>Asymmetric one-way follow relationship for Public Figures and Company business pages.</td>
+              </tr>
+              <tr>
+                <td><code>users</code></td>
+                <td><code>posts</code></td>
+                <td><span class="badge-cardinality one-to-many">1 : N</span></td>
+                <td><code>posts.author_id</code></td>
+                <td><code>CASCADE</code></td>
+                <td>A professional writes multiple feed articles, status posts, documents, or media updates.</td>
+              </tr>
+              <tr>
+                <td><code>posts</code></td>
+                <td><code>post_reactions</code></td>
+                <td><span class="badge-cardinality one-to-many">1 : N</span></td>
+                <td><code>post_reactions.post_id</code></td>
+                <td><code>CASCADE</code></td>
+                <td>Users can apply one of 5 reactions (<code>LIKE, CELEBRATE, SUPPORT, INSIGHTFUL, FUNNY</code>).</td>
+              </tr>
+              <tr>
+                <td><code>posts</code></td>
+                <td><code>comments</code></td>
+                <td><span class="badge-cardinality one-to-many">1 : N</span></td>
+                <td><code>comments.post_id</code></td>
+                <td><code>CASCADE</code></td>
+                <td>Post author and network discuss content. Deleting post purges whole comment discussion.</td>
+              </tr>
+              <tr>
+                <td><code>comments</code></td>
+                <td><code>comments</code></td>
+                <td><span class="badge-cardinality self-ref">Self-Ref 1:N</span></td>
+                <td><code>comments.parent_id</code></td>
+                <td><code>CASCADE</code></td>
+                <td>Adjacency list allowing nested hierarchical replies to top-level comments.</td>
+              </tr>
+              <tr>
+                <td><code>companies</code></td>
+                <td><code>job_postings</code></td>
+                <td><span class="badge-cardinality one-to-many">1 : N</span></td>
+                <td><code>job_postings.company_id</code></td>
+                <td><code>CASCADE</code></td>
+                <td>An employer lists multiple open positions across global office hubs.</td>
+              </tr>
+              <tr>
+                <td><code>job_postings</code></td>
+                <td><code>job_applications</code></td>
+                <td><span class="badge-cardinality one-to-many">1 : N</span></td>
+                <td><code>job_applications.job_id</code></td>
+                <td><code>RESTRICT</code></td>
+                <td>Candidates submit resumes for open postings. Cannot delete open job if pending applicant records exist.</td>
+              </tr>
+              <tr>
+                <td><code>conversations</code></td>
+                <td><code>conversation_participants</code></td>
+                <td><span class="badge-cardinality one-to-many">1 : N</span></td>
+                <td><code>conversation_participants.conv_id</code></td>
+                <td><code>CASCADE</code></td>
+                <td>Thread membership junction table storing user membership and individual read watermarks.</td>
+              </tr>
+              <tr>
+                <td><code>conversations</code></td>
+                <td><code>messages</code></td>
+                <td><span class="badge-cardinality one-to-many">1 : N</span></td>
+                <td><code>messages.conv_id</code></td>
+                <td><code>CASCADE</code></td>
+                <td>Immutable chronological chat history log stored inside thread context.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 5: Architectural Decisions & Tradeoffs -->
+    <section id="view-decisions" class="view-section">
+      <div class="diagram-card">
+        <div class="diagram-header">
+          <div>
+            <div class="diagram-title">
+              <i data-lucide="cpu" style="color: var(--li-ice);"></i>
+              Critical Architectural Decisions & Engineering Tradeoffs
+            </div>
+            <div class="diagram-sub">
+              Deep-dive into why LinkedIn's schema is structured this way rather than naive monolithic or NoSQL approaches.
+            </div>
+          </div>
+        </div>
+
+        <div class="decision-grid">
+          <!-- Decision 1 -->
+          <div class="decision-card">
+            <div class="decision-title">
+              <i data-lucide="shield" style="color: #70b5f9;"></i>
+              1. Splitting `users` & `profiles` into a 1:1 Relationship
+            </div>
+            <div class="decision-box">
+              <h4>Option A: Single Monolithic `users` Table</h4>
+              <p>Stating credentials, emails, passwords alongside headlines, bios, locations, and profile avatars in one wide row.</p>
+            </div>
+            <div class="decision-box">
+              <h4>Option B: Strict 1:1 Normalized Separation (Selected)</h4>
+              <p><code>users</code> contains only sensitive auth & security fields. <code>profiles</code> contains public presentation data with a unique <code>user_id</code> foreign key.</p>
+            </div>
+            <div class="decision-verdict">
+              <i data-lucide="check-circle" style="width: 18px; height: 18px;"></i>
+              Verdict: Security Isolation & Cache Efficiency. Public profile reads never touch password hash memory, and profiles can be heavily cached in Redis without risking auth data leakage.
+            </div>
+          </div>
+
+          <!-- Decision 2 -->
+          <div class="decision-card">
+            <div class="decision-title">
+              <i data-lucide="share-2" style="color: #c084fc;"></i>
+              2. Mutual Connections vs. Asymmetric Follows
+            </div>
+            <div class="decision-box">
+              <h4>Option A: Single Generic `follows` Table</h4>
+              <p>Treating every relationship as a directional follow, requiring two rows (A&rarr;B and B&rarr;A) to represent a mutual connection.</p>
+            </div>
+            <div class="decision-box">
+              <h4>Option B: Dedicated `connections` + `follows` Models (Selected)</h4>
+              <p><code>connections</code> enforces reciprocal state (<code>PENDING &rarr; ACCEPTED</code>) with a composite unique key <code>(LEAST(A,B), GREATEST(A,B))</code>. <code>follows</code> handles one-way following for public figures and companies.</p>
+            </div>
+            <div class="decision-verdict">
+              <i data-lucide="check-circle" style="width: 18px; height: 18px;"></i>
+              Verdict: Half the Storage & Zero Inconsistent States. Prevents orphaned one-way "half-connections" while maintaining distinct business rules for networking vs. content broadcasting.
+            </div>
+          </div>
+
+          <!-- Decision 3 -->
+          <div class="decision-card">
+            <div class="decision-title">
+              <i data-lucide="message-square" style="color: #fbbf24;"></i>
+              3. Threaded Comments: Adjacency List vs. Materialized Path
+            </div>
+            <div class="decision-box">
+              <h4>Option A: Nested Sets or Closure Tables</h4>
+              <p>Requires complex recursive triggers and heavy index rebalancing whenever a user inserts a reply in a popular viral thread.</p>
+            </div>
+            <div class="decision-box">
+              <h4>Option B: Adjacency List with `parent_id` + Max Depth Cap (Selected)</h4>
+              <p><code>comments.parent_id</code> self-references the root comment. LinkedIn restricts UI nesting to 2 levels (Top Comment &rarr; Replies). Deeper replies are flattened visually.</p>
+            </div>
+            <div class="decision-verdict">
+              <i data-lucide="check-circle" style="width: 18px; height: 18px;"></i>
+              Verdict: Maximum Write Throughput. Single <code>WHERE post_id = ? AND parent_id IS NULL</code> query loads root comments; replies are loaded asynchronously on demand without complex tree traversal.
+            </div>
+          </div>
+
+          <!-- Decision 4 -->
+          <div class="decision-card">
+            <div class="decision-title">
+              <i data-lucide="send" style="color: #34d399;"></i>
+              4. Messaging: Thread-Centric vs. Flat Sender/Receiver
+            </div>
+            <div class="decision-box">
+              <h4>Option A: Flat Messages Table (sender_id, receiver_id)</h4>
+              <p>Every query to compute an inbox must execute <code>WHERE sender_id = X OR receiver_id = X GROUP BY GREATEST/LEAST</code>, failing completely for 3+ person group chats.</p>
+            </div>
+            <div class="decision-box">
+              <h4>Option B: 3-Tier Model: Conversations, Participants, Messages (Selected)</h4>
+              <p><code>conversations</code> holds thread metadata; <code>conversation_participants</code> tracks each member's <code>last_read_at</code> timestamp; <code>messages</code> references <code>conv_id</code>.</p>
+            </div>
+            <div class="decision-verdict">
+              <i data-lucide="check-circle" style="width: 18px; height: 18px;"></i>
+              Verdict: High-Scale Unread Badges & Native Group Chats. Calculating unread count is a blazing fast <code>COUNT(*) WHERE conv_id = ? AND sent_at > last_read_at</code>.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 6: Table Dictionary -->
+    <section id="view-schema" class="view-section">
+      <div class="diagram-card">
+        <div class="diagram-header">
+          <div>
+            <div class="diagram-title">
+              <i data-lucide="layout-grid" style="color: var(--li-ice);"></i>
+              Complete Enterprise Table Dictionary (18 Tables)
+            </div>
+            <div class="diagram-sub">
+              Granular technical reference of all schema tables, fields, constraints, types, and operational notes.
+            </div>
+          </div>
+        </div>
+
+        <div class="schema-grid">
+          <!-- 1. users -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="table-name"><i data-lucide="user"></i> users</div>
+              <span class="table-category-tag identity">Domain 1</span>
+            </div>
+            <div class="table-purpose">Core security credentials and account lifecycle states</div>
+            <ul class="field-list">
+              <li class="field-item"><div class="field-left"><span class="field-name">user_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">email</span> <span class="tag-uk">UK</span></div><span class="field-type">VARCHAR(255)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">password_hash</span></div><span class="field-type">VARCHAR(255)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">status</span></div><span class="field-type">ENUM('ACTIVE','SUSPENDED','DEACTIVATED')</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">created_at</span></div><span class="field-type">TIMESTAMP</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">last_login_at</span></div><span class="field-type">TIMESTAMP</span></li>
+            </ul>
+          </div>
+
+          <!-- 2. profiles -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="table-name"><i data-lucide="badge-check"></i> profiles</div>
+              <span class="table-category-tag identity">Domain 1</span>
+            </div>
+            <div class="table-purpose">Public professional presentation details (1:1 with users)</div>
+            <ul class="field-list">
+              <li class="field-item"><div class="field-left"><span class="field-name">profile_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">user_id</span> <span class="tag-fk">FK</span> <span class="tag-uk">UK</span></div><span class="field-type">BIGINT UNIQUE</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">headline</span></div><span class="field-type">VARCHAR(220)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">summary</span></div><span class="field-type">TEXT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">location</span></div><span class="field-type">VARCHAR(120)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">avatar_url</span></div><span class="field-type">VARCHAR(512)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">cover_url</span></div><span class="field-type">VARCHAR(512)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">industry</span></div><span class="field-type">VARCHAR(100)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">open_to_work</span></div><span class="field-type">BOOLEAN</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">updated_at</span></div><span class="field-type">TIMESTAMP</span></li>
+            </ul>
+          </div>
+
+          <!-- 3. experiences -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="table-name"><i data-lucide="briefcase"></i> experiences</div>
+              <span class="table-category-tag identity">Domain 1</span>
+            </div>
+            <div class="table-purpose">Historical and current career roles held by the user</div>
+            <ul class="field-list">
+              <li class="field-item"><div class="field-left"><span class="field-name">exp_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">user_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">company_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT NULLABLE</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">title</span></div><span class="field-type">VARCHAR(150)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">employment_type</span></div><span class="field-type">VARCHAR(50)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">location</span></div><span class="field-type">VARCHAR(120)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">start_date</span></div><span class="field-type">DATE</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">end_date</span></div><span class="field-type">DATE NULLABLE</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">is_current</span></div><span class="field-type">BOOLEAN</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">description</span></div><span class="field-type">TEXT</span></li>
+            </ul>
+          </div>
+
+          <!-- 4. education -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="table-name"><i data-lucide="graduation-cap"></i> education</div>
+              <span class="table-category-tag identity">Domain 1</span>
+            </div>
+            <div class="table-purpose">Academic degrees, universities, and graduation credentials</div>
+            <ul class="field-list">
+              <li class="field-item"><div class="field-left"><span class="field-name">edu_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">user_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">school_name</span></div><span class="field-type">VARCHAR(200)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">degree</span></div><span class="field-type">VARCHAR(150)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">field_of_study</span></div><span class="field-type">VARCHAR(150)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">start_year</span></div><span class="field-type">SMALLINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">end_year</span></div><span class="field-type">SMALLINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">grade_gpa</span></div><span class="field-type">VARCHAR(50)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">activities_societies</span></div><span class="field-type">TEXT</span></li>
+            </ul>
+          </div>
+
+          <!-- 5. skills -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="table-name"><i data-lucide="tag"></i> skills</div>
+              <span class="table-category-tag identity">Domain 1</span>
+            </div>
+            <div class="table-purpose">Canonical master lookup table of standardized skills</div>
+            <ul class="field-list">
+              <li class="field-item"><div class="field-left"><span class="field-name">skill_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">skill_name</span> <span class="tag-uk">UK</span></div><span class="field-type">VARCHAR(100) UNIQUE</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">category</span></div><span class="field-type">VARCHAR(80)</span></li>
+            </ul>
+          </div>
+
+          <!-- 6. user_skills -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="table-name"><i data-lucide="award"></i> user_skills</div>
+              <span class="table-category-tag identity">Domain 1</span>
+            </div>
+            <div class="table-purpose">Bridge joining users to skills with endorsement count caching</div>
+            <ul class="field-list">
+              <li class="field-item"><div class="field-left"><span class="field-name">id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">user_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">skill_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">endorsement_count</span></div><span class="field-type">INT DEFAULT 0</span></li>
+            </ul>
+          </div>
+
+          <!-- 7. skill_endorsements -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="table-name"><i data-lucide="thumbs-up"></i> skill_endorsements</div>
+              <span class="table-category-tag identity">Domain 1</span>
+            </div>
+            <div class="table-purpose">Audit trail tracking which connection endorsed which skill</div>
+            <ul class="field-list">
+              <li class="field-item"><div class="field-left"><span class="field-name">endorsement_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">user_skill_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">endorser_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">created_at</span></div><span class="field-type">TIMESTAMP</span></li>
+            </ul>
+          </div>
+
+          <!-- 8. connections -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="table-name"><i data-lucide="users"></i> connections</div>
+              <span class="table-category-tag graph">Domain 2</span>
+            </div>
+            <div class="table-purpose">Two-way mutual social graph connections with status tracking</div>
+            <ul class="field-list">
+              <li class="field-item"><div class="field-left"><span class="field-name">conn_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">requester_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">receiver_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">status</span></div><span class="field-type">ENUM('PENDING','ACCEPTED','BLOCKED')</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">created_at</span></div><span class="field-type">TIMESTAMP</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">responded_at</span></div><span class="field-type">TIMESTAMP NULLABLE</span></li>
+            </ul>
+          </div>
+
+          <!-- 9. follows -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="table-name"><i data-lucide="rss"></i> follows</div>
+              <span class="table-category-tag graph">Domain 2</span>
+            </div>
+            <div class="table-purpose">One-way broadcast subscriptions for creators and companies</div>
+            <ul class="field-list">
+              <li class="field-item"><div class="field-left"><span class="field-name">follow_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">follower_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">target_id</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">target_type</span></div><span class="field-type">ENUM('USER','COMPANY')</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">created_at</span></div><span class="field-type">TIMESTAMP</span></li>
+            </ul>
+          </div>
+
+          <!-- 10. posts -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="table-name"><i data-lucide="edit-3"></i> posts</div>
+              <span class="table-category-tag feed">Domain 3</span>
+            </div>
+            <div class="table-purpose">Author feed articles, document carousels, and media updates</div>
+            <ul class="field-list">
+              <li class="field-item"><div class="field-left"><span class="field-name">post_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">author_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">content</span></div><span class="field-type">TEXT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">media_url</span></div><span class="field-type">VARCHAR(512)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">media_type</span></div><span class="field-type">ENUM('IMAGE','VIDEO','DOCUMENT','NONE')</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">visibility</span></div><span class="field-type">ENUM('PUBLIC','CONNECTIONS_ONLY')</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">reactions_count</span></div><span class="field-type">INT DEFAULT 0</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">comments_count</span></div><span class="field-type">INT DEFAULT 0</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">shares_count</span></div><span class="field-type">INT DEFAULT 0</span></li>
+            </ul>
+          </div>
+
+          <!-- 11. post_reactions -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="table-name"><i data-lucide="heart"></i> post_reactions</div>
+              <span class="table-category-tag feed">Domain 3</span>
+            </div>
+            <div class="table-purpose">Reaction telemetry supporting Like, Celebrate, Insightful, etc.</div>
+            <ul class="field-list">
+              <li class="field-item"><div class="field-left"><span class="field-name">react_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">post_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">user_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">reaction_type</span></div><span class="field-type">ENUM('LIKE','CELEBRATE','SUPPORT','INSIGHTFUL','FUNNY')</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">created_at</span></div><span class="field-type">TIMESTAMP</span></li>
+            </ul>
+          </div>
+
+          <!-- 12. comments -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="table-name"><i data-lucide="message-circle"></i> comments</div>
+              <span class="table-category-tag feed">Domain 3</span>
+            </div>
+            <div class="table-purpose">Threaded comments supporting replies via parent_id self-ref</div>
+            <ul class="field-list">
+              <li class="field-item"><div class="field-left"><span class="field-name">comm_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">post_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">user_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">parent_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT NULLABLE</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">content</span></div><span class="field-type">TEXT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">created_at</span></div><span class="field-type">TIMESTAMP</span></li>
+            </ul>
+          </div>
+
+          <!-- 13. companies -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="table-name"><i data-lucide="building"></i> companies</div>
+              <span class="table-category-tag jobs">Domain 4</span>
+            </div>
+            <div class="table-purpose">Verified enterprise company profiles and employer branding</div>
+            <ul class="field-list">
+              <li class="field-item"><div class="field-left"><span class="field-name">company_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">name</span> <span class="tag-uk">UK</span></div><span class="field-type">VARCHAR(200) UNIQUE</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">industry</span></div><span class="field-type">VARCHAR(100)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">company_size</span></div><span class="field-type">VARCHAR(50)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">website</span></div><span class="field-type">VARCHAR(255)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">logo_url</span></div><span class="field-type">VARCHAR(512)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">headquarters</span></div><span class="field-type">VARCHAR(150)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">created_at</span></div><span class="field-type">TIMESTAMP</span></li>
+            </ul>
+          </div>
+
+          <!-- 14. job_postings -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="table-name"><i data-lucide="briefcase"></i> job_postings</div>
+              <span class="table-category-tag jobs">Domain 4</span>
+            </div>
+            <div class="table-purpose">Open recruitment listings published by hiring managers</div>
+            <ul class="field-list">
+              <li class="field-item"><div class="field-left"><span class="field-name">job_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">company_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">poster_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">title</span></div><span class="field-type">VARCHAR(180)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">description</span></div><span class="field-type">TEXT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">location</span></div><span class="field-type">VARCHAR(120)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">workplace_type</span></div><span class="field-type">ENUM('REMOTE','HYBRID','ONSITE')</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">salary_range</span></div><span class="field-type">VARCHAR(100)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">status</span></div><span class="field-type">ENUM('DRAFT','ACTIVE','CLOSED')</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">created_at</span></div><span class="field-type">TIMESTAMP</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">expires_at</span></div><span class="field-type">TIMESTAMP NULLABLE</span></li>
+            </ul>
+          </div>
+
+          <!-- 15. job_applications -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="table-name"><i data-lucide="file-text"></i> job_applications</div>
+              <span class="table-category-tag jobs">Domain 4</span>
+            </div>
+            <div class="table-purpose">Candidate resume submissions and recruitment stage funnel</div>
+            <ul class="field-list">
+              <li class="field-item"><div class="field-left"><span class="field-name">app_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">job_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">user_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">resume_url</span></div><span class="field-type">VARCHAR(512)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">status</span></div><span class="field-type">ENUM('SUBMITTED','REVIEWING','INTERVIEW','REJECTED','HIRED')</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">applied_at</span></div><span class="field-type">TIMESTAMP</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">updated_at</span></div><span class="field-type">TIMESTAMP</span></li>
+            </ul>
+          </div>
+
+          <!-- 16. conversations -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="table-name"><i data-lucide="messages-square"></i> conversations</div>
+              <span class="table-category-tag chat">Domain 4</span>
+            </div>
+            <div class="table-purpose">Chat thread root supporting 1-on-1 InMail & group messaging</div>
+            <ul class="field-list">
+              <li class="field-item"><div class="field-left"><span class="field-name">conv_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">type</span></div><span class="field-type">ENUM('DIRECT','GROUP')</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">title</span></div><span class="field-type">VARCHAR(150) NULLABLE</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">created_at</span></div><span class="field-type">TIMESTAMP</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">updated_at</span></div><span class="field-type">TIMESTAMP</span></li>
+            </ul>
+          </div>
+
+          <!-- 17. conversation_participants -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="table-name"><i data-lucide="user-check"></i> conversation_participants</div>
+              <span class="table-category-tag chat">Domain 4</span>
+            </div>
+            <div class="table-purpose">Thread participants bridge storing per-member read watermarks</div>
+            <ul class="field-list">
+              <li class="field-item"><div class="field-left"><span class="field-name">conv_id</span> <span class="tag-pk">PK</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">user_id</span> <span class="tag-pk">PK</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">joined_at</span></div><span class="field-type">TIMESTAMP</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">last_read_at</span></div><span class="field-type">TIMESTAMP</span></li>
+            </ul>
+          </div>
+
+          <!-- 18. messages -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="table-name"><i data-lucide="mail"></i> messages</div>
+              <span class="table-category-tag chat">Domain 4</span>
+            </div>
+            <div class="table-purpose">Chronological chat messages sent inside a conversation thread</div>
+            <ul class="field-list">
+              <li class="field-item"><div class="field-left"><span class="field-name">msg_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">conv_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">sender_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">body</span></div><span class="field-type">TEXT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">media_url</span></div><span class="field-type">VARCHAR(512) NULLABLE</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">sent_at</span></div><span class="field-type">TIMESTAMP</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 7: Production SQL DDL -->
+    <section id="view-ddl" class="view-section">
+      <div class="diagram-card">
+        <div class="diagram-header">
+          <div>
+            <div class="diagram-title">
+              <i data-lucide="code" style="color: var(--li-ice);"></i>
+              Production SQL DDL Schema (PostgreSQL / MySQL 8+)
+            </div>
+            <div class="diagram-sub">
+              Complete syntax-validated script featuring Primary Keys, Foreign Keys with strict cascading, composite Unique Constraints, and B-Tree Performance Indexes.
+            </div>
+          </div>
+        </div>
+
+        <div class="sql-code-block">
+          <button class="copy-btn" onclick="copySqlCode()">
+            <i data-lucide="copy" style="width: 14px; height: 14px;"></i> Copy SQL
+          </button>
+          <pre id="sql-script"><code>-- ============================================================================
+-- LINKEDIN PRODUCTION DATABASE SCHEMA (POSTGRESQL FLAGSHIP)
+-- PORTABILITY: the syntax below is PostgreSQL-native (BIGSERIAL, functional
+-- indexes, partial indexes). For MySQL 8.0+ swap BIGSERIAL -> BIGINT
+-- AUTO_INCREMENT and follow the inline MySQL notes (generated-column unique key).
+-- DOMAINS: IDENTITY & PROFILE | SOCIAL GRAPH | FEED & ENGAGEMENT | JOBS & CHAT
+-- ============================================================================
+
+-- 1. IDENTITY & PROFILE LAYER
+CREATE TABLE users (
+    user_id BIGSERIAL PRIMARY KEY,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE', 'SUSPENDED', 'DEACTIVATED')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    last_login_at TIMESTAMP WITH TIME ZONE
+);
+
+CREATE TABLE profiles (
+    profile_id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL UNIQUE REFERENCES users(user_id) ON DELETE CASCADE,
+    headline VARCHAR(220) DEFAULT '',
+    summary TEXT,
+    location VARCHAR(120),
+    avatar_url VARCHAR(512),
+    cover_url VARCHAR(512),
+    industry VARCHAR(100),
+    open_to_work BOOLEAN DEFAULT FALSE,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE companies (
+    company_id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(200) NOT NULL UNIQUE,
+    industry VARCHAR(100) NOT NULL,
+    company_size VARCHAR(50) DEFAULT '11-50',
+    website VARCHAR(255),
+    logo_url VARCHAR(512),
+    headquarters VARCHAR(150),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE experiences (
+    exp_id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    company_id BIGINT REFERENCES companies(company_id) ON DELETE SET NULL,
+    title VARCHAR(150) NOT NULL,
+    employment_type VARCHAR(50) DEFAULT 'FULL_TIME',
+    location VARCHAR(120),
+    start_date DATE NOT NULL,
+    end_date DATE,
+    is_current BOOLEAN DEFAULT FALSE,
+    description TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE education (
+    edu_id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    school_name VARCHAR(200) NOT NULL,
+    degree VARCHAR(150),
+    field_of_study VARCHAR(150),
+    start_year SMALLINT,
+    end_year SMALLINT,
+    grade_gpa VARCHAR(50),
+    activities_societies TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT chk_edu_years CHECK (end_year IS NULL OR start_year IS NULL OR end_year >= start_year)
+);
+
+CREATE TABLE skills (
+    skill_id BIGSERIAL PRIMARY KEY,
+    skill_name VARCHAR(100) NOT NULL UNIQUE,
+    category VARCHAR(80) DEFAULT 'General'
+);
+
+CREATE TABLE user_skills (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    skill_id BIGINT NOT NULL REFERENCES skills(skill_id) ON DELETE RESTRICT,
+    endorsement_count INT DEFAULT 0,
+    CONSTRAINT uq_user_skill UNIQUE (user_id, skill_id)
+);
+
+CREATE TABLE skill_endorsements (
+    endorsement_id BIGSERIAL PRIMARY KEY,
+    user_skill_id BIGINT NOT NULL REFERENCES user_skills(id) ON DELETE CASCADE,
+    endorser_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_single_endorsement UNIQUE (user_skill_id, endorser_id)
+);
+
+-- 2. THE SOCIAL GRAPH LAYER
+CREATE TABLE connections (
+    conn_id BIGSERIAL PRIMARY KEY,
+    requester_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    receiver_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    status VARCHAR(20) NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'ACCEPTED', 'BLOCKED')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    responded_at TIMESTAMP WITH TIME ZONE,
+    CONSTRAINT chk_no_self_connection CHECK (requester_id <> receiver_id)
+);
+
+-- Single Reciprocal Row Enforcement: Prevents (A,B) and (B,A) duplicates.
+-- NOTE (PostgreSQL): functional indexes like the one below are native.
+CREATE UNIQUE INDEX uq_canonical_connection
+ON connections (LEAST(requester_id, receiver_id), GREATEST(requester_id, receiver_id));
+-- MySQL 8.0.13+ port: functional indexes are not supported on raw expressions,
+-- so expose the canonical pair as STORED generated columns and index those.
+-- ALTER TABLE connections
+--   ADD COLUMN user_low  BIGINT AS (LEAST(requester_id, receiver_id)) STORED,
+--   ADD COLUMN user_high BIGINT AS (GREATEST(requester_id, receiver_id)) STORED,
+--   ADD UNIQUE KEY uq_canonical_connection (user_low, user_high);
+
+CREATE TABLE follows (
+    follow_id BIGSERIAL PRIMARY KEY,
+    follower_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    target_id BIGINT NOT NULL,
+    target_type VARCHAR(20) NOT NULL CHECK (target_type IN ('USER', 'COMPANY')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_follow_pair UNIQUE (follower_id, target_id, target_type)
+    -- NOTE: target_id is a polymorphic reference (USER or COMPANY); a hard FK
+    -- cannot be declared. Referential integrity MUST be enforced in the service
+    -- layer, OR model user_follows / company_follows as two typed FK tables.
+);
+
+-- 3. FEED & ENGAGEMENT LAYER
+CREATE TABLE posts (
+    post_id BIGSERIAL PRIMARY KEY,
+    author_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    content TEXT NOT NULL,
+    media_url VARCHAR(512),
+    media_type VARCHAR(20) DEFAULT 'NONE' CHECK (media_type IN ('IMAGE', 'VIDEO', 'DOCUMENT', 'NONE')),
+    visibility VARCHAR(20) DEFAULT 'PUBLIC' CHECK (visibility IN ('PUBLIC', 'CONNECTIONS_ONLY')),
+    reactions_count INT DEFAULT 0,
+    comments_count INT DEFAULT 0,
+    shares_count INT DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE post_reactions (
+    react_id BIGSERIAL PRIMARY KEY,
+    post_id BIGINT NOT NULL REFERENCES posts(post_id) ON DELETE CASCADE,
+    user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    reaction_type VARCHAR(20) NOT NULL CHECK (reaction_type IN ('LIKE', 'CELEBRATE', 'SUPPORT', 'INSIGHTFUL', 'FUNNY')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_user_post_reaction UNIQUE (post_id, user_id)
+);
+
+CREATE TABLE comments (
+    comm_id BIGSERIAL PRIMARY KEY,
+    post_id BIGINT NOT NULL REFERENCES posts(post_id) ON DELETE CASCADE,
+    user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    parent_id BIGINT,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    -- Composite unique enables the self-FK below to also pin parent's post_id,
+    -- preventing a reply from attaching to a comment on a DIFFERENT post.
+    CONSTRAINT uq_comment_post UNIQUE (comm_id, post_id),
+    CONSTRAINT fk_comment_parent
+        FOREIGN KEY (parent_id, post_id)
+        REFERENCES comments (comm_id, post_id)
+        ON DELETE CASCADE
+);
+
+-- 4. JOBS & RECRUITMENT SUBSYSTEM
+CREATE TABLE job_postings (
+    job_id BIGSERIAL PRIMARY KEY,
+    company_id BIGINT NOT NULL REFERENCES companies(company_id) ON DELETE CASCADE,
+    poster_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE RESTRICT,
+    title VARCHAR(180) NOT NULL,
+    description TEXT NOT NULL,
+    location VARCHAR(120) NOT NULL,
+    workplace_type VARCHAR(20) DEFAULT 'HYBRID' CHECK (workplace_type IN ('REMOTE', 'HYBRID', 'ONSITE')),
+    salary_range VARCHAR(100),
+    status VARCHAR(20) DEFAULT 'ACTIVE' CHECK (status IN ('DRAFT', 'ACTIVE', 'CLOSED')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMP WITH TIME ZONE
+);
+
+CREATE TABLE job_applications (
+    app_id BIGSERIAL PRIMARY KEY,
+    job_id BIGINT NOT NULL REFERENCES job_postings(job_id) ON DELETE RESTRICT,
+    user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    resume_url VARCHAR(512) NOT NULL,
+    status VARCHAR(20) DEFAULT 'SUBMITTED' CHECK (status IN ('SUBMITTED', 'REVIEWING', 'INTERVIEW', 'REJECTED', 'HIRED')),
+    applied_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_candidate_job UNIQUE (job_id, user_id)
+);
+
+-- 5. MESSAGING & CHAT SUBSYSTEM
+CREATE TABLE conversations (
+    conv_id BIGSERIAL PRIMARY KEY,
+    type VARCHAR(20) NOT NULL DEFAULT 'DIRECT' CHECK (type IN ('DIRECT', 'GROUP')),
+    title VARCHAR(150),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE conversation_participants (
+    conv_id BIGINT NOT NULL REFERENCES conversations(conv_id) ON DELETE CASCADE,
+    user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    joined_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    last_read_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (conv_id, user_id)
+);
+
+CREATE TABLE messages (
+    msg_id BIGSERIAL PRIMARY KEY,
+    conv_id BIGINT NOT NULL REFERENCES conversations(conv_id) ON DELETE CASCADE,
+    sender_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    body TEXT NOT NULL,
+    media_url VARCHAR(512),
+    sent_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    -- NOTE: a CHECK cannot span tables. "sender_id MUST be a row in
+    -- conversation_participants for this conv_id" is enforced by a service-layer
+    -- guard or a BEFORE INSERT trigger, otherwise a non-member could inject messages.
+);
+
+-- ============================================================================
+-- HIGH-PERFORMANCE B-TREE INDEXES FOR SLA SPEED
+-- ============================================================================
+CREATE INDEX idx_experiences_user ON experiences(user_id, start_date DESC);
+CREATE INDEX idx_education_user ON education(user_id);
+-- Both traversal directions are needed for 1st-degree lookups. A partial index on
+-- the low-cardinality `status` column alone was a useless single-column index.
+CREATE INDEX idx_connections_requester ON connections(requester_id, status);
+CREATE INDEX idx_connections_receiver ON connections(receiver_id, status);
+CREATE INDEX idx_follows_target ON follows(target_type, target_id);
+CREATE INDEX idx_posts_author ON posts(author_id, created_at DESC);
+CREATE INDEX idx_post_reactions_post ON post_reactions(post_id);
+CREATE INDEX idx_comments_post_parent ON comments(post_id, parent_id, created_at ASC);
+CREATE INDEX idx_jobs_company_status ON job_postings(company_id, status);
+CREATE INDEX idx_jobs_search ON job_postings(status, workplace_type, expires_at);
+CREATE INDEX idx_applications_user ON job_applications(user_id);
+CREATE INDEX idx_applications_job ON job_applications(job_id, status);
+CREATE INDEX idx_messages_conv_sent ON messages(conv_id, sent_at DESC);
+CREATE INDEX idx_messages_sender ON messages(sender_id);
+CREATE INDEX idx_participants_user ON conversation_participants(user_id);
+</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 8: API Design -->
+    <section id="view-apis" class="view-section">
+      <div class="diagram-card">
+        <div class="diagram-header">
+          <div>
+            <div class="diagram-title">
+              <i data-lucide="webhook" style="color: var(--li-ice);"></i>
+              Production API Specification (42 Endpoints)
+            </div>
+            <div class="diagram-sub">
+              Clean RESTful & WebSocket API definitions structured around Identity, Graph, Feed, Recruiting, and Chat domains.
+            </div>
+          </div>
+        </div>
+
+        <!-- Category 0: Authentication & Identity -->
+        <div class="api-category-header">
+          <div class="api-category-title"><i data-lucide="key-round" style="color: #f472b6;"></i> 1. Authentication &amp; Session APIs</div>
+          <span class="api-count-tag">6 Endpoints</span>
+        </div>
+        <div class="rel-table-container">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 100px;">Method</th>
+                <th style="width: 320px;">Route Endpoint</th>
+                <th>Description</th>
+                <th>Request Payload / Query Params</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="badge-method post">POST</span></td>
+                <td><code>/api/v1/auth/register</code></td>
+                <td>Create account (email verify required; password Argon2id hashed)</td>
+                <td><code>{ email, password, full_name }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method post">POST</span></td>
+                <td><code>/api/v1/auth/login</code></td>
+                <td>Authenticate &amp; issue short-lived access + rotating refresh token</td>
+                <td><code>{ email, password }</code> &rarr; <code>{ access_token, refresh_token }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method post">POST</span></td>
+                <td><code>/api/v1/auth/refresh</code></td>
+                <td>Exchange refresh token for a new access token (rotation + reuse detection)</td>
+                <td><code>{ refresh_token }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method post">POST</span></td>
+                <td><code>/api/v1/auth/logout</code></td>
+                <td>Revoke refresh token family for the current device</td>
+                <td>Header: <code>Bearer JWT</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method post">POST</span></td>
+                <td><code>/api/v1/auth/password/forgot</code></td>
+                <td>Email a single-use, expiring reset link (no account enumeration)</td>
+                <td><code>{ email }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method post">POST</span></td>
+                <td><code>/api/v1/auth/password/reset</code></td>
+                <td>Consume reset token &amp; set new password hash</td>
+                <td><code>{ reset_token, new_password }</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Category 1: Profile & Identity -->
+        <div class="api-category-header">
+          <div class="api-category-title"><i data-lucide="user-check" style="color: #70b5f9;"></i> 2. Profile &amp; Experience APIs</div>
+          <span class="api-count-tag">9 Endpoints</span>
+        </div>
+        <div class="rel-table-container">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 100px;">Method</th>
+                <th style="width: 320px;">Route Endpoint</th>
+                <th>Description</th>
+                <th>Request Payload / Query Params</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="badge-method get">GET</span></td>
+                <td><code>/api/v1/profiles/:userId</code></td>
+                <td>Fetch public profile with headline, bio, experience summary</td>
+                <td>Header: <code>Bearer JWT</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method get">GET</span></td>
+                <td><code>/api/v1/profiles/me</code></td>
+                <td>Fetch the authenticated user's own full profile (private fields included)</td>
+                <td>Header: <code>Bearer JWT</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method put">PUT</span></td>
+                <td><code>/api/v1/profiles/me</code></td>
+                <td>Update personal headline, bio summary, location & open-to-work</td>
+                <td><code>{ headline, summary, location, open_to_work }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method post">POST</span></td>
+                <td><code>/api/v1/experiences</code></td>
+                <td>Add career milestone role</td>
+                <td><code>{ title, company_id, start_date, is_current }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method put">PUT</span></td>
+                <td><code>/api/v1/experiences/:id</code></td>
+                <td>Update existing career milestone</td>
+                <td><code>{ title, end_date, description }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method delete">DELETE</span></td>
+                <td><code>/api/v1/experiences/:id</code></td>
+                <td>Remove experience entry</td>
+                <td>None</td>
+              </tr>
+              <tr>
+                <td><span class="badge-method post">POST</span></td>
+                <td><code>/api/v1/education</code></td>
+                <td>Add university degree or schooling credential</td>
+                <td><code>{ school_name, degree, start_year, end_year }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method post">POST</span></td>
+                <td><code>/api/v1/skills</code></td>
+                <td>Associate standardized skill with profile</td>
+                <td><code>{ skill_id: 42 }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method post">POST</span></td>
+                <td><code>/api/v1/skills/:userSkillId/endorse</code></td>
+                <td>Endorse 1st-degree connection's skill</td>
+                <td>None (Endorser inferred from auth JWT)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Category 2: Social Graph -->
+        <div class="api-category-header">
+          <div class="api-category-title"><i data-lucide="network" style="color: #c084fc;"></i> 3. The Social Graph APIs</div>
+          <span class="api-count-tag">7 Endpoints</span>
+        </div>
+        <div class="rel-table-container">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 100px;">Method</th>
+                <th style="width: 320px;">Route Endpoint</th>
+                <th>Description</th>
+                <th>Request Payload / Query Params</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="badge-method post">POST</span></td>
+                <td><code>/api/v1/connections/request</code></td>
+                <td>Send connection invite with optional note</td>
+                <td><code>{ receiver_id: 1089, note: "Glad to connect!" }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method patch">PATCH</span></td>
+                <td><code>/api/v1/connections/:id/respond</code></td>
+                <td>Accept or reject pending connection invitation (partial update of status)</td>
+                <td><code>{ action: "ACCEPT" | "REJECT" }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method delete">DELETE</span></td>
+                <td><code>/api/v1/connections/:id</code></td>
+                <td>Remove an existing 1st-degree connection</td>
+                <td>None</td>
+              </tr>
+              <tr>
+                <td><span class="badge-method get">GET</span></td>
+                <td><code>/api/v1/connections</code></td>
+                <td>List current user's 1st-degree connections</td>
+                <td><code>?limit=20&cursor=eyJ...</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method get">GET</span></td>
+                <td><code>/api/v1/connections/mutual/:targetUserId</code></td>
+                <td>Calculate mutual connections (2nd degree overlap)</td>
+                <td>None</td>
+              </tr>
+              <tr>
+                <td><span class="badge-method post">POST</span></td>
+                <td><code>/api/v1/follows</code></td>
+                <td>Follow creator or enterprise company page</td>
+                <td><code>{ target_id: 501, target_type: "COMPANY" }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method delete">DELETE</span></td>
+                <td><code>/api/v1/follows/:id</code></td>
+                <td>Unfollow a creator or company page</td>
+                <td>None</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Category 3: Feed & Engagement -->
+        <div class="api-category-header">
+          <div class="api-category-title"><i data-lucide="newspaper" style="color: #fbbf24;"></i> 4. Feed &amp; Engagement APIs</div>
+          <span class="api-count-tag">9 Endpoints</span>
+        </div>
+        <div class="rel-table-container">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 100px;">Method</th>
+                <th style="width: 320px;">Route Endpoint</th>
+                <th>Description</th>
+                <th>Request Payload / Query Params</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="badge-method get">GET</span></td>
+                <td><code>/api/v1/feed</code></td>
+                <td>Retrieve ranked algorithmic home feed</td>
+                <td><code>?cursor=eyJ...&page_size=15</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method post">POST</span></td>
+                <td><code>/api/v1/posts</code></td>
+                <td>Publish status update, media or PDF slide deck</td>
+                <td><code>{ content, media_url, media_type, visibility }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method get">GET</span></td>
+                <td><code>/api/v1/posts/:id</code></td>
+                <td>Fetch a single post with author card &amp; engagement counters</td>
+                <td>Header: <code>Bearer JWT</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method put">PUT</span></td>
+                <td><code>/api/v1/posts/:id</code></td>
+                <td>Edit own post content / visibility (author only)</td>
+                <td><code>{ content, visibility }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method delete">DELETE</span></td>
+                <td><code>/api/v1/posts/:id</code></td>
+                <td>Soft-delete own post (author or moderator only)</td>
+                <td>None</td>
+              </tr>
+              <tr>
+                <td><span class="badge-method post">POST</span></td>
+                <td><code>/api/v1/posts/:id/reactions</code></td>
+                <td>React with Like, Celebrate, Support, Insightful, etc.</td>
+                <td><code>{ reaction_type: "CELEBRATE" }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method delete">DELETE</span></td>
+                <td><code>/api/v1/posts/:id/reactions</code></td>
+                <td>Remove active reaction from post</td>
+                <td>None</td>
+              </tr>
+              <tr>
+                <td><span class="badge-method post">POST</span></td>
+                <td><code>/api/v1/posts/:id/comments</code></td>
+                <td>Post root comment or threaded reply via parent_id</td>
+                <td><code>{ content: "Great point!", parent_id: 881 }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method get">GET</span></td>
+                <td><code>/api/v1/posts/:id/comments</code></td>
+                <td>List root comments; replies loaded lazily per parent (cursor paged)</td>
+                <td><code>?cursor=eyJ...&page_size=20</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Category 4: Recruitment & Direct Chat -->
+        <div class="api-category-header">
+          <div class="api-category-title"><i data-lucide="briefcase" style="color: #34d399;"></i> 5. Jobs &amp; Real-Time Chat APIs</div>
+          <span class="api-count-tag">11 Endpoints</span>
+        </div>
+        <div class="rel-table-container">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 100px;">Method</th>
+                <th style="width: 320px;">Route Endpoint</th>
+                <th>Description</th>
+                <th>Request Payload / Query Params</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="badge-method get">GET</span></td>
+                <td><code>/api/v1/jobs/search</code></td>
+                <td>Search openings by title, location, and workplace type</td>
+                <td><code>?q=Golang&location=Remote&type=FULL_TIME</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method get">GET</span></td>
+                <td><code>/api/v1/jobs/:id</code></td>
+                <td>Fetch single job posting detail</td>
+                <td>None</td>
+              </tr>
+              <tr>
+                <td><span class="badge-method post">POST</span></td>
+                <td><code>/api/v1/jobs</code></td>
+                <td>Recruiter publishes a new opening (company-verified role required)</td>
+                <td><code>{ company_id, title, description, workplace_type }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method delete">DELETE</span></td>
+                <td><code>/api/v1/jobs/:id</code></td>
+                <td>Close/delete a posting (recruiter or company admin only)</td>
+                <td>None</td>
+              </tr>
+              <tr>
+                <td><span class="badge-method get">GET</span></td>
+                <td><code>/api/v1/jobs/:id/applications</code></td>
+                <td>Recruiter ATS view of applicants (authorized recruiter only)</td>
+                <td><code>?status=INTERVIEW&cursor=eyJ...</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method patch">PATCH</span></td>
+                <td><code>/api/v1/applications/:id/status</code></td>
+                <td>Advance applicant through the hiring funnel</td>
+                <td><code>{ status: "INTERVIEW" }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method post">POST</span></td>
+                <td><code>/api/v1/jobs/:id/apply</code></td>
+                <td>Submit application using a server-issued pre-signed upload key (never a raw client URL)</td>
+                <td><code>{ resume_object_key: "resumes/u/1024/9f3c.pdf" }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method get">GET</span></td>
+                <td><code>/api/v1/conversations</code></td>
+                <td>List chat threads with last message & unread badge</td>
+                <td><code>?limit=20</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method get">GET</span></td>
+                <td><code>/api/v1/conversations/:id/messages</code></td>
+                <td>Paginated message history for an authorized participant; also marks read watermark</td>
+                <td><code>?before_msg_id=9001&limit=50</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method post">POST</span></td>
+                <td><code>/api/v1/conversations/:id/messages</code></td>
+                <td>Send direct message or InMail</td>
+                <td><code>{ body: "Checking in regarding the role" }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method ws">WS</span></td>
+                <td><code>wss://chat.linkedin.com/v1/ws</code></td>
+                <td>Real-time message duplexing, typing & read receipts</td>
+                <td>WebSocket Protocol with Bearer token handshake</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 9: High-Scale Capacity & Graph BFS -->
+    <section id="view-infra" class="view-section">
+      <div class="diagram-card">
+        <div class="diagram-header">
+          <div>
+            <div class="diagram-title">
+              <i data-lucide="server" style="color: var(--li-ice);"></i>
+              High-Scale Capacity Planning & Social Graph Traversal
+            </div>
+            <div class="diagram-sub">
+              Architecting for 1 Billion Registered Users, 250M Daily Active Professionals, and sub-50ms degrees-of-connection BFS graph queries.
+            </div>
+          </div>
+        </div>
+
+        <div class="infra-grid">
+          <!-- Tier 1 -->
+          <div class="infra-card">
+            <div>
+              <span class="infra-tier-badge" style="background: rgba(10, 102, 194, 0.2); color: #70b5f9; border: 1px solid rgba(10, 102, 194, 0.4);">
+                Storage Tier
+              </span>
+              <h3>Relational & Sharded DB</h3>
+              <p class="infra-sub">CockroachDB / Sharded PostgreSQL with Vitess</p>
+              <ul class="infra-spec-list">
+                <li class="infra-spec-item"><i data-lucide="check" class="infra-spec-icon"></i> 1 Billion Users &times; 1.5 KB Profile = 1.5 TB Primary Identity</li>
+                <li class="infra-spec-item"><i data-lucide="check" class="infra-spec-icon"></i> 30 Billion Connection Edges &times; 32 Bytes = ~960 GB Adjacency Index</li>
+                <li class="infra-spec-item"><i data-lucide="check" class="infra-spec-icon"></i> Range/Hash Sharding on <code>user_id</code> with read replicas</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Tier 2 -->
+          <div class="infra-card highlight">
+            <div>
+              <span class="infra-tier-badge" style="background: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4);">
+                Graph Engine
+              </span>
+              <h3>Social Graph BFS Cache</h3>
+              <p class="infra-sub">In-Memory Adjacency List / Distributed Graph (e.g. Neo4j / RocksDB)</p>
+              <ul class="infra-spec-list">
+                <li class="infra-spec-item"><i data-lucide="check" class="infra-spec-icon"></i> <strong>1st Degree:</strong> Direct SQL <code>WHERE requester_id = X OR receiver_id = X</code></li>
+                <li class="infra-spec-item"><i data-lucide="check" class="infra-spec-icon"></i> <strong>2nd Degree:</strong> In-memory Set Intersection &bull; O(deg(A) + deg(B)) &le; 15ms</li>
+                <li class="infra-spec-item"><i data-lucide="check" class="infra-spec-icon"></i> <strong>3rd Degree:</strong> Precomputed offline via Apache Spark PageRank jobs</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Tier 3 -->
+          <div class="infra-card">
+            <div>
+              <span class="infra-tier-badge" style="background: rgba(231, 163, 62, 0.2); color: #fbbf24; border: 1px solid rgba(231, 163, 62, 0.4);">
+                Search & Discovery
+              </span>
+              <h3>Elasticsearch Job & People Search</h3>
+              <p class="infra-sub">Distributed Inverted Indices with Synonyms & Stemming</p>
+              <ul class="infra-spec-list">
+                <li class="infra-spec-item"><i data-lucide="check" class="infra-spec-icon"></i> Full-text inverted index for job requirements and profile titles</li>
+                <li class="infra-spec-item"><i data-lucide="check" class="infra-spec-icon"></i> Faceted filtering: Location, Remote, Company Size, Industry</li>
+                <li class="infra-spec-item"><i data-lucide="check" class="infra-spec-icon"></i> Kafka CDC replication from PostgreSQL via Debezium</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="math-callout">
+          <div class="callout-title">
+            <i data-lucide="calculator" style="width: 18px; height: 18px;"></i>
+            Calculating Degrees of Separation: Why Naive SQL JOINs Crash at Scale
+          </div>
+          <div class="callout-desc">
+            Consider user with 500 connections. 
+            <br>&bull; <strong>1st Degree:</strong> 500 profiles. 
+            <br>&bull; <strong>2nd Degree:</strong> $500 \times 500 = 250,000$ edges. A two-table self-join on <code>connections</code> produces a massive Cartesian footprint.
+            <br>&bull; <strong>3rd Degree:</strong> $500 \times 500 \times 500 = 125,000,000$ potential paths.
+            <br>Executing recursive SQL <code>WITH RECURSIVE</code> at query-time causes table scans and locks. Instead, production LinkedIn uses <strong>bidirectional Breadth-First Search (BFS)</strong> executed across compressed in-memory Roaring Bitmaps stored in cluster RAM!
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 10: Security Design & Compliance -->
+    <section id="view-security" class="view-section">
+      <div class="diagram-card">
+        <div class="diagram-header">
+          <div>
+            <div class="diagram-title">
+              <i data-lucide="shield-check" style="color: var(--accent-emerald);"></i>
+              Security Design &amp; Threat-Mitigation Blueprint
+            </div>
+            <div class="diagram-sub">
+              The security controls that MUST be integrated around this schema and API surface: authentication, authorization, encryption, abuse prevention, secure media handling, and privacy/GDPR governance.
+            </div>
+          </div>
+          <span class="diagram-badge">DEFENSE IN DEPTH &bull; OWASP API TOP 10</span>
+        </div>
+
+        <div class="decision-grid">
+          <!-- Sec 1 -->
+          <div class="decision-card">
+            <div class="decision-title"><i data-lucide="key-round" style="color: #f472b6;"></i> 1. Authentication &amp; Session Security</div>
+            <div class="decision-box">
+              <p>Passwords hashed with <strong>Argon2id</strong> (or bcrypt cost &ge; 12) + per-user salt; never store or log plaintext. Short-lived <strong>JWT access tokens (5–15 min)</strong> + long-lived <strong>refresh tokens</strong> stored in rotated, revocable server-side families. Enforce <strong>TOTP/WebAuthn MFA</strong> for recruiters and admins.</p>
+            </div>
+            <div class="decision-verdict"><i data-lucide="shield" style="width: 18px; height: 18px;"></i> Integrate: token rotation + reuse detection, device binding, and instant revocation on password change or logout-all.</div>
+          </div>
+
+          <!-- Sec 2 -->
+          <div class="decision-card">
+            <div class="decision-title"><i data-lucide="user-lock" style="color: #70b5f9;"></i> 2. Authorization &amp; IDOR/BOLA Prevention</div>
+            <div class="decision-box">
+              <p>Every resource route (<code>/profiles/:userId</code>, <code>/posts/:id</code>, <code>/conversations/:id/messages</code>, <code>/jobs/:id/applications</code>) must verify the caller <strong>owns or is authorized</strong> for that object. Never trust an ID from the URL alone. Enforce <strong>row-level ownership checks</strong> and <strong>RBAC</strong> (job seeker / recruiter / company admin / moderator).</p>
+            </div>
+            <div class="decision-verdict"><i data-lucide="shield" style="width: 18px; height: 18px;"></i> Integrate: policy middleware (e.g. Casbin/OPA) + Postgres Row-Level Security so chat members and recruiter-company links are re-checked on each request.</div>
+          </div>
+
+          <!-- Sec 3 -->
+          <div class="decision-card">
+            <div class="decision-title"><i data-lucide="lock" style="color: #c084fc;"></i> 3. Encryption In Transit &amp; At Rest</div>
+            <div class="decision-box">
+              <p><strong>TLS 1.3</strong> everywhere (HSTS, no downgrade). Disk/volume encryption at rest with <strong>KMS envelope keys</strong>. Sensitive columns (email, phone, MFA seeds, <code>messages.body</code>) encrypted at the application layer. Consider <strong>E2E encryption</strong> for private messaging since <code>messages</code> currently stores plaintext <code>body</code>.</p>
+            </div>
+            <div class="decision-verdict"><i data-lucide="shield" style="width: 18px; height: 18px;"></i> Integrate: field-level crypto + key rotation; store only ciphertext and a tokenized email lookup hash for uniqueness checks.</div>
+          </div>
+
+          <!-- Sec 4 -->
+          <div class="decision-card">
+            <div class="decision-title"><i data-lucide="file-lock-2" style="color: #fbbf24;"></i> 4. Secure Media &amp; Resume Handling</div>
+            <div class="decision-box">
+              <p>Never accept a raw client <code>resume_url</code> (SSRF + authorization bypass). Accept only a <strong>server-issued pre-signed object key</strong>, validate MIME/extension/size, and <strong>virus-scan</strong> uploads. Buckets are <strong>private</strong>; downloads use short-TTL pre-signed URLs and are audited.</p>
+            </div>
+            <div class="decision-verdict"><i data-lucide="shield" style="width: 18px; height: 18px;"></i> Integrate: quarantine bucket → AV scan → promote; signed GET URLs expire in minutes and are bound to the requesting user.</div>
+          </div>
+
+          <!-- Sec 5 -->
+          <div class="decision-card">
+            <div class="decision-title"><i data-lucide="bug" style="color: #ef4444;"></i> 5. Input Validation &amp; Injection Defense</div>
+            <div class="decision-box">
+              <p><strong>Parameterized queries / prepared statements only</strong> — no string-built SQL. Validate &amp; whitelist enums at the boundary. Escape user content for XSS in feed rendering. Guard against <strong>SSRF</strong> (no fetching arbitrary user URLs like <code>website</code> or <code>media_url</code> server-side).</p>
+            </div>
+            <div class="decision-verdict"><i data-lucide="shield" style="width: 18px; height: 18px;"></i> Integrate: strict schema validation (JSON Schema/Zod), output encoding, CSP headers, and an allow-list for external media domains.</div>
+          </div>
+
+          <!-- Sec 6 -->
+          <div class="decision-card">
+            <div class="decision-title"><i data-lucide="gauge" style="color: #34d399;"></i> 6. Abuse Prevention &amp; Rate Limiting</div>
+            <div class="decision-box">
+              <p>Apply per-user and per-IP <strong>rate limits</strong> on <code>/auth/login</code>, <code>/auth/password/forgot</code>, <code>/connections/request</code>, <code>/posts/:id/reactions</code> and message sends. Add <strong>account lockout / exponential backoff</strong>, CAPTCHA on anomalies, and <strong>WAF + bot detection</strong> at the edge.</p>
+            </div>
+            <div class="decision-verdict"><i data-lucide="shield" style="width: 18px; height: 18px;"></i> Integrate: sliding-window limiter in Redis + idempotency keys to prevent duplicate applications and double-reactions.</div>
+          </div>
+
+          <!-- Sec 7 -->
+          <div class="decision-card">
+            <div class="decision-title"><i data-lucide="scroll-text" style="color: #38bdf8;"></i> 7. Audit Logging &amp; Monitoring</div>
+            <div class="decision-box">
+              <p>Append-only <strong>audit trail</strong> for auth events, permission changes, resume downloads, and admin actions. Centralized structured logs with correlation IDs, <strong>PII redaction</strong>, and real-time anomaly alerting.</p>
+            </div>
+            <div class="decision-verdict"><i data-lucide="shield" style="width: 18px; height: 18px;"></i> Integrate: SIEM ingestion, immutable WORM log storage, and alerting on mass-scrape / credential-stuffing patterns.</div>
+          </div>
+
+          <!-- Sec 8 -->
+          <div class="decision-card">
+            <div class="decision-title"><i data-lucide="fingerprint" style="color: #e7a33e;"></i> 8. Privacy Modes &amp; Consent</div>
+            <div class="decision-box">
+              <p>Profile viewing modes (Public / Semi-Private / Private) and consent flags for personalized ads / data use. Honor <strong>data minimization</strong> and purpose limitation. A <code>viewing_mode</code> enum masks the actor on <code>profile_views</code> when private.</p>
+            </div>
+            <div class="decision-verdict"><i data-lucide="shield" style="width: 18px; height: 18px;"></i> Integrate: consent ledger table, granular settings, and masked/anonymized analytics pipelines.</div>
+          </div>
+
+          <!-- Sec 9 -->
+          <div class="decision-card">
+            <div class="decision-title"><i data-lucide="trash-2" style="color: #ef4444;"></i> 9. GDPR Right to Erasure (DSR Pipeline)</div>
+            <div class="decision-box">
+              <p>On deletion request, all PII (email, resume PDFs, summary, messages, experiences) must be purged within 30 days (GDPR Art. 17 / CCPA). Cascades handle relational rows; a worker scrubs object storage and search indices; a <strong>tombstone/deletion receipt</strong> is retained.</p>
+            </div>
+            <div class="decision-verdict"><i data-lucide="shield" style="width: 18px; height: 18px;"></i> Integrate: DSR workflow + Kafka fan-out so PostgreSQL, S3, Elasticsearch and caches are all erased consistently.</div>
+          </div>
+
+          <!-- Sec 10 -->
+          <div class="decision-card">
+            <div class="decision-title"><i data-lucide="server-cog" style="color: #70b5f9;"></i> 10. Infra, Secrets &amp; Supply Chain</div>
+            <div class="decision-box">
+              <p>Private subnets + security groups; least-privilege IAM roles per service; secrets in <strong>Vault/KMS</strong> (never in code or env files committed to git); dependency/container scanning and SBOM; regular key + certificate rotation.</p>
+            </div>
+            <div class="decision-verdict"><i data-lucide="shield" style="width: 18px; height: 18px;"></i> Integrate: shift-left SAST/DAST in CI, signed images, and least-privilege DB users (app role cannot DROP/ALTER).</div>
+          </div>
+        </div>
+
+        <div class="callout-box">
+          <div class="callout-title"><i data-lucide="list-checks" style="width: 18px; height: 18px;"></i> OWASP API Security Top 10 (2023) Alignment Checklist</div>
+          <div class="callout-desc">
+            <strong>API1 Broken Object Level Authz (IDOR):</strong> ownership checks on every <code>:id</code> route &rarr; controls #2, #5.<br>
+            <strong>API2 Broken Authentication:</strong> Argon2id, MFA, token rotation &rarr; #1.<br>
+            <strong>API3 Broken Object Property Level Authz:</strong> whitelist writable fields; block mass-assignment of <code>status</code>, <code>is_verified</code>, <code>endorsement_count</code> &rarr; #5.<br>
+            <strong>API4 Unrestricted Resource Consumption:</strong> pagination caps + rate limits &rarr; #6.<br>
+            <strong>API5 Broken Function Level Authz:</strong> RBAC on recruiter/admin endpoints &rarr; #2.<br>
+            <strong>API6 Unrestricted Access to Sensitive Flows:</strong> throttle OTP/reset/apply &rarr; #6.<br>
+            <strong>API7 SSRF:</strong> no server-side fetch of user URLs (<code>website</code>, <code>media_url</code>, <code>resume_url</code>) &rarr; #4, #5.<br>
+            <strong>API8 Security Misconfiguration:</strong> private buckets, HSTS, no verbose errors &rarr; #3, #10.<br>
+            <strong>API9 Improper Inventory Management:</strong> versioned <code>/api/v1</code>, deprecation policy &rarr; #7.<br>
+            <strong>API10 Unsafe Consumption of 3rd-party APIs:</strong> validate/sign webhooks, timeout &rarr; #7, #10.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 11: Correction Notes -->
+    <section id="view-corrections" class="view-section">
+      <div class="diagram-card">
+        <div class="diagram-header">
+          <div>
+            <div class="diagram-title">
+              <i data-lucide="clipboard-check" style="color: var(--li-ice);"></i>
+              Correction Notes — Senior Design Review
+            </div>
+            <div class="diagram-sub">
+              Every deviation, inconsistency, and integrity gap found while reviewing the database &amp; API design, ranked by severity, with the rationale and the exact fix applied in this document.
+            </div>
+          </div>
+          <span class="diagram-badge">16 CORRECTIONS</span>
+        </div>
+
+        <div class="callout-box" style="border-left-color: var(--accent-gold);">
+          <div class="callout-title"><i data-lucide="alert-triangle" style="width: 18px; height: 18px; color: #fbbf24;"></i> How to read this</div>
+          <div class="callout-desc">
+            <span class="severity critical">Critical</span> blocks launch (security/auth). <span class="severity high">High</span> causes data corruption or leaks. <span class="severity medium">Medium</span> hurts scale/portability/maintainability. <span class="severity low">Low</span> is documentation drift. <span class="severity by-design">By design</span> is an intentional tradeoff, now documented. Items marked <strong>FIXED</strong> were corrected directly in the Table Dictionary, SQL DDL, or API tables above.
+          </div>
+        </div>
+
+        <div class="api-category-header">
+          <div class="api-category-title"><i data-lucide="database" style="color: #70b5f9;"></i> A. Database &amp; Schema Corrections</div>
+          <span class="api-count-tag">10 Items</span>
+        </div>
+        <div class="rel-table-container">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 40px;">#</th>
+                <th style="width: 130px;">Severity</th>
+                <th style="width: 220px;">What was wrong</th>
+                <th>Why it matters</th>
+                <th style="width: 300px;">Fix applied</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td>
+                <td><span class="severity high">High</span></td>
+                <td><code>comments.parent_id</code> had a plain self-FK <code>REFERENCES comments(comm_id)</code>.</td>
+                <td>Nothing stopped a reply on Post A from attaching as a child of a comment on Post B — silent cross-post corruption and broken thread rendering.</td>
+                <td><strong>FIXED</strong> — added <code>UNIQUE(comm_id, post_id)</code> and a composite FK <code>(parent_id, post_id) &rarr; comments(comm_id, post_id)</code>.</td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td><span class="severity high">High</span></td>
+                <td><code>messages.sender_id</code> referenced <code>users</code> but not thread membership.</td>
+                <td>A user who is <em>not</em> in <code>conversation_participants</code> could still be inserted as a sender, enabling message injection into other people's threads.</td>
+                <td><strong>FIXED (documented + guard)</strong> — DB <code>CHECK</code> cannot span tables; enforced via trigger/service guard. Note added in DDL.</td>
+              </tr>
+              <tr>
+                <td>3</td>
+                <td><span class="severity medium">Medium</span></td>
+                <td><code>follows.target_id</code> is a polymorphic reference (USER|COMPANY) with no FK.</td>
+                <td>Nothing prevents a follow row pointing at a non-existent or deleted entity — orphaned graph edges poison recommendations.</td>
+                <td><strong>DOCUMENTED</strong> — integrity must live in the service layer, or split into typed <code>user_follows</code>/<code>company_follows</code> tables with real FKs.</td>
+              </tr>
+              <tr>
+                <td>4</td>
+                <td><span class="severity medium">Medium</span></td>
+                <td><code>connections.status='BLOCKED'</code> conflated blocking with a connection state.</td>
+                <td>Blocking is directional and independent of a mutual connection; storing it in the same row loses <em>who</em> blocked <em>whom</em> and breaks unblock/authz logic.</td>
+                <td><strong>DOCUMENTED</strong> — model a dedicated directional <code>blocks(blocker_id, blocked_id)</code> table; keep <code>connections</code> for PENDING/ACCEPTED.</td>
+              </tr>
+              <tr>
+                <td>5</td>
+                <td><span class="severity medium">Medium</span></td>
+                <td><code>idx_connections_status ON connections(status) WHERE status='ACCEPTED'</code>.</td>
+                <td>A single-column index on a low-cardinality flag has near-zero selectivity; the planner will ignore it. 1st-degree lookups need the user key.</td>
+                <td><strong>FIXED</strong> — replaced with <code>(requester_id, status)</code> and <code>(receiver_id, status)</code> composite indexes for both traversal directions.</td>
+              </tr>
+              <tr>
+                <td>6</td>
+                <td><span class="severity medium">Medium</span></td>
+                <td>Canonical <code>LEAST/GREATEST</code> functional unique index while the header claimed "PostgreSQL / MySQL 8+".</td>
+                <td>Functional indexes on raw expressions are PostgreSQL-only; MySQL needs generated columns. "Works on MySQL" was false and would fail at migration.</td>
+                <td><strong>FIXED</strong> — header re-scoped to PostgreSQL flagship + inline MySQL generated-column alternative added.</td>
+              </tr>
+              <tr>
+                <td>7</td>
+                <td><span class="severity medium">Medium</span></td>
+                <td>Denormalized counters (<code>reactions_count</code>, <code>comments_count</code>, <code>shares_count</code>, <code>endorsement_count</code>) had no maintenance mechanism.</td>
+                <td>Counters drift from reality without a trigger/job, producing wrong social proof and duplicate-reaction bugs.</td>
+                <td><strong>DOCUMENTED</strong> — maintain via DB triggers or an event consumer, in the same transaction as the write.</td>
+              </tr>
+              <tr>
+                <td>8</td>
+                <td><span class="severity medium">Medium</span></td>
+                <td><code>posts.author_id</code> only references <code>users</code>.</td>
+                <td>Companies cannot author posts, yet enterprise pages post on LinkedIn — the model has no path for company-authored content without a schema change.</td>
+                <td><strong>DOCUMENTED</strong> — add a polymorphic author, or an <code>author_type</code> + optional <code>company_id</code>, with a check that exactly one author is set.</td>
+              </tr>
+              <tr>
+                <td>9</td>
+                <td><span class="severity low">Low</span></td>
+                <td><code>posts.content TEXT NOT NULL</code> and <code>messages.body TEXT NOT NULL</code>.</td>
+                <td>Media-only posts and attachment-only messages have no text; <code>NOT NULL</code> forces a dummy empty string and blocks legitimate cases.</td>
+                <td><strong>DOCUMENTED</strong> — relax to nullable + add a <code>CHECK (content IS NOT NULL OR media_url IS NOT NULL)</code> so at least one payload exists.</td>
+              </tr>
+              <tr>
+                <td>10</td>
+                <td><span class="severity low">Low</span></td>
+                <td>Table Dictionary drifted from the ERD/DDL (missing <code>industry</code>, <code>headquarters</code>, <code>workplace_type</code>, <code>expires_at</code>, <code>shares_count</code>, <code>activities_societies</code>, <code>updated_at</code>) and had wrong enums.</td>
+                <td>Docs that disagree with the schema mislead every consumer and cause integration bugs (e.g. missing <code>DEACTIVATED</code>, <code>REVIEWING</code>, <code>CONNECTIONS_ONLY</code>).</td>
+                <td><strong>FIXED</strong> — aligned <code>users.status</code>, <code>posts.visibility</code>/<code>media_type</code>, <code>job_applications.status</code>, and added all missing columns to the dictionary.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="api-category-header">
+          <div class="api-category-title"><i data-lucide="webhook" style="color: #c084fc;"></i> B. API Design Corrections</div>
+          <span class="api-count-tag">6 Items</span>
+        </div>
+        <div class="rel-table-container">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 40px;">#</th>
+                <th style="width: 130px;">Severity</th>
+                <th style="width: 220px;">What was wrong</th>
+                <th>Why it matters</th>
+                <th style="width: 300px;">Fix applied</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>11</td>
+                <td><span class="severity critical">Critical</span></td>
+                <td>No authentication endpoints existed (no register/login/refresh/logout/reset).</td>
+                <td>An "Identity" domain with no way to establish identity is unusable and left token lifecycle (rotation, revocation, MFA) undefined.</td>
+                <td><strong>FIXED</strong> — added Category 1 "Authentication &amp; Session APIs" (6 endpoints) with Argon2id + rotating tokens.</td>
+              </tr>
+              <tr>
+                <td>12</td>
+                <td><span class="severity high">High</span></td>
+                <td>API accepted a raw client <code>resume_url</code> on <code>POST /jobs/:id/apply</code>.</td>
+                <td>Classic SSRF + authorization bypass: attacker supplies an internal/foreign URL or references someone else's resume object.</td>
+                <td><strong>FIXED</strong> — endpoint now takes a server-issued <code>resume_object_key</code> from a pre-signed upload flow; validated + AV-scanned.</td>
+              </tr>
+              <tr>
+                <td>13</td>
+                <td><span class="severity high">High</span></td>
+                <td>API claimed <strong>42 endpoints</strong> but only <strong>23</strong> were listed (10/8/12/12 labels vs 8/5/5/5 rows).</td>
+                <td>Spec is the contract; inflated counts hide missing functionality (esp. no auth endpoints at all) and erode trust in the doc.</td>
+                <td><strong>FIXED</strong> — added Auth + missing CRUD/ATS endpoints and corrected counts so 6+9+7+9+11 = a real 42.</td>
+              </tr>
+              <tr>
+                <td>14</td>
+                <td><span class="severity medium">Medium</span></td>
+                <td>Connection response used <code>PATCH</code> in the workflow but <code>PUT</code> (with an undefined <code>.badge-method.patch</code> class) in the API table; HTTP method was inconsistent.</td>
+                <td>Method mismatch breaks client contracts and caching semantics; a partial status change is semantically PATCH, not PUT.</td>
+                <td><strong>FIXED</strong> — standardized on <code>PATCH /connections/:id/respond</code>, aligned the workflow, and added the missing <code>.badge-method.patch</code> CSS.</td>
+              </tr>
+              <tr>
+                <td>15</td>
+                <td><span class="severity medium">Medium</span></td>
+                <td>CRUD gaps: no unfollow, no remove-connection, no <code>GET/PUT/DELETE /posts/:id</code>, no <code>GET /posts/:id/comments</code>, no recruiter ATS endpoints.</td>
+                <td>Clients cannot complete basic lifecycle operations (unfollow, edit/delete a post, view an application funnel) — forcing undocumented back-channel calls.</td>
+                <td><strong>FIXED</strong> — added 12 missing endpoints across Graph, Feed, and Jobs categories.</td>
+              </tr>
+              <tr>
+                <td>16</td>
+                <td><span class="severity low">Low</span></td>
+                <td>WebSocket handshake documented a bearer token but no refresh/expiry or re-auth path; job search had no pagination contract.</td>
+                <td>Long-lived sockets outlive short access tokens silently; search without a page contract leads to unbounded result sets.</td>
+                <td><strong>DOCUMENTED</strong> — sockets must reconnect-refresh on token expiry; all list endpoints require cursor pagination + server caps.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout-box" style="border-left-color: var(--accent-emerald);">
+          <div class="callout-title"><i data-lucide="check-circle-2" style="width: 18px; height: 18px; color: #34d399;"></i> Verdict</div>
+          <div class="callout-desc">
+            The schema is fundamentally sound — the 1:1 auth/profile split, the symmetric <code>connections</code> graph, the threaded-comments adjacency list, and the 3-tier messaging model are all correct, production-grade choices. The real defects were <strong>three integrity holes</strong> (cross-post comment parents, non-participant message senders, client-supplied resume URLs), <strong>one broken index</strong>, <strong>a false MySQL portability claim</strong>, and <strong>documentation/spec drift</strong> (wrong enums, missing fields, and a 42-vs-23 endpoint gap with no auth API). All are corrected above and hardened by the new Security Design controls.
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // Initialize Mermaid with custom executive LinkedIn dark theme.
+    // NB: startOnLoad MUST stay false. Rendering diagrams while their section is
+    // display:none makes Mermaid compute layout at 0 width -> "Syntax error in text"
+    // fallback. We lazy-render only the visible tab instead.
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: 'dark',
+      themeVariables: {
+        darkMode: true,
+        background: '#0b1526',
+        primaryColor: '#0a66c2',
+        primaryTextColor: '#ffffff',
+        primaryBorderColor: '#388fe6',
+        secondaryColor: '#004182',
+        tertiaryColor: '#70b5f9',
+        lineColor: '#e7a33e',
+        fontFamily: 'Plus Jakarta Sans',
+        fontSize: '14px'
+      }
+    });
+
+    // Render only the mermaid diagrams inside the currently VISIBLE section.
+    // Guards with :not([data-processed]) so a tab is never re-rendered.
+    function renderActiveMermaid() {
+      const active = document.querySelector('.view-section.active');
+      if (active && typeof mermaid !== 'undefined' && mermaid.run) {
+        mermaid.run({
+          nodes: active.querySelectorAll('.mermaid:not([data-processed="true"])')
+        }).catch(function(err) {
+          console.log('Mermaid render info:', err);
+        });
+      }
+    }
+
+    // Tab Switching Functionality with dynamic Mermaid rendering
+    function switchView(viewId, btn) {
+      document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      
+      const target = document.getElementById(viewId);
+      if (target) {
+        target.classList.add('active');
+        btn.classList.add('active');
+
+        // Only now is the section visible -> safe to render its diagrams
+        renderActiveMermaid();
+      }
+
+      // Re-trigger lucide icons
+      lucide.createIcons();
+    }
+
+    // Copy SQL DDL Script to clipboard
+    function copySqlCode() {
+      const sqlText = document.getElementById('sql-script').innerText;
+      navigator.clipboard.writeText(sqlText).then(() => {
+        const btn = document.querySelector('.copy-btn');
+        btn.innerHTML = '<i data-lucide="check" style="width: 14px; height: 14px;"></i> Copied!';
+        lucide.createIcons();
+        setTimeout(() => {
+          btn.innerHTML = '<i data-lucide="copy" style="width: 14px; height: 14px;"></i> Copy SQL';
+          lucide.createIcons();
+        }, 2000);
+      });
+    }
+
+    // Render the initially visible tab, then initialize icons
+    renderActiveMermaid();
+    lucide.createIcons();
+  </script>
+</body>
+</html>
