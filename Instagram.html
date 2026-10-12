@@ -855,10 +855,16 @@
           <i data-lucide="code" style="width: 15px; height: 15px;"></i> Production SQL DDL
         </button>
         <button class="tab-btn" id="tab-btn-apis" onclick="switchView('view-apis', this)">
-          <i data-lucide="webhook" style="width: 15px; height: 15px;"></i> API Design (42 Endpoints)
+          <i data-lucide="webhook" style="width: 15px; height: 15px;"></i> API Design (46 Endpoints)
         </button>
         <button class="tab-btn" id="tab-btn-infra" onclick="switchView('view-infra', this)">
           <i data-lucide="server" style="width: 15px; height: 15px;"></i> Server & Capacity Planning
+        </button>
+        <button class="tab-btn" id="tab-btn-corrections" onclick="switchView('view-corrections', this)">
+          <i data-lucide="wrench" style="width: 15px; height: 15px;"></i> Correction Notes
+        </button>
+        <button class="tab-btn" id="tab-btn-security" onclick="switchView('view-security', this)">
+          <i data-lucide="shield-alert" style="width: 15px; height: 15px;"></i> Security Design
         </button>
       </div>
     </div>
@@ -876,7 +882,7 @@
               Full relational schema encompassing User Graph, Multi-media Carousels, Reels, Follows, Likes, Comments, Saves, Ephemeral Stories, Hashtags, and Direct Messages.
             </div>
           </div>
-          <span class="diagram-badge">16 RELATIONAL TABLES</span>
+          <span class="diagram-badge">19 RELATIONAL TABLES</span>
         </div>
 
         <pre class="mermaid">
@@ -915,9 +921,12 @@ erDiagram
 
     CONVERSATIONS ||--o{ CONVERSATION_MEMBERS : "has member participants (1:N)"
     CONVERSATIONS ||--o{ MESSAGES : "contains chat history (1:N)"
+    USERS ||--o{ MESSAGE_READS : "reads messages (1:N)"
+    MESSAGES ||--o{ MESSAGE_READS : "tracks per-member read receipt (1:N)"
+    USERS ||--o{ NOTIFICATIONS : "triggers notification (1:N)"
 
     USERS {
-        int user_id PK
+        bigint user_id PK
         string username UK
         string email UK
         string password_hash
@@ -928,88 +937,91 @@ erDiagram
         boolean is_verified
         boolean is_private
         datetime created_at
+        datetime updated_at
     }
 
     POSTS {
-        int post_id PK
-        int user_id FK
+        bigint post_id PK
+        bigint user_id FK
         string caption
         string location
-        int views_count "Denormalized counter"
-        int likes_count "Denormalized counter"
-        int comments_count "Denormalized counter"
+        bigint views_count "Denormalized counter"
+        bigint likes_count "Denormalized counter"
+        bigint comments_count "Denormalized counter"
         datetime created_at
+        datetime updated_at
     }
 
     POST_MEDIA {
-        int media_id PK
-        int post_id FK
+        bigint media_id PK
+        bigint post_id FK
         string media_url
         string media_type "IMAGE or VIDEO"
         int carousel_order
     }
 
     POST_VIEWS {
-        int view_id PK
-        int user_id FK
-        int post_id FK
+        bigint view_id PK
+        bigint user_id FK
+        bigint post_id FK
         datetime viewed_at
         int duration_seconds
     }
 
     REELS {
-        int reel_id PK
-        int user_id FK
+        bigint reel_id PK
+        bigint user_id FK
         string video_url
         string caption
         string audio_title
-        int views_count
-        int likes_count
+        bigint views_count
+        bigint likes_count
         int duration_seconds
         datetime created_at
     }
 
     FOLLOWS {
-        int follow_id PK
-        int follower_id FK "Users.user_id"
-        int following_id FK "Users.user_id"
+        bigint follow_id PK
+        bigint follower_id FK "Users.user_id"
+        bigint following_id FK "Users.user_id"
         string status "ACCEPTED or PENDING"
         datetime created_at
     }
 
     POST_LIKES {
-        int like_id PK
-        int user_id FK
-        int post_id FK
+        bigint like_id PK
+        bigint user_id FK
+        bigint post_id FK
         datetime created_at
     }
 
     REEL_LIKES {
-        int like_id PK
-        int user_id FK
-        int reel_id FK
+        bigint like_id PK
+        bigint user_id FK
+        bigint reel_id FK
         datetime created_at
     }
 
     COMMENTS {
-        int comment_id PK
-        int user_id FK
-        int post_id FK
-        int parent_comment_id FK "Self-ref reply"
+        bigint comment_id PK
+        bigint user_id FK
+        bigint post_id FK
+        bigint parent_comment_id FK "Self-ref reply (NULLable)"
         string comment_text
         datetime created_at
+        datetime updated_at
     }
 
     SAVES {
-        int save_id PK
-        int user_id FK
-        int post_id FK
+        bigint save_id PK
+        bigint user_id FK
+        bigint post_id FK
         datetime created_at
     }
 
     STORIES {
-        int story_id PK
-        int user_id FK
+        bigint story_id PK
+        bigint user_id FK
         string media_url
         string media_type
         datetime created_at
@@ -1017,54 +1029,69 @@ erDiagram
     }
 
     STORY_VIEWS {
-        int view_id PK
-        int story_id FK
-        int viewer_id FK "Users.user_id"
+        bigint view_id PK
+        bigint story_id FK
+        bigint viewer_id FK "Users.user_id"
         datetime viewed_at
     }
 
     SUGGESTIONS {
-        int suggestion_id PK
-        int user_id FK "Target user"
-        int suggested_user_id FK "Candidate user"
+        bigint suggestion_id PK
+        bigint user_id FK "Target user"
+        bigint suggested_user_id FK "Candidate user"
         string reason "e.g. Mutuals, Contacts"
-        float score
+        decimal score
         datetime created_at
     }
 
     HASHTAGS {
-        int hashtag_id PK
+        bigint hashtag_id PK
         string tag_name UK
-        int post_count
+        bigint post_count
         datetime created_at
     }
 
     POST_HASHTAGS {
-        int post_id PK,FK
-        int hashtag_id PK,FK
+        bigint post_id PK,FK
+        bigint hashtag_id PK,FK
     }
 
     CONVERSATIONS {
-        int conversation_id PK
+        bigint conversation_id PK
         string type "DIRECT or GROUP"
         string group_name
         datetime created_at
     }
 
     CONVERSATION_MEMBERS {
-        int conversation_id PK,FK
-        int user_id PK,FK
+        bigint conversation_id PK,FK
+        bigint user_id PK,FK
         datetime joined_at
     }
 
     MESSAGES {
-        int message_id PK
-        int conversation_id FK
-        int sender_id FK
+        bigint message_id PK
+        bigint conversation_id FK
+        bigint sender_id FK
         string message_text
         string media_url
-        boolean is_read
         datetime sent_at
+    }
+
+    MESSAGE_READS {
+        bigint message_id PK,FK
+        bigint user_id PK,FK
+        datetime read_at
+    }
+
+    NOTIFICATIONS {
+        bigint notification_id PK
+        bigint recipient_id FK "Users.user_id"
+        bigint actor_id FK "Users.user_id"
+        string type "LIKE, COMMENT, FOLLOW, MENTION"
+        bigint target_id "post_id / comment_id / user_id"
+        boolean is_read
+        datetime created_at
     }
         </pre>
       </div>
@@ -1100,7 +1127,7 @@ erDiagram
     POSTS ||--o{ COMMENTS : "has (1:N)"
 
     USERS {
-        int user_id PK
+        bigint user_id PK
         string username UK
         string email UK
         string password_hash
@@ -1108,37 +1135,37 @@ erDiagram
     }
 
     POSTS {
-        int post_id PK
-        int user_id FK
+        bigint post_id PK
+        bigint user_id FK
         string caption
         datetime created_at
     }
 
     FOLLOWS {
-        int follow_id PK
-        int follower_id FK "FK to users.user_id"
-        int following_id FK "FK to users.user_id"
+        bigint follow_id PK
+        bigint follower_id FK "FK to users.user_id"
+        bigint following_id FK "FK to users.user_id"
         datetime created_at
     }
 
     POST_LIKES {
-        int like_id PK
-        int user_id FK
-        int post_id FK
+        bigint like_id PK
+        bigint user_id FK
+        bigint post_id FK
         datetime created_at
     }
 
     COMMENTS {
-        int comment_id PK
-        int user_id FK
-        int post_id FK
+        bigint comment_id PK
+        bigint user_id FK
+        bigint post_id FK
         string comment_text
         datetime created_at
     }
 
     REELS {
-        int reel_id PK
-        int user_id FK
+        bigint reel_id PK
+        bigint user_id FK
         string video_url
         string caption
         datetime created_at
@@ -1345,8 +1372,8 @@ graph TD
               <td><code>comments</code> (reply)</td>
               <td><span class="badge-cardinality self-ref">Self 1 : N</span></td>
               <td><code>comments.parent_comment_id</code></td>
-              <td><code>SET NULL</code></td>
-              <td>Enables nested replies (thread discussion). Top-level comments have <code>NULL</code> parent.</td>
+              <td><code>CASCADE</code></td>
+              <td>Enables nested replies (thread discussion). Top-level comments have <code>NULL</code> parent. Deleting a parent cascades to its replies (matches DDL); prefer soft-delete to keep thread history.</td>
             </tr>
             <tr>
               <td><code>users</code></td>
@@ -1402,7 +1429,55 @@ graph TD
               <td><span class="badge-cardinality many-to-many">M : N</span></td>
               <td><code>user_id</code> & <code>suggested_user_id</code></td>
               <td><code>CASCADE</code></td>
-              <td>Calculated recommendation output with score and reason ("Followed by your friend").</td>
+              <td>Calculated recommendation output with score and reason ("Followed by your friend"). Unique pair enforced by <code>UNIQUE(user_id, suggested_user_id)</code>.</td>
+            </tr>
+            <tr>
+              <td><code>users</code> ↔ <code>reels</code></td>
+              <td><code>reel_likes</code></td>
+              <td><span class="badge-cardinality many-to-many">M : N</span></td>
+              <td><code>user_id</code> &amp; <code>reel_id</code></td>
+              <td><code>CASCADE</code></td>
+              <td>Users like reels; <code>UNIQUE(user_id, reel_id)</code> stops double-liking. Kept separate from <code>post_likes</code> for isolation.</td>
+            </tr>
+            <tr>
+              <td><code>conversations</code></td>
+              <td><code>conversation_members</code></td>
+              <td><span class="badge-cardinality one-to-many">1 : N</span></td>
+              <td><code>conversation_members.conversation_id</code></td>
+              <td><code>CASCADE</code></td>
+              <td>Participants of a DIRECT or GROUP chat. Composite PK <code>(conversation_id, user_id)</code> prevents duplicate membership.</td>
+            </tr>
+            <tr>
+              <td><code>users</code> ↔ <code>conversations</code></td>
+              <td><code>conversation_members</code></td>
+              <td><span class="badge-cardinality many-to-many">M : N</span></td>
+              <td><code>conversation_members.user_id</code></td>
+              <td><code>CASCADE</code></td>
+              <td>Bridge table resolving the M:N membership between users and conversations.</td>
+            </tr>
+            <tr>
+              <td><code>conversations</code></td>
+              <td><code>messages</code></td>
+              <td><span class="badge-cardinality one-to-many">1 : N</span></td>
+              <td><code>messages.conversation_id</code></td>
+              <td><code>CASCADE</code></td>
+              <td>Chat history ordered by <code>sent_at</code>; index <code>(conversation_id, sent_at DESC)</code> powers "load last N messages".</td>
+            </tr>
+            <tr>
+              <td><code>messages</code> ↔ <code>users</code></td>
+              <td><code>message_reads</code></td>
+              <td><span class="badge-cardinality many-to-many">M : N</span></td>
+              <td><code>message_id</code> &amp; <code>user_id</code></td>
+              <td><code>CASCADE</code></td>
+              <td>Per-member read receipts. Replaces the broken single <code>messages.is_read</code> boolean so GROUP chats track each member independently.</td>
+            </tr>
+            <tr>
+              <td><code>users</code></td>
+              <td><code>notifications</code></td>
+              <td><span class="badge-cardinality one-to-many">1 : N</span></td>
+              <td><code>notifications.recipient_id</code> &amp; <code>actor_id</code></td>
+              <td><code>CASCADE</code> / <code>SET NULL</code></td>
+              <td>Activity feed alerts. <code>actor_id</code> uses <code>SET NULL</code> so a deleted user doesn't erase the notification history.</td>
             </tr>
           </tbody>
         </table>
@@ -1703,7 +1778,7 @@ graph TD
             <div class="table-name"><i data-lucide="bookmark"></i> saves</div>
             <span class="tag-pk">PK: save_id</span>
           </div>
-          <div class="table-purpose">Private bookmarks of posts into collections</div>
+          <div class="table-purpose">Private bookmarks of posts (visible only to the owner)</div>
           <ul class="field-list">
             <li class="field-item"><div class="field-left"><span class="field-name">save_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
             <li class="field-item"><div class="field-left"><span class="field-name">user_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT ➔ users</span></li>
@@ -1725,6 +1800,125 @@ graph TD
             <li class="field-item"><div class="field-left"><span class="field-name">suggested_user_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT ➔ users</span></li>
             <li class="field-item"><div class="field-left"><span class="field-name">reason</span></div><span class="field-type">VARCHAR(100)</span></li>
             <li class="field-item"><div class="field-left"><span class="field-name">score</span></div><span class="field-type">DECIMAL(5,2)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">created_at</span></div><span class="field-type">TIMESTAMP</span></li>
+          </ul>
+        </div>
+
+        <!-- 13. hashtags -->
+        <div class="table-card">
+          <div class="table-card-header">
+            <div class="table-name"><i data-lucide="hash"></i> hashtags</div>
+            <span class="tag-pk">PK: hashtag_id</span>
+          </div>
+          <div class="table-purpose">Searchable tags with a cached post counter</div>
+          <ul class="field-list">
+            <li class="field-item"><div class="field-left"><span class="field-name">hashtag_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">tag_name</span> <span class="tag-uk">UK</span></div><span class="field-type">VARCHAR(100) (lowercased)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">post_count</span></div><span class="field-type">BIGINT DEFAULT 0 (async)</span></li>
+          </ul>
+        </div>
+
+        <!-- 14. post_hashtags -->
+        <div class="table-card">
+          <div class="table-card-header">
+            <div class="table-name"><i data-lucide="link"></i> post_hashtags</div>
+            <span class="tag-pk">PK: (post_id, hashtag_id)</span>
+          </div>
+          <div class="table-purpose">Junction table resolving the M:N between posts and hashtags</div>
+          <ul class="field-list">
+            <li class="field-item"><div class="field-left"><span class="field-name">post_id</span> <span class="tag-pk">PK</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT ➔ posts</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">hashtag_id</span> <span class="tag-pk">PK</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT ➔ hashtags</span></li>
+          </ul>
+        </div>
+
+        <!-- 15. reel_likes -->
+        <div class="table-card">
+          <div class="table-card-header">
+            <div class="table-name"><i data-lucide="heart"></i> reel_likes</div>
+            <span class="tag-pk">PK: like_id</span>
+          </div>
+          <div class="table-purpose">Likes on reels (kept separate from post_likes)</div>
+          <ul class="field-list">
+            <li class="field-item"><div class="field-left"><span class="field-name">like_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">user_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT ➔ users</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">reel_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT ➔ reels</span></li>
+          </ul>
+        </div>
+
+        <!-- 16. conversations -->
+        <div class="table-card">
+          <div class="table-card-header">
+            <div class="table-name"><i data-lucide="messages-square"></i> conversations</div>
+            <span class="tag-pk">PK: conversation_id</span>
+          </div>
+          <div class="table-purpose">Direct-message threads and group chats</div>
+          <ul class="field-list">
+            <li class="field-item"><div class="field-left"><span class="field-name">conversation_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">type</span></div><span class="field-type">ENUM('DIRECT','GROUP')</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">group_name</span></div><span class="field-type">VARCHAR(100) NULL</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">created_at</span></div><span class="field-type">TIMESTAMP</span></li>
+          </ul>
+        </div>
+
+        <!-- 17. conversation_members -->
+        <div class="table-card">
+          <div class="table-card-header">
+            <div class="table-name"><i data-lucide="user-check"></i> conversation_members</div>
+            <span class="tag-pk">PK: (conversation_id, user_id)</span>
+          </div>
+          <div class="table-purpose">Membership bridge between users and conversations</div>
+          <ul class="field-list">
+            <li class="field-item"><div class="field-left"><span class="field-name">conversation_id</span> <span class="tag-pk">PK</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT ➔ conversations</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">user_id</span> <span class="tag-pk">PK</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT ➔ users</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">joined_at</span></div><span class="field-type">TIMESTAMP</span></li>
+          </ul>
+        </div>
+
+        <!-- 18. messages -->
+        <div class="table-card">
+          <div class="table-card-header">
+            <div class="table-name"><i data-lucide="mail"></i> messages</div>
+            <span class="tag-pk">PK: message_id</span>
+          </div>
+          <div class="table-purpose">Chat history. No is_read column — read state is per member</div>
+          <ul class="field-list">
+            <li class="field-item"><div class="field-left"><span class="field-name">message_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">conversation_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT ➔ conversations</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">sender_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT ➔ users</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">message_text</span></div><span class="field-type">TEXT</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">media_url</span></div><span class="field-type">VARCHAR(512) NULL</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">sent_at</span></div><span class="field-type">TIMESTAMP</span></li>
+          </ul>
+        </div>
+
+        <!-- 19. message_reads -->
+        <div class="table-card">
+          <div class="table-card-header">
+            <div class="table-name"><i data-lucide="check-check"></i> message_reads</div>
+            <span class="tag-pk">PK: (message_id, user_id)</span>
+          </div>
+          <div class="table-purpose">Per-member read receipts (correct group-chat read state)</div>
+          <ul class="field-list">
+            <li class="field-item"><div class="field-left"><span class="field-name">message_id</span> <span class="tag-pk">PK</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT ➔ messages</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">user_id</span> <span class="tag-pk">PK</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT ➔ users</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">read_at</span></div><span class="field-type">TIMESTAMP</span></li>
+          </ul>
+        </div>
+
+        <!-- 20. notifications -->
+        <div class="table-card">
+          <div class="table-card-header">
+            <div class="table-name"><i data-lucide="bell"></i> notifications</div>
+            <span class="tag-pk">PK: notification_id</span>
+          </div>
+          <div class="table-purpose">Activity alerts: likes, comments, follows, mentions</div>
+          <ul class="field-list">
+            <li class="field-item"><div class="field-left"><span class="field-name">notification_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">recipient_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT ➔ users</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">actor_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT ➔ users (NULLable)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">type</span></div><span class="field-type">ENUM(...)</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">target_id</span></div><span class="field-type">BIGINT NULL</span></li>
+            <li class="field-item"><div class="field-left"><span class="field-name">is_read</span></div><span class="field-type">BOOLEAN DEFAULT false</span></li>
           </ul>
         </div>
       </div>
@@ -1748,7 +1942,14 @@ graph TD
         <pre class="sql-code-block" id="sql-script">
 -- ========================================================
 -- INSTAGRAM DATABASE SCHEMA (Production-Ready DDL)
--- Compatible with PostgreSQL & MySQL 8.0+
+-- Dialect: PostgreSQL 14+  (See MySQL 8.0 notes below)
+--
+-- MySQL 8.0 translation notes:
+--   BIGSERIAL            -> BIGINT AUTO_INCREMENT
+--   TIMESTAMP WITH TIME ZONE -> TIMESTAMP
+--   CHECK / UNIQUE / FK  -> identical syntax supported
+--   INET                 -> VARCHAR(45)  (MySQL has no INET type)
+--   CITEXT / lower() idx -> MySQL utf8mb4_0900_ai_ci is already case-insensitive
 -- ========================================================
 
 -- 1. USERS TABLE
@@ -1780,6 +1981,7 @@ CREATE TABLE posts (
     likes_count BIGINT DEFAULT 0,
     comments_count BIGINT DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_posts_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
@@ -1868,6 +2070,7 @@ CREATE TABLE comments (
     parent_comment_id BIGINT,
     comment_text TEXT NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_comments_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
     CONSTRAINT fk_comments_post FOREIGN KEY (post_id) REFERENCES posts(post_id) ON DELETE CASCADE,
     CONSTRAINT fk_comments_parent FOREIGN KEY (parent_comment_id) REFERENCES comments(comment_id) ON DELETE CASCADE
@@ -1938,8 +2141,114 @@ CREATE TABLE suggestions (
     score DECIMAL(5,2) DEFAULT 0.0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_sug_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
-    CONSTRAINT fk_sug_candidate FOREIGN KEY (suggested_user_id) REFERENCES users(user_id) ON DELETE CASCADE
+    CONSTRAINT fk_sug_candidate FOREIGN KEY (suggested_user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    -- Prevent duplicate recommendation rows per user pair
+    CONSTRAINT uq_user_suggestion UNIQUE (user_id, suggested_user_id)
 );
+
+CREATE INDEX idx_suggestions_user_score ON suggestions(user_id, score DESC);
+
+-- 14. REEL LIKES TABLE (was referenced in ER but missing from DDL)
+CREATE TABLE reel_likes (
+    like_id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    reel_id BIGINT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_reel_likes_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    CONSTRAINT fk_reel_likes_reel FOREIGN KEY (reel_id) REFERENCES reels(reel_id) ON DELETE CASCADE,
+    CONSTRAINT uq_reel_user_like UNIQUE (user_id, reel_id)
+);
+
+CREATE INDEX idx_reel_likes_reel ON reel_likes(reel_id);
+
+-- 15. CONVERSATIONS TABLE (Direct Messages + Group Chat)
+CREATE TABLE conversations (
+    conversation_id BIGSERIAL PRIMARY KEY,
+    type VARCHAR(10) NOT NULL DEFAULT 'DIRECT' CHECK (type IN ('DIRECT', 'GROUP')),
+    group_name VARCHAR(100),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 16. CONVERSATION MEMBERS (Junction: users <-> conversations)
+CREATE TABLE conversation_members (
+    conversation_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    joined_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (conversation_id, user_id),
+    CONSTRAINT fk_cm_conversation FOREIGN KEY (conversation_id) REFERENCES conversations(conversation_id) ON DELETE CASCADE,
+    CONSTRAINT fk_cm_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_cm_user ON conversation_members(user_id);
+
+-- 17. MESSAGES TABLE (NOTE: no is_read column -> read state lives in message_reads)
+CREATE TABLE messages (
+    message_id BIGSERIAL PRIMARY KEY,
+    conversation_id BIGINT NOT NULL,
+    sender_id BIGINT NOT NULL,
+    message_text TEXT,
+    media_url VARCHAR(512),
+    sent_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_messages_conversation FOREIGN KEY (conversation_id) REFERENCES conversations(conversation_id) ON DELETE CASCADE,
+    CONSTRAINT fk_messages_sender FOREIGN KEY (sender_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+-- Critical index for "fetch last N messages of a conversation"
+CREATE INDEX idx_messages_conversation_time ON messages(conversation_id, sent_at DESC);
+
+-- 18. MESSAGE READS TABLE (per-member read receipts -> fixes group-chat is_read bug)
+CREATE TABLE message_reads (
+    message_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    read_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (message_id, user_id),
+    CONSTRAINT fk_mr_message FOREIGN KEY (message_id) REFERENCES messages(message_id) ON DELETE CASCADE,
+    CONSTRAINT fk_mr_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+-- 19. NOTIFICATIONS TABLE (was referenced in ER but never defined)
+CREATE TABLE notifications (
+    notification_id BIGSERIAL PRIMARY KEY,
+    recipient_id BIGINT NOT NULL,
+    actor_id BIGINT,
+    type VARCHAR(20) NOT NULL CHECK (type IN ('LIKE', 'COMMENT', 'FOLLOW', 'MENTION', 'STORY_VIEW')),
+    target_id BIGINT,
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_notif_recipient FOREIGN KEY (recipient_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    CONSTRAINT fk_notif_actor FOREIGN KEY (actor_id) REFERENCES users(user_id) ON DELETE SET NULL
+);
+
+-- Fast unread badge lookups per user
+CREATE INDEX idx_notifications_recipient ON notifications(recipient_id, is_read, created_at DESC);
+
+-- 20. SECURITY — PASSWORD RESET / OTP TOKENS (forgot-password flow storage)
+CREATE TABLE password_reset_tokens (
+    token_id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    otp_hash VARCHAR(255) NOT NULL,        -- NEVER store the raw OTP
+    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    consumed_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_prt_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_prt_user ON password_reset_tokens(user_id, expires_at);
+
+-- 21. SECURITY — REFRESH TOKEN / SESSION STORE (enables revoke-all-devices)
+CREATE TABLE user_sessions (
+    session_id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    refresh_token_hash VARCHAR(255) NOT NULL,  -- store hash, never raw token
+    device_info VARCHAR(255),
+    ip_address INET,
+    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    revoked_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_session_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_sessions_user ON user_sessions(user_id, expires_at);
         </pre>
       </div>
     </section>
@@ -1951,14 +2260,14 @@ CREATE TABLE suggestions (
           <div>
             <div class="diagram-title">
               <i data-lucide="webhook" style="color: var(--accent-cyan);"></i>
-              Instagram REST & Realtime API Architecture (42 Endpoints)
+              Instagram REST & Realtime API Architecture (46 Endpoints)
             </div>
             <div class="diagram-sub">
               Complete production API catalogue mapping HTTP verbs, routes, authentication headers, request payloads, response structures, and pagination standards.
             </div>
           </div>
           <span class="diagram-badge" style="background: rgba(6, 182, 212, 0.15); color: #38bdf8; border-color: rgba(6, 182, 212, 0.3);">
-            42 REST & WS ENDPOINTS
+            46 REST & WS ENDPOINTS
           </span>
         </div>
 
@@ -2119,7 +2428,7 @@ CREATE TABLE suggestions (
               </tr>
               <tr>
                 <td><span class="badge-method delete">DELETE</span></td>
-                <td><code>/api/v1/users/:id/unfollow</code></td>
+                <td><code>/api/v1/users/:id/follow</code></td>
                 <td>Bearer</td>
                 <td>None</td>
                 <td><code>200 OK { message: "Unfollowed successfully" }</code></td>
@@ -2215,7 +2524,7 @@ CREATE TABLE suggestions (
         <!-- 5. Engagement Service -->
         <div class="api-category-header">
           <div class="api-category-title"><i data-lucide="heart" style="color: #ef4444;"></i> 5. Engagement Service (Likes, Comments & Saves)</div>
-          <span class="api-count-tag">8 APIs</span>
+          <span class="api-count-tag">9 APIs</span>
         </div>
         <div class="rel-table-container">
           <table>
@@ -2285,13 +2594,62 @@ CREATE TABLE suggestions (
                 <td>None</td>
                 <td><code>200 OK { is_saved: true }</code></td>
               </tr>
+              <tr>
+                <td><span class="badge-method delete">DELETE</span></td>
+                <td><code>/api/v1/posts/:id/save</code></td>
+                <td>Bearer</td>
+                <td>None</td>
+                <td><code>200 OK { is_saved: false }</code></td>
+              </tr>
             </tbody>
           </table>
         </div>
 
-        <!-- 6. Views & Analytics -->
+        <!-- 6. Reels Service -->
         <div class="api-category-header">
-          <div class="api-category-title"><i data-lucide="eye" style="color: #10b981;"></i> 6. Realtime Views & Analytics Engine</div>
+          <div class="api-category-title"><i data-lucide="video" style="color: #ff6b8b;"></i> 6. Reels Service (Short-Form Video)</div>
+          <span class="api-count-tag">3 APIs</span>
+        </div>
+        <div class="rel-table-container">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 90px;">Method</th>
+                <th style="width: 280px;">Endpoint Route</th>
+                <th style="width: 90px;">Auth</th>
+                <th>Request Body / Params</th>
+                <th>Success Response</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="badge-method post">POST</span></td>
+                <td><code>/api/v1/reels</code></td>
+                <td>Bearer</td>
+                <td><code>{ video_url, caption, audio_title, duration_seconds }</code></td>
+                <td><code>201 Created { reel_id, created_at }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method get">GET</span></td>
+                <td><code>/api/v1/feed/reels</code></td>
+                <td>Bearer</td>
+                <td>Query: <code>?cursor=...&amp;limit=10</code></td>
+                <td><code>200 OK { reels: [ { reel, creator, is_liked } ], next_cursor }</code></td>
+              </tr>
+              <tr>
+                <td><span class="badge-method post">POST</span></td>
+                <td><code>/api/v1/reels/:id/like</code></td>
+                <td>Bearer</td>
+                <td>None</td>
+                <td><code>200 OK { likes_count: 124, is_liked: true }</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 7. Views & Analytics -->
+        <div class="api-category-header">
+          <div class="api-category-title"><i data-lucide="eye" style="color: #10b981;"></i> 7. Realtime Views & Analytics Engine</div>
           <span class="api-count-tag">3 APIs</span>
         </div>
         <div class="rel-table-container">
@@ -2333,7 +2691,7 @@ CREATE TABLE suggestions (
 
         <!-- 7. Stories Service -->
         <div class="api-category-header">
-          <div class="api-category-title"><i data-lucide="clock" style="color: #f59e0b;"></i> 7. Ephemeral 24h Stories Service</div>
+          <div class="api-category-title"><i data-lucide="clock" style="color: #f59e0b;"></i> 8. Ephemeral 24h Stories Service</div>
           <span class="api-count-tag">4 APIs</span>
         </div>
         <div class="rel-table-container">
@@ -2382,7 +2740,7 @@ CREATE TABLE suggestions (
 
         <!-- 8. Feeds & Direct Chat -->
         <div class="api-category-header">
-          <div class="api-category-title"><i data-lucide="send" style="color: #6366f1;"></i> 8. Feeds, Reels & Realtime Direct Messaging</div>
+          <div class="api-category-title"><i data-lucide="send" style="color: #6366f1;"></i> 9. Home Feed & Realtime Direct Messaging</div>
           <span class="api-count-tag">5 APIs</span>
         </div>
         <div class="rel-table-container">
@@ -2408,7 +2766,7 @@ CREATE TABLE suggestions (
                 <td><span class="badge-method get">GET</span></td>
                 <td><code>/api/v1/feed/explore</code></td>
                 <td>Bearer</td>
-                <td>Query: <code>?page=1&limit=24</code></td>
+                <td>Query: <code>?cursor=...&limit=24</code></td>
                 <td><code>200 OK { grid: [ { post_id, thumbnail_url, likes_count } ] }</code></td>
               </tr>
               <tr>
@@ -2649,12 +3007,428 @@ graph TD
         </div>
       </div>
     </section>
+
+    <!-- VIEW 10: Correction Notes -->
+    <section id="view-corrections" class="view-section">
+      <div class="diagram-card">
+        <div class="diagram-header">
+          <div>
+            <div class="diagram-title">
+              <i data-lucide="wrench" style="color: var(--accent-amber);"></i>
+              Correction Notes — Bugs Found & Fixed
+            </div>
+            <div class="diagram-sub">
+              Every mistake found during the senior review of this DB & API design, why it matters (or why it doesn't), and exactly how it was fixed above.
+            </div>
+          </div>
+          <span class="diagram-badge" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border-color: rgba(245, 158, 11, 0.3);">
+            16 REVIEW FINDINGS
+          </span>
+        </div>
+
+        <div class="rel-table-container">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 40px;">#</th>
+                <th style="width: 130px;">Area</th>
+                <th style="width: 100px;">Severity</th>
+                <th style="width: 230px;">Mistake Found</th>
+                <th>Why It Matters (or Not)</th>
+                <th>Fix Applied</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td>
+                <td>Chat / DM</td>
+                <td><span class="badge-cardinality one-to-one" style="background: rgba(239,68,68,0.18); color: #f87171; border-color: rgba(239,68,68,0.4);">CRITICAL</span></td>
+                <td><code>messages.is_read</code> BOOLEAN</td>
+                <td>A single boolean cannot represent per-member read state in a GROUP chat (the table supports <code>type='GROUP'</code>). Either the sender marks a message read for everyone, or reads crash. Read receipts would be wrong from day one.</td>
+                <td>Removed <code>is_read</code>; added <code>message_reads(message_id, user_id, read_at)</code> junction table (ER + DDL).</td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td>SQL DDL</td>
+                <td><span class="badge-cardinality one-to-one" style="background: rgba(239,68,68,0.18); color: #f87171; border-color: rgba(239,68,68,0.4);">CRITICAL</span></td>
+                <td>DDL labeled "Production-Ready" was missing <code>reel_likes</code>, <code>conversations</code>, <code>conversation_members</code>, <code>messages</code>, <code>notifications</code></td>
+                <td>The ER diagram referenced these tables but the DDL skipped them. Running this script then importing the "full" schema would break every FK on those tables — migrations fail, codegen misreports the model.</td>
+                <td>Added all missing tables, FKs, UNIQUE constraints and indexes to the DDL.</td>
+              </tr>
+              <tr>
+                <td>3</td>
+                <td>ER Diagram</td>
+                <td><span class="badge-cardinality one-to-one" style="background: rgba(245,158,11,0.18); color: #fbbf24; border-color: rgba(245,158,11,0.4);">HIGH</span></td>
+                <td>Dangling <code>NOTIFICATIONS</code> relation + badge said "16 TABLES" but 18 were defined</td>
+                <td><code>USERS ||--o{ NOTIFICATIONS</code> pointed at a table that doesn't exist anywhere (no entity, no DDL). The "16 tables" badge disagrees with the actual 18 entities. Documentation that contradicts itself misleads the whole team.</td>
+                <td>Added <code>notifications</code> entity + DDL; badge corrected to 19.</td>
+              </tr>
+              <tr>
+                <td>4</td>
+                <td>Constraints</td>
+                <td><span class="badge-cardinality one-to-one" style="background: rgba(245,158,11,0.18); color: #fbbf24; border-color: rgba(245,158,11,0.4);">HIGH</span></td>
+                <td><code>comments.parent_comment_id</code>: matrix said <code>ON DELETE SET NULL</code>, DDL said <code>ON DELETE CASCADE</code></td>
+                <td>Two sources of truth disagree: one promises replies survive parent deletion, the other silently deletes the whole thread. In production this is an unpredictable data-loss bug.</td>
+                <td>Unified to <code>CASCADE</code> (delete thread) in both. Recommend soft-delete (<code>deleted_at</code> + placeholder "[deleted]") in code.</td>
+              </tr>
+              <tr>
+                <td>5</td>
+                <td>Schema Types</td>
+                <td><span class="badge-cardinality one-to-one" style="background: rgba(245,158,11,0.18); color: #fbbf24; border-color: rgba(245,158,11,0.4);">HIGH</span></td>
+                <td>ER used <code>int</code> PKs/counters while DDL used <code>BIGSERIAL</code></td>
+                <td><code>INT</code> overflows at ~2.1 billion. At Instagram scale (500M+ DAU, billions of likes/views) the counters and IDs blow past INT. Doc/DDL type drift causes silent truncation bugs.</td>
+                <td>ER entity types normalized to <code>bigint</code> (IDs and counters), <code>decimal</code> for scores.</td>
+              </tr>
+              <tr>
+                <td>6</td>
+                <td>Schema Types</td>
+                <td><span class="badge-cardinality one-to-one" style="background: rgba(16,185,129,0.18); color: #34d399; border-color: rgba(16,185,129,0.4);">MEDIUM</span></td>
+                <td>ER said <code>float</code>, DDL said <code>DECIMAL(5,2)</code> for <code>suggestions.score</code></td>
+                <td>Minor inconsistency, but <code>FLOAT</code> is approximate and can't be relied on for ranking ties. Doc drift again.</td>
+                <td>Standardized on <code>DECIMAL(5,2)</code> in ER.</td>
+              </tr>
+              <tr>
+                <td>7</td>
+                <td>API Pagination</td>
+                <td><span class="badge-cardinality one-to-one" style="background: rgba(245,158,11,0.18); color: #fbbf24; border-color: rgba(245,158,11,0.4);">HIGH</span></td>
+                <td><code>GET /feed/explore</code> used <code>?page=1&limit=24</code></td>
+                <td>Violates the doc's own cursor pagination rule. <code>OFFSET</code> gets slower (full table scan each page) and returns duplicates/misses when rows are inserted during paging.</td>
+                <td>Changed to <code>?cursor=...&amp;limit=24</code>.</td>
+              </tr>
+              <tr>
+                <td>8</td>
+                <td>API REST Design</td>
+                <td><span class="badge-cardinality one-to-one" style="background: rgba(16,185,129,0.18); color: #34d399; border-color: rgba(16,185,129,0.4);">MEDIUM</span></td>
+                <td>Follow = <code>POST /users/:id/follow</code>, Unfollow = <code>DELETE /users/:id/unfollow</code></td>
+                <td>Two different URL shapes for one relationship, and an action-verb (<code>/unfollow</code>) in the path. Inconsistent with the likes pattern (<code>POST/DELETE /posts/:id/like</code>).</td>
+                <td>Unfollow is now <code>DELETE /api/v1/users/:id/follow</code>, matching the like/unlike convention.</td>
+              </tr>
+              <tr>
+                <td>9</td>
+                <td>API Coverage</td>
+                <td><span class="badge-cardinality one-to-one" style="background: rgba(16,185,129,0.18); color: #34d399; border-color: rgba(16,185,129,0.4);">MEDIUM</span></td>
+                <td>No <code>DELETE /posts/:id/save</code> (unsave) endpoint</td>
+                <td>Users could save but never un-save. Half a feature shipped.</td>
+                <td>Added <code>DELETE /api/v1/posts/:id/save</code>.</td>
+              </tr>
+              <tr>
+                <td>10</td>
+                <td>API Coverage</td>
+                <td><span class="badge-cardinality one-to-one" style="background: rgba(16,185,129,0.18); color: #34d399; border-color: rgba(16,185,129,0.4);">MEDIUM</span></td>
+                <td>Reels tables existed but zero Reels endpoints</td>
+                <td>Mobile clients cannot publish reels, watch the reels feed, or like reels through the documented API even though the schema supports them.</td>
+                <td>Added Reels service: POST /reels, GET /feed/reels, POST /reels/:id/like.</td>
+              </tr>
+              <tr>
+                <td>11</td>
+                <td>Schema Audit</td>
+                <td><span class="badge-cardinality one-to-one" style="background: rgba(16,185,129,0.18); color: #34d399; border-color: rgba(16,185,129,0.4);">MEDIUM</span></td>
+                <td>Editable content (<code>posts</code>, <code>comments</code>) had no <code>updated_at</code></td>
+                <td><code>PATCH /posts/:id</code> and comment edits exist, so nothing records "when was this last edited" — no audit trail, broken cache invalidation, stale UI.</td>
+                <td>Added <code>updated_at TIMESTAMPTZ</code> to <code>posts</code> and <code>comments</code> (DDL + ER).</td>
+              </tr>
+              <tr>
+                <td>12</td>
+                <td>Constraints</td>
+                <td><span class="badge-cardinality one-to-one" style="background: rgba(16,185,129,0.18); color: #34d399; border-color: rgba(16,185,129,0.4);">MEDIUM</span></td>
+                <td>No <code>UNIQUE(user_id, suggested_user_id)</code> on <code>suggestions</code></td>
+                <td>Recomputed recommendation jobs run daily; without the unique pair they fill the table with duplicates and your recos look broken.</td>
+                <td>Added unique constraint + <code>(user_id, score DESC)</code> index.</td>
+              </tr>
+              <tr>
+                <td>13</td>
+                <td>Data Model</td>
+                <td><span class="badge-cardinality one-to-one" style="background: rgba(16,185,129,0.18); color: #34d399; border-color: rgba(16,185,129,0.4);">MEDIUM</span></td>
+                <td>Email uniqueness is case-sensitive</td>
+                <td>PostgreSQL <code>UNIQUE(email)</code> lets <code>A@x.com</code> and <code>a@x.com</code> both register → duplicate accounts and login confusion.</td>
+                <td>Normalize to lowercase on write + enforce case-insensitive uniqueness (<code>CITEXT</code> or a <code>UNIQUE index ON (lower(email))</code>) — see Security Design.</td>
+              </tr>
+              <tr>
+                <td>14</td>
+                <td>Data Integrity</td>
+                <td><span class="badge-cardinality one-to-one" style="background: rgba(16,185,129,0.18); color: #34d399; border-color: rgba(16,185,129,0.4);">MEDIUM</span></td>
+                <td>Denormalized counters (<code>views_count</code>, <code>hashtags.post_count</code>) had no producer/trigger defined</td>
+                <td>Cached counters drift forever unless an async worker owns them. They'll be right at launch and wrong within a week.</td>
+                <td>Documented worker-owned counters (already implied by the view pipeline). Add idempotent "flush" jobs; tolerate eventual consistency.</td>
+              </tr>
+              <tr>
+                <td>15</td>
+                <td>Scalability</td>
+                <td><span class="badge-cardinality one-to-one" style="background: rgba(245,158,11,0.18); color: #fbbf24; border-color: rgba(245,158,11,0.4);">HIGH</span></td>
+                <td><code>post_views</code> is an unbounded append-only event log with no partitioning/retention</td>
+                <td>Every 3-second watch inserts a row. At 100k DAU that's ~350M+ rows/month. Queries slow, storage explodes, index bloat.</td>
+                <td>Required: partition by month, TTL retention (e.g. keep 13 months), and aggregate unique views via HyperLogLog in Redis (as the workflow already diagrams).</td>
+              </tr>
+              <tr>
+                <td>16</td>
+                <td>Security</td>
+                <td><span class="badge-cardinality one-to-one" style="background: rgba(239,68,68,0.18); color: #f87171; border-color: rgba(239,68,68,0.4);">CRITICAL</span></td>
+                <td>Forgot-password / refresh flows had no backing storage and no password policy</td>
+                <td><code>POST /auth/forgot-password</code> and refresh tokens reference data (<code>otp</code>, session) that has no table. You can't validate OTPs, rotate sessions, or revoke a stolen device.</td>
+                <td>Added <code>password_reset_tokens</code> + <code>user_sessions</code> tables; full controls in the Security Design tab.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div style="padding: 18px 22px; background: rgba(15, 23, 42, 0.7); border-radius: 14px; border: 1px solid var(--border-color);">
+          <h4 style="color: #fbbf24; font-size: 1rem; margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+            <i data-lucide="lightbulb" style="width: 16px; height: 16px;"></i> How to read severity
+          </h4>
+          <p style="color: var(--text-muted); font-size: 0.875rem; line-height: 1.55;">
+            <strong style="color: #f87171;">CRITICAL</strong> — will break data correctness, migrations, or security in production. <strong style="color: #fbbf24;">HIGH</strong> — costs real money/incidents at scale or contradicts another part of the doc. <strong style="color: #34d399;">MEDIUM/LOW</strong> — quality-of-life, inconsistency, or non-blocking (still fixed). Everything above was applied to the schema/API <em>and</em> its documentation so the two never disagree again.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 11: Security Design -->
+    <section id="view-security" class="view-section">
+      <div class="diagram-card">
+        <div class="diagram-header">
+          <div>
+            <div class="diagram-title">
+              <i data-lucide="shield-alert" style="color: var(--accent-green);"></i>
+              Security Design — Controls to Integrate
+            </div>
+            <div class="diagram-sub">
+              The production checklist for this schema + API: authentication, authorization, data protection, and hardening at every layer. Mark each item done as you integrate it.
+            </div>
+          </div>
+          <span class="diagram-badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.3);">
+            6 CONTROL GROUPINGS
+          </span>
+        </div>
+
+        <div class="decision-grid" style="grid-template-columns: repeat(auto-fit, minmax(460px, 1fr));">
+          <!-- Security 1: Authentication -->
+          <div class="decision-card">
+            <div class="decision-title">
+              <i data-lucide="key-round" style="color: #34d399;"></i>
+              1. Authentication & Session Management
+            </div>
+            <div class="decision-box">
+              <h4>Password storage</h4>
+              <p>
+                Store only <code>password_hash</code> produced by <strong>Argon2id</strong> or <strong>bcrypt (cost ≥ 12)</strong> — never MD5/SHA1/plaintext, never in the API response, never in logs. Add a per-user <code>password_changed_at</code> column to force token re-issuance after password resets.
+              </p>
+            </div>
+            <div class="decision-box">
+              <h4>JWT strategy</h4>
+              <p>
+                Short-lived access tokens (<strong>15 min</strong>), long-lived rotating refresh tokens (<strong>14–30 days</strong>). Sign with <strong>RS256</strong>, include <code>iss</code>/<code>aud</code>/<code>exp</code>/<code>iat</code>/<code>jti</code>. On every refresh rotate the token and detect reuse (stolen-token signal) — then revoke the whole session. Store refresh-token <em>hashes</em> in the new <code>user_sessions</code> table.
+              </p>
+            </div>
+            <div class="decision-box">
+              <h4>Token storage on client</h4>
+              <p>
+                Refresh tokens in <strong>httpOnly + Secure + SameSite=Lax</strong> cookies; never in <code>localStorage</code> (XSS-exfiltrable). Access tokens in memory only. Support "log out all devices" by <code>REVOKE</code> on <code>user_sessions</code>.
+              </p>
+            </div>
+            <div class="decision-box">
+              <h4>Login / OTP hardening</h4>
+              <p>
+                Rate-limit login, register, OTP, and refresh routes per IP + per account (e.g. 5/min) with exponential backoff. <strong>Prevent user enumeration</strong>: identical response for "account not found" vs "wrong password". OTPs: 6 digits, hashed in <code>password_reset_tokens.otp_hash</code>, 5-minute TTL, single-use, and never logged. Enable <strong>2FA/MFA (TOTP)</strong> for high-value accounts.
+              </p>
+            </div>
+          </div>
+
+          <!-- Security 2: Authorization -->
+          <div class="decision-card">
+            <div class="decision-title">
+              <i data-lucide="shield-check" style="color: #38bdf8;"></i>
+              2. Authorization — Prevent Broken Access Control (IDOR)
+            </div>
+            <div class="decision-box">
+              <h4>Owner-only mutations</h4>
+              <p>
+                <code>PATCH/DELETE /posts/:id</code>, <code>DELETE /comments/:id</code>, <code>DELETE /stories/:id</code>, and <code>GET /posts/:id/insights</code> must verify <strong>the authenticated user owns the resource</strong> before touching it. Always derive the actor from the token, never accept it in the body/URL.
+              </p>
+            </div>
+            <div class="decision-box">
+              <h4>Private-account access rules</h4>
+              <p>
+                Enforce "follow or be an approved follower to view" for <code>is_private = true</code> accounts on posts, stories, followers, and following lists. A private user's media must also be <em>denied at the storage layer</em> (signed URLs), not just hidden in the UI.
+              </p>
+            </div>
+            <div class="decision-box">
+              <h4>DM conversation membership</h4>
+              <p>
+                Before reading/sending <code>POST /conversations/:id/messages</code> or opening <code>/ws/v1/chat</code>, verify the caller is a row in <code>conversation_members</code>. One missing check = private chat leak — the #1 social-media CVE class.
+              </p>
+            </div>
+            <div class="decision-box">
+              <h4>Object IDs & mass assignment</h4>
+              <p>
+                Prefer non-sequential/snowflake IDs so IDs can't be scraped. Whitelist fields on every PATCH (<code>full_name</code>, <code>bio</code>, <code>website</code>…) — never bind raw JSON into the user object (would allow setting <code>is_verified</code>). Idempotency keys on POST like/comment to stop double-application.
+              </p>
+            </div>
+          </div>
+
+          <!-- Security 3: Injection & Input -->
+          <div class="decision-card">
+            <div class="decision-title">
+              <i data-lucide="bug" style="color: #a855f7;"></i>
+              3. Injection & Input Validation
+            </div>
+            <div class="decision-box">
+              <h4>SQL injection</h4>
+              <p>
+                Parameterized queries / ORM everywhere. Never string-concatenate SQL. Least-privilege DB role for the app (no superuser, no <code>pg_dump</code> access from web tier).
+              </p>
+            </div>
+            <div class="decision-box">
+              <h4>XSS / stored output</h4>
+              <p>
+                <code>caption</code>, <code>comment_text</code>, <code>bio</code>, <code>username</code> are attacker-controlled and rendered by clients. Encode output, sanitize on write (allow-list), add CSP, and a strict <code>connect-src</code>. Treat <code>website</code> carefully — it's a clickable URL (SSRF + phishing surface); validate scheme to <code>https://</code> only.
+              </p>
+            </div>
+            <div class="decision-box">
+              <h4>File upload abuse</h4>
+              <p>
+                Presigned-S3 flow (<code>POST /media/presigned-url</code>) must pin: max file size (≤10MB image, ≤50MB video), allow-listed content types, and 2-minute expiry. On upload confirm the <strong>magic bytes</strong> (not the client MIME), re-encode images, virus-scan, and store under random keys in a private bucket — public reads only via CDN/signed URL.
+              </p>
+            </div>
+            <div class="decision-box">
+              <h4>SSRF & link safety</h4>
+              <p>
+                Never let clients fetch arbitrary URLs server-side (their "website", og-preview, media import). Validate + DNS-pin + block link-local/metadata IPs. WebSocket auth token must come via subprotocol or first-frame message — never rely on a token in the query string (it leaks into logs and proxies).
+              </p>
+            </div>
+          </div>
+
+          <!-- Security 4: Transport & Secrets -->
+          <div class="decision-card">
+            <div class="decision-title">
+              <i data-lucide="lock" style="color: #f59e0b;"></i>
+              4. Transport, Secrets & Infra Hardening
+            </div>
+            <div class="decision-box">
+              <h4>TLS & security headers</h4>
+              <p>
+                TLS 1.2+ (ideally 1.3) with HSTS preload on all domains. Set <code>X-Content-Type-Options: nosniff</code>, <code>X-Frame-Options: DENY</code>, <code>Referrer-Policy</code>, and a strict CSP. CSRF protection (double-submit / Origin check) for anything cookie-authenticated.
+              </p>
+            </div>
+            <div class="decision-box">
+              <h4>Secrets & keys</h4>
+              <p>
+                JWT signing keys, S3 keys, DB passwords in a vault/env (never in the repo, never in client bundles). Rotate on schedule and on any leak. Encrypt media keys in DB; the DB itself stored encrypted at rest (KMS).
+              </p>
+            </div>
+            <div class="decision-box">
+              <h4>Rate limiting & abuse</h4>
+              <p>
+                Throttle the view beacon (<code>POST /posts/:id/views</code>) and like endpoints per user — otherwise one script inflates counts (fake engagement) and burns IOPS. Use token-bucket in Redis; return <code>429</code> with <code>Retry-After</code>. Add CAPTCHA/turnstile on register and follow-spam hotspots.
+              </p>
+            </div>
+            <div class="decision-box">
+              <h4>Logging & monitoring</h4>
+              <p>
+                Audit-log security events (login, logout, password reset, token refresh, account delete). <strong>Never log</strong> passwords, tokens, OTPs, or emails — redact PII. Ship to a SIEM with alerts on: repeated 401s, refresh-token reuse, impossible login geography.
+              </p>
+            </div>
+          </div>
+
+          <!-- Security 5: Data Protection & Privacy -->
+          <div class="decision-card">
+            <div class="decision-title">
+              <i data-lucide="database-zap" style="color: #06b6d4;"></i>
+              5. Data Protection & Privacy (GDPR-ready)
+            </div>
+            <div class="decision-box">
+              <h4>Email / PII</h4>
+              <p>
+                Lowercase emails before insert and enforce case-insensitive uniqueness (PostgreSQL <code>CITEXT</code>, or <code>UNIQUE index ON (lower(email))</code>). Encrypt high-sensitivity PII fields at the application layer (KMS envelope). Never expose the raw email/phone via <code>GET /users/:username</code> — a public profile must never return <code>email</code>.
+              </p>
+            </div>
+            <div class="decision-box">
+              <h4>Right to erasure / soft delete</h4>
+              <p>
+                Add <code>deleted_at</code> (soft delete) to users, posts, comments, messages. CASCADE hard-delete destroys fanout histories, replies, and chat evidence. Use a purge pipeline that anonymizes PII (username → "user_<id>", email removed) and physically deletes only after a retention window.
+              </p>
+            </div>
+            <div class="decision-box">
+              <h4>Media access control</h4>
+              <p>
+                Private accounts' media requires signed, expiring CDN URLs. Even public media shouldn't be guessable — random opaque keys, not <code>/users/5/post_1.jpg</code>. Stories must reject any access past <code>expires_at</code> at both the API and storage layer.
+              </p>
+            </div>
+            <div class="decision-box">
+              <h4>Session on password change</h4>
+              <p>
+                Reset password → rotate <code>refresh_token</code> family, invalidate other sessions, bump <code>password_changed_at</code>. Email the user about the change; send security alerts for new-device or new-IP logins.
+              </p>
+            </div>
+          </div>
+
+          <!-- Security 6: AppSec & Compliance -->
+          <div class="decision-card">
+            <div class="decision-title">
+              <i data-lucide="scan-search" style="color: #f87171;"></i>
+              6. Application Security Lifecycle
+            </div>
+            <div class="decision-box">
+              <h4>Dependencies & pipelines</h4>
+              <p>
+                Automated dependency scanning (npm/cargo/Go vuln), SAST on every PR, DAST on staging, and container-image scanning before deploy. Keep the base images patched; run containers as non-root with read-only root FS.
+              </p>
+            </div>
+            <div class="decision-box">
+              <h4>WAF & edge</h4>
+              <p>
+                Cloudflare/AWS WAF in front of the ALB: SQLi/XSS rule sets, per-IP rate limiting, geo-blocking abuse. Enable bot management on register/login. Validate <code>Content-Type</code>-specific API traffic at the edge.
+              </p>
+            </div>
+            <div class="decision-box">
+              <h4>Incident response</h4>
+              <p>
+                Document runbooks for: leaked JWT key, credential stuffing spike, CSRF/IDOR report, and account-takeover wave. Keep encrypted, tested, restorable backups (RPO ≤ 15 min) and practice the restore drill quarterly.
+              </p>
+            </div>
+            <div class="decision-box">
+              <h4>Compliance checklist</h4>
+              <p>
+                GDPR (erasure + consent logs), COPPA (13+ age gate at register), and platform rules (content moderation, takedown pipeline, abuse reporting). Add a <code>content_reports</code> table when you build reporting — it's a compliance gap if reporting is unimplemented.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="math-callout">
+          <h4 style="color: #34d399; font-size: 1.05rem; display: flex; align-items: center; gap: 8px;">
+            <i data-lucide="list-checks" style="width: 18px; height: 18px;"></i>
+            Minimum Viable Security Gate (before any public launch)
+          </h4>
+          <div class="math-grid">
+            <div class="math-card">
+              <h4>Must-Fix #1 — Auth</h4>
+              <p>Argon2id/bcrypt hashing, 15-min access + rotating refresh tokens stored as hashes in <code>user_sessions</code>, httpOnly refresh cookie, OTP hashed & single-use.</p>
+            </div>
+            <div class="math-card">
+              <h4>Must-Fix #2 — IDOR</h4>
+              <p>Owner checks on every mutating endpoint, private-account follower gating, DM membership checks, whitelisted PATCH fields.</p>
+            </div>
+            <div class="math-card">
+              <h4>Must-Fix #3 — Injection</h4>
+              <p>Parameterized queries, output encoding + CSP, magic-byte media validation, SSRF-safe URL handling.</p>
+            </div>
+            <div class="math-card">
+              <h4>Must-Fix #4 — Ops</h4>
+              <p>TLS + HSTS, rate limiting per IP/user, audit logging without PII, secrets in vault, tested encrypted backups.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
 
   <script>
-    // Initialize Mermaid with custom aesthetic dark theme
+    // Initialize Mermaid with custom aesthetic dark theme.
+    // NB: startOnLoad MUST stay false. Rendering diagrams while their section is
+    // display:none makes Mermaid compute the layout at 0 width -> broken NaN
+    // SVG paths and a blank/errored diagram. We lazy-render per tab instead.
     mermaid.initialize({
-      startOnLoad: true,
+      startOnLoad: false,
       theme: 'dark',
       themeVariables: {
         darkMode: true,
@@ -2670,24 +3444,31 @@ graph TD
       }
     });
 
+    // Render only the mermaid diagrams inside the currently VISIBLE section.
+    // Guards with :not([data-processed]) so a tab is never re-rendered.
+    function renderActiveMermaid() {
+      const active = document.querySelector('.view-section.active');
+      if (active && typeof mermaid !== 'undefined' && mermaid.run) {
+        mermaid.run({
+          nodes: active.querySelectorAll('.mermaid:not([data-processed="true"])')
+        }).catch(function(err) {
+          console.log('Mermaid render info:', err);
+        });
+      }
+    }
+
     // Tab Switching Functionality with dynamic Mermaid rendering
     function switchView(viewId, btn) {
       document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      
+
       const target = document.getElementById(viewId);
       if (target) {
         target.classList.add('active');
         btn.classList.add('active');
 
-        // Dynamically run Mermaid on elements in newly opened tab if needed
-        if (typeof mermaid !== 'undefined' && mermaid.run) {
-          mermaid.run({
-            nodes: target.querySelectorAll('.mermaid:not([data-processed="true"])')
-          }).catch(function(err) {
-            console.log('Mermaid render info:', err);
-          });
-        }
+        // Only now is the section visible -> safe to render its diagrams
+        renderActiveMermaid();
       }
 
       // Re-trigger lucide icons
@@ -2708,7 +3489,8 @@ graph TD
       });
     }
 
-    // Initialize Lucide Icons
+    // Render the initially visible tab (Enterprise ER Diagram), then icons
+    renderActiveMermaid();
     lucide.createIcons();
   </script>
 </body>
