@@ -1,0 +1,3577 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Matrimonial Website Enterprise Architecture, Database Design & Section-Wise Collapsible REST API Specification. Features multi-manager family access model, 21 relational tables, interactive ERD, and 54 production REST/WebSocket endpoints. Light Theme edition.">
+  <title>Matrimonial System — Database Architecture & Complete API Specification</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Mermaid.js -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.8/dist/mermaid.min.js"></script>
+
+  <style>
+    /* ==========================================================================
+       THEME DESIGN SYSTEM (Default: Luxury Light Theme, with Dark Mode Support)
+       ========================================================================== */
+    :root, [data-theme="light"] {
+      --bg-page: #f8fafc;
+      --bg-surface: #ffffff;
+      --bg-card: #ffffff;
+      --bg-card-subtle: #f1f5f9;
+      --bg-card-hover: #ffffff;
+      --border-color: rgba(0, 0, 0, 0.08);
+      --border-light: rgba(0, 0, 0, 0.04);
+      --border-active: rgba(225, 29, 72, 0.45);
+
+      /* Matrimonial signature brand colors: Romance Crimson Rose, Royal Indigo & Regal Amber */
+      --mat-rose: #e11d48;
+      --mat-rose-hover: #be123c;
+      --mat-rose-subtle: #ffe4e6;
+      --mat-rose-border: #fecdd3;
+      --mat-indigo: #4f46e5;
+      --mat-indigo-subtle: #e0e7ff;
+      --mat-gold: #d97706;
+      --mat-gold-subtle: #fef3c7;
+      --mat-emerald: #059669;
+      --mat-emerald-subtle: #dcfce7;
+      --mat-cyan: #0284c7;
+      --mat-cyan-subtle: #e0f2fe;
+      --mat-purple: #9333ea;
+      --mat-purple-subtle: #f3e8ff;
+
+      --primary-gradient: linear-gradient(135deg, #e11d48 0%, #be123c 60%, #9f1239 100%);
+      --accent-gradient: linear-gradient(135deg, #d97706 0%, #e11d48 100%);
+      --badge-gradient: linear-gradient(135deg, rgba(225, 29, 72, 0.1) 0%, rgba(217, 119, 6, 0.1) 100%);
+
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --text-dim: #64748b;
+
+      --card-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.03);
+      --card-shadow-hover: 0 12px 30px -4px rgba(225, 29, 72, 0.12), 0 4px 12px -2px rgba(0, 0, 0, 0.05);
+      --toolbar-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(0, 0, 0, 0.05);
+
+      --table-header-bg: #f8fafc;
+      --table-row-hover: rgba(225, 29, 72, 0.025);
+      --code-bg: #f1f5f9;
+      --code-text: #be123c;
+      --code-border: #e2e8f0;
+
+      --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'Fira Code', monospace;
+    }
+
+    [data-theme="dark"] {
+      --bg-page: #070b14;
+      --bg-surface: #0c1424;
+      --bg-card: rgba(13, 22, 39, 0.78);
+      --bg-card-subtle: rgba(20, 34, 61, 0.7);
+      --bg-card-hover: rgba(20, 34, 61, 0.9);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-light: rgba(255, 255, 255, 0.04);
+      --border-active: rgba(244, 63, 94, 0.55);
+
+      --mat-rose: #f43f5e;
+      --mat-rose-hover: #fb7185;
+      --mat-rose-subtle: rgba(244, 63, 94, 0.2);
+      --mat-rose-border: rgba(244, 63, 94, 0.4);
+      --mat-indigo: #6366f1;
+      --mat-indigo-subtle: rgba(99, 102, 241, 0.2);
+      --mat-gold: #f59e0b;
+      --mat-gold-subtle: rgba(245, 158, 11, 0.2);
+      --mat-emerald: #10b981;
+      --mat-emerald-subtle: rgba(16, 185, 129, 0.2);
+      --mat-cyan: #06b6d4;
+      --mat-cyan-subtle: rgba(6, 182, 212, 0.2);
+      --mat-purple: #a855f7;
+      --mat-purple-subtle: rgba(168, 85, 247, 0.2);
+
+      --primary-gradient: linear-gradient(135deg, #f43f5e 0%, #e11d48 50%, #881337 100%);
+      --accent-gradient: linear-gradient(135deg, #f59e0b 0%, #f43f5e 100%);
+      --badge-gradient: linear-gradient(135deg, rgba(244, 63, 94, 0.25) 0%, rgba(245, 158, 11, 0.15) 100%);
+
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+
+      --card-shadow: 0 10px 30px rgba(0,0,0,0.35);
+      --card-shadow-hover: 0 14px 34px rgba(244, 63, 94, 0.25);
+      --toolbar-shadow: 0 16px 32px rgba(0, 0, 0, 0.55);
+
+      --table-header-bg: rgba(6, 13, 23, 0.95);
+      --table-row-hover: rgba(255, 255, 255, 0.02);
+      --code-bg: rgba(6, 13, 23, 0.9);
+      --code-text: #fda4af;
+      --code-border: rgba(244, 63, 94, 0.25);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-page);
+      background-image: 
+        radial-gradient(at 10% 12%, rgba(225, 29, 72, 0.07) 0px, transparent 50%),
+        radial-gradient(at 88% 18%, rgba(217, 119, 6, 0.06) 0px, transparent 48%),
+        radial-gradient(at 50% 90%, rgba(79, 70, 229, 0.05) 0px, transparent 50%);
+      background-attachment: fixed;
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      padding-bottom: 70px;
+      -webkit-font-smoothing: antialiased;
+      transition: background-color 0.25s ease, color 0.25s ease;
+    }
+
+    .container {
+      max-width: 1420px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Header */
+    header {
+      padding: 44px 0 24px;
+      text-align: center;
+    }
+
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 18px;
+      border-radius: 9999px;
+      background: var(--mat-rose-subtle);
+      border: 1px solid var(--mat-rose-border);
+      color: var(--mat-rose);
+      font-size: 0.825rem;
+      font-weight: 700;
+      margin-bottom: 18px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
+    h1 {
+      font-size: 2.85rem;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      background: linear-gradient(135deg, #0f172a 0%, #e11d48 55%, #d97706 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 14px;
+    }
+
+    [data-theme="dark"] h1 {
+      background: linear-gradient(135deg, #ffffff 0%, #fb7185 45%, #fbbf24 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 1.125rem;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    /* Top Stats Grid */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin: 32px 0 24px;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 18px 20px;
+      backdrop-filter: blur(12px);
+      transition: all 0.25s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--card-shadow);
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--mat-rose);
+    }
+
+    .stat-card:hover {
+      border-color: var(--border-active);
+      transform: translateY(-2px);
+      box-shadow: var(--card-shadow-hover);
+    }
+
+    .stat-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .stat-badge {
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .stat-badge.pillar-auth { background: var(--mat-indigo-subtle); color: var(--mat-indigo); border: 1px solid rgba(79, 70, 229, 0.3); }
+    .stat-badge.pillar-family { background: var(--mat-rose-subtle); color: var(--mat-rose); border: 1px solid rgba(225, 29, 72, 0.3); }
+    .stat-badge.pillar-match { background: var(--mat-gold-subtle); color: var(--mat-gold); border: 1px solid rgba(217, 119, 6, 0.3); }
+    .stat-badge.pillar-security { background: var(--mat-emerald-subtle); color: var(--mat-emerald); border: 1px solid rgba(5, 150, 105, 0.3); }
+
+    .stat-val {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .stat-desc {
+      font-size: 0.825rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    /* Toolbar & Navigation */
+    .toolbar {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 18px;
+      padding: 12px 18px;
+      backdrop-filter: blur(14px);
+      margin-bottom: 28px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 15px;
+      z-index: 100;
+      box-shadow: var(--toolbar-shadow);
+    }
+
+    .toolbar-brand {
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.95rem;
+    }
+
+    .toolbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .tab-group {
+      display: flex;
+      gap: 6px;
+      background: var(--bg-card-subtle);
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      flex-wrap: wrap;
+    }
+
+    .tab-btn {
+      padding: 9px 15px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 0.84rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-main);
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    [data-theme="dark"] .tab-btn:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .tab-btn.active {
+      background: var(--primary-gradient);
+      color: #fff !important;
+      box-shadow: 0 4px 14px rgba(225, 29, 72, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    /* Theme Switcher Button */
+    .theme-toggle-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: 10px;
+      background: var(--bg-card-subtle);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      font-size: 0.84rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .theme-toggle-btn:hover {
+      border-color: var(--mat-rose);
+      transform: translateY(-1px);
+    }
+
+    /* View Sections */
+    .view-section {
+      display: none;
+      animation: fadeIn 0.25s ease-out;
+    }
+
+    .view-section.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Diagram Card */
+    .diagram-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 28px;
+      backdrop-filter: blur(12px);
+      margin-bottom: 30px;
+      overflow-x: auto;
+      box-shadow: var(--card-shadow);
+    }
+
+    .diagram-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .diagram-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .diagram-sub {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      max-width: 950px;
+    }
+
+    .diagram-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      background: var(--mat-rose-subtle);
+      border: 1px solid var(--mat-rose-border);
+      color: var(--mat-rose);
+    }
+
+    .mermaid {
+      display: flex;
+      justify-content: center;
+      min-width: 950px;
+      margin: 10px auto;
+      background: var(--bg-card);
+      padding: 16px;
+      border-radius: 12px;
+    }
+
+    /* Callout & Principle Banner */
+    .callout-box {
+      margin: 24px 0;
+      padding: 22px 24px;
+      background: var(--mat-rose-subtle);
+      border-radius: 16px;
+      border: 1px solid var(--mat-rose-border);
+      border-left: 5px solid var(--mat-rose);
+    }
+
+    .callout-title {
+      color: var(--mat-rose);
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .callout-desc {
+      color: var(--text-main);
+      font-size: 0.91rem;
+      line-height: 1.6;
+    }
+
+    /* Core Separation Pillars */
+    .pillar-separation-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+      margin: 24px 0 32px;
+    }
+
+    .principle-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 18px;
+      padding: 24px;
+      backdrop-filter: blur(12px);
+      transition: all 0.25s ease;
+      position: relative;
+      box-shadow: var(--card-shadow);
+    }
+
+    .principle-card:hover {
+      border-color: var(--border-active);
+      transform: translateY(-2px);
+      box-shadow: var(--card-shadow-hover);
+    }
+
+    .principle-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .principle-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+    }
+
+    .principle-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .principle-subtitle {
+      font-size: 0.78rem;
+      color: var(--mat-rose);
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .principle-desc {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.55;
+      margin-bottom: 14px;
+    }
+
+    .principle-bullets {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 0.84rem;
+      color: var(--text-main);
+    }
+
+    .principle-bullets li {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .principle-bullets i {
+      color: var(--mat-emerald);
+      flex-shrink: 0;
+      margin-top: 3px;
+    }
+
+    /* Relationship Matrix Table */
+    .rel-table-container {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      overflow-x: auto;
+      backdrop-filter: blur(12px);
+      margin-bottom: 12px;
+      box-shadow: var(--card-shadow);
+      transition: all 0.25s ease;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th {
+      background: var(--table-header-bg);
+      padding: 14px 18px;
+      font-size: 0.825rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 2px solid var(--border-color);
+    }
+
+    td {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 0.91rem;
+      color: var(--text-main);
+      vertical-align: middle;
+    }
+
+    tr:hover td {
+      background: var(--table-row-hover);
+    }
+
+    code {
+      font-family: var(--font-mono);
+      background: var(--code-bg);
+      color: var(--code-text);
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-size: 0.85em;
+      border: 1px solid var(--code-border);
+      font-weight: 600;
+    }
+
+    /* Cardinality Badges */
+    .badge-cardinality {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .badge-cardinality.one-to-one { background: var(--mat-emerald-subtle); color: var(--mat-emerald); border: 1px solid rgba(5, 150, 105, 0.3); }
+    .badge-cardinality.one-to-many { background: var(--mat-cyan-subtle); color: var(--mat-cyan); border: 1px solid rgba(2, 132, 199, 0.3); }
+    .badge-cardinality.many-to-many { background: var(--mat-purple-subtle); color: var(--mat-purple); border: 1px solid rgba(147, 51, 234, 0.3); }
+
+    /* API Design Filter Bar */
+    .api-filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 22px;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-card-subtle);
+      padding: 14px 18px;
+      border-radius: 14px;
+      border: 1px solid var(--border-color);
+    }
+
+    .api-filter-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .api-filter-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .api-search-input {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 9px 14px 9px 36px;
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      font-size: 0.85rem;
+      width: 260px;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .api-search-input:focus {
+      border-color: var(--mat-rose);
+      box-shadow: 0 0 0 2px rgba(225, 29, 72, 0.2);
+    }
+
+    .search-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 11px;
+      color: var(--text-dim);
+      width: 16px;
+      height: 16px;
+      pointer-events: none;
+    }
+
+    .api-pills-filter {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .filter-pill {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .filter-pill:hover, .filter-pill.active {
+      background: var(--mat-rose-subtle);
+      border-color: var(--mat-rose-border);
+      color: var(--mat-rose);
+    }
+
+    /* Section Control Buttons (Expand All / Collapse All) */
+    .section-ctrl-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 12px;
+      border-radius: 8px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .section-ctrl-btn:hover {
+      border-color: var(--mat-rose);
+      color: var(--mat-rose);
+      transform: translateY(-1px);
+    }
+
+    /* ==========================================================================
+       SECTION-WISE COLLAPSIBLE ACCORDION STYLES
+       ========================================================================== */
+    .api-category-block {
+      margin-bottom: 22px;
+      border-radius: 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      box-shadow: var(--card-shadow);
+      overflow: hidden;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .api-category-block:hover {
+      border-color: var(--border-active);
+    }
+
+    .api-category-header {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-card);
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.2s ease;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .api-category-header:hover {
+      background: var(--bg-card-subtle);
+    }
+
+    .api-category-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .api-category-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .api-category-header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .api-count-tag {
+      font-size: 0.75rem;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: var(--mat-rose-subtle);
+      color: var(--mat-rose);
+      font-family: var(--font-mono);
+      font-weight: 700;
+      border: 1px solid var(--mat-rose-border);
+    }
+
+    .section-state-pill {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 6px;
+      background: var(--bg-card-subtle);
+      border: 1px solid var(--border-color);
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .section-toggle-icon {
+      width: 18px;
+      height: 18px;
+      color: var(--mat-rose);
+      transition: transform 0.25s ease;
+      flex-shrink: 0;
+    }
+
+    /* Collapsed state styling */
+    .api-category-block.collapsed .rel-table-container {
+      display: none;
+    }
+
+    .api-category-block.collapsed .api-category-header {
+      border-bottom: none;
+    }
+
+    .api-category-block.collapsed .section-toggle-icon {
+      transform: rotate(-90deg);
+    }
+
+    .api-category-block.collapsed .section-state-pill {
+      color: var(--mat-rose);
+      background: var(--mat-rose-subtle);
+      border-color: var(--mat-rose-border);
+    }
+
+    /* Method Badges (Crisp in Light Mode) */
+    .badge-method {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      text-align: center;
+      min-width: 65px;
+    }
+    .badge-method.get { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+    .badge-method.post { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+    .badge-method.put { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+    .badge-method.patch { background: #fce7f3; color: #be185d; border: 1px solid #fbcfe8; }
+    .badge-method.delete { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+    .badge-method.ws { background: #f3e8ff; color: #7e22ce; border: 1px solid #e9d5ff; }
+
+    .badge-auth {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .badge-auth.public { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+    .badge-auth.user { background: var(--mat-indigo-subtle); color: var(--mat-indigo); border: 1px solid rgba(79, 70, 229, 0.3); }
+    .badge-auth.manager { background: var(--mat-rose-subtle); color: var(--mat-rose); border: 1px solid rgba(225, 29, 72, 0.3); }
+    .badge-auth.admin { background: var(--mat-gold-subtle); color: var(--mat-gold); border: 1px solid rgba(217, 119, 6, 0.3); }
+
+    /* Schema Table Cards */
+    .schema-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+      gap: 20px;
+    }
+
+    .table-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 18px;
+      padding: 22px 24px;
+      backdrop-filter: blur(12px);
+      transition: all 0.2s ease;
+      box-shadow: var(--card-shadow);
+    }
+
+    .table-card:hover {
+      border-color: var(--mat-rose);
+      transform: translateY(-2px);
+      box-shadow: var(--card-shadow-hover);
+    }
+
+    .table-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 10px;
+    }
+
+    .table-name {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--mat-rose);
+      font-family: var(--font-mono);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .table-category-tag {
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      font-family: var(--font-mono);
+    }
+    .table-category-tag.auth { background: var(--mat-indigo-subtle); color: var(--mat-indigo); border: 1px solid rgba(79, 70, 229, 0.3); }
+    .table-category-tag.profile { background: var(--mat-rose-subtle); color: var(--mat-rose); border: 1px solid rgba(225, 29, 72, 0.3); }
+    .table-category-tag.search { background: var(--mat-gold-subtle); color: var(--mat-gold); border: 1px solid rgba(217, 119, 6, 0.3); }
+    .table-category-tag.comm { background: var(--mat-cyan-subtle); color: var(--mat-cyan); border: 1px solid rgba(2, 132, 199, 0.3); }
+
+    .table-purpose {
+      font-size: 0.825rem;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      font-style: italic;
+    }
+
+    .field-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .field-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      padding: 6px 10px;
+      background: var(--bg-card-subtle);
+      border-radius: 8px;
+      border: 1px solid var(--border-light);
+    }
+
+    .field-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .field-name {
+      font-family: var(--font-mono);
+      color: var(--text-main);
+      font-weight: 600;
+    }
+
+    .tag-pk {
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 2px 5px;
+      border-radius: 4px;
+      background: #fef3c7;
+      color: #b45309;
+      border: 1px solid #fde68a;
+    }
+
+    .tag-fk {
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 2px 5px;
+      border-radius: 4px;
+      background: #e0f2fe;
+      color: #0284c7;
+      border: 1px solid #bae6fd;
+    }
+
+    .tag-uk {
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 2px 5px;
+      border-radius: 4px;
+      background: #f3e8ff;
+      color: #9333ea;
+      border: 1px solid #e9d5ff;
+    }
+
+    .field-type {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    /* SQL DDL Box (Clean High-Contrast Terminal) */
+    .sql-code-block {
+      background: #0f172a;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      border-radius: 16px;
+      padding: 22px;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: #93c5fd;
+      overflow-x: auto;
+      line-height: 1.65;
+      position: relative;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .copy-btn:hover {
+      background: var(--primary-gradient);
+      border-color: transparent;
+    }
+
+    /* Security Box */
+    .security-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+
+    .security-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 18px;
+      padding: 22px 24px;
+      backdrop-filter: blur(12px);
+      box-shadow: var(--card-shadow);
+    }
+
+    .security-card h4 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .security-card p {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.55;
+    }
+
+    /* Toast Notification */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #059669;
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      display: none;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+      z-index: 1000;
+      backdrop-filter: blur(8px);
+    }
+
+    @media (max-width: 900px) {
+      h1 { font-size: 2rem; }
+      .toolbar { flex-direction: column; align-items: stretch; }
+      .tab-group { width: 100%; justify-content: center; }
+      .api-filter-bar { flex-direction: column; align-items: stretch; }
+      .api-filter-left, .api-filter-right { width: 100%; justify-content: space-between; }
+      .api-search-input { width: 100%; }
+      .schema-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="container">
+      <div class="badge-pill">
+        <i data-lucide="heart-handshake" style="width: 16px; height: 16px;"></i>
+        Matrimonial Platform System Architecture &bull; Light Theme
+      </div>
+      <h1>Matrimonial Database &amp; Complete API Specification</h1>
+      <p>High-security matchmaking platform architecture separating User Authentication from Matrimonial Profiles via Multi-Manager Family Authorization, 21 relational tables, and 54 production REST/WebSocket endpoints with section-wise collapsible views.</p>
+
+      <!-- Key Metrics Bar -->
+      <div class="stats-bar">
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-badge pillar-auth">Core Principle</span>
+            <i data-lucide="shield-check" style="width: 18px; height: 18px; color: var(--mat-indigo);"></i>
+          </div>
+          <div class="stat-val">Separated Identities</div>
+          <div class="stat-desc">Strict separation between Login Accounts (<code>users</code>) and Marriage Profiles (<code>profiles</code>).</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-badge pillar-family">Family Access</span>
+            <i data-lucide="users" style="width: 18px; height: 18px; color: var(--mat-rose);"></i>
+          </div>
+          <div class="stat-val">M : N Multi-Manager</div>
+          <div class="stat-desc">Parents, siblings &amp; candidates co-manage profiles with granular role permissions (Owner, Editor, Viewer).</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-badge pillar-match">Matchmaking Engine</span>
+            <i data-lucide="sparkles" style="width: 18px; height: 18px; color: var(--mat-gold);"></i>
+          </div>
+          <div class="stat-val">Preferences &amp; Proposals</div>
+          <div class="stat-desc">Algorithmic partner preferences, 2-way interest lifecycles, shortlisting, and mutual match scoring.</div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-header">
+            <span class="stat-badge pillar-security">Production Specs</span>
+            <i data-lucide="webhook" style="width: 18px; height: 18px; color: var(--mat-emerald);"></i>
+          </div>
+          <div class="stat-val">54 REST Endpoints</div>
+          <div class="stat-desc">Complete API specification with route purpose, payloads, HTTP statuses &amp; RBAC rules.</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- Global Navigation Toolbar -->
+    <div class="toolbar" id="main-toolbar">
+      <div class="toolbar-brand">
+        <i data-lucide="database" style="color: var(--mat-rose);"></i>
+        Matrimonial Architecture Portal
+      </div>
+
+      <div class="toolbar-actions">
+        <div class="tab-group" role="tablist">
+          <button class="tab-btn active" id="tab-btn-apis" onclick="switchView('view-apis', this)">
+            <i data-lucide="webhook" style="width: 15px; height: 15px;"></i> API Design (54 Endpoints)
+          </button>
+          <button class="tab-btn" id="tab-btn-architecture" onclick="switchView('view-architecture', this)">
+            <i data-lucide="layers" style="width: 15px; height: 15px;"></i> Core Multi-Manager Model
+          </button>
+          <button class="tab-btn" id="tab-btn-erd" onclick="switchView('view-erd', this)">
+            <i data-lucide="network" style="width: 15px; height: 15px;"></i> ER Diagram (21 Tables)
+          </button>
+          <button class="tab-btn" id="tab-btn-matrix" onclick="switchView('view-matrix', this)">
+            <i data-lucide="table-properties" style="width: 15px; height: 15px;"></i> Relationship Matrix
+          </button>
+          <button class="tab-btn" id="tab-btn-schema" onclick="switchView('view-schema', this)">
+            <i data-lucide="layout-grid" style="width: 15px; height: 15px;"></i> Table Dictionary
+          </button>
+          <button class="tab-btn" id="tab-btn-workflows" onclick="switchView('view-workflows', this)">
+            <i data-lucide="workflow" style="width: 15px; height: 15px;"></i> Pipelines &amp; Workflows
+          </button>
+          <button class="tab-btn" id="tab-btn-ddl" onclick="switchView('view-ddl', this)">
+            <i data-lucide="code" style="width: 15px; height: 15px;"></i> Production SQL DDL
+          </button>
+          <button class="tab-btn" id="tab-btn-security" onclick="switchView('view-security', this)">
+            <i data-lucide="shield-check" style="width: 15px; height: 15px;"></i> Security &amp; Compliance
+          </button>
+        </div>
+
+        <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()" title="Toggle Light / Dark Mode">
+          <i data-lucide="sun" id="themeIcon" style="width: 15px; height: 15px; color: var(--mat-gold);"></i>
+          <span id="themeText">Light</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- VIEW 1: API Design & Specification (54 Endpoints with Section-Wise Expand/Collapse) -->
+    <section id="view-apis" class="view-section active">
+      <div class="diagram-card">
+        <div class="diagram-header">
+          <div>
+            <div class="diagram-title">
+              <i data-lucide="webhook" style="color: var(--mat-rose);"></i>
+              Complete Production API Specification with Purpose of Each API
+            </div>
+            <div class="diagram-sub">
+              Versioned RESTful architecture (<code>/api/v1</code>) and WebSocket protocol with precise business purpose, request payloads, authorization constraints, and response status codes. Click on any section header to collapse or expand it.
+            </div>
+          </div>
+          <span class="diagram-badge">54 ENDPOINTS &bull; 16 SECTION BLOCKS</span>
+        </div>
+
+        <!-- Filter Bar with Section Controls -->
+        <div class="api-filter-bar">
+          <div class="api-filter-left">
+            <div class="search-wrapper">
+              <i data-lucide="search" class="search-icon"></i>
+              <input type="text" id="apiSearchInput" class="api-search-input" placeholder="Search API route or keyword..." onkeyup="filterApis()">
+            </div>
+
+            <div class="api-pills-filter">
+              <button class="filter-pill active" onclick="filterCategory('all', this)">All (54)</button>
+              <button class="filter-pill" onclick="filterCategory('auth', this)">Auth &amp; Account</button>
+              <button class="filter-pill" onclick="filterCategory('profile', this)">Profiles</button>
+              <button class="filter-pill" onclick="filterCategory('manager', this)">Multi-Manager</button>
+              <button class="filter-pill" onclick="filterCategory('kyc', this)">KYC &amp; Photos</button>
+              <button class="filter-pill" onclick="filterCategory('search', this)">Discovery</button>
+              <button class="filter-pill" onclick="filterCategory('interest', this)">Interests &amp; Matches</button>
+              <button class="filter-pill" onclick="filterCategory('chat', this)">Chat &amp; Alerts</button>
+              <button class="filter-pill" onclick="filterCategory('admin', this)">Safety &amp; Admin</button>
+            </div>
+          </div>
+
+          <div class="api-filter-right">
+            <button class="section-ctrl-btn" onclick="expandAllSections()" title="Expand all sections">
+              <i data-lucide="chevrons-down" style="width: 14px; height: 14px;"></i> Expand All
+            </button>
+            <button class="section-ctrl-btn" onclick="collapseAllSections()" title="Collapse all sections">
+              <i data-lucide="chevrons-up" style="width: 14px; height: 14px;"></i> Collapse All
+            </button>
+          </div>
+        </div>
+
+        <!-- 1. Authentication & Session APIs -->
+        <div class="api-category-block" data-category="auth" id="sec-auth">
+          <div class="api-category-header" onclick="toggleSection('sec-auth')">
+            <div class="api-category-title-wrap">
+              <div class="api-category-title"><i data-lucide="key" style="color: var(--mat-rose);"></i> 1. Authentication &amp; Session Management APIs</div>
+              <span class="api-count-tag">8 Endpoints</span>
+            </div>
+            <div class="api-category-header-right">
+              <span class="section-state-pill" id="badge-sec-auth">Expanded</span>
+              <i data-lucide="chevron-down" class="section-toggle-icon"></i>
+            </div>
+          </div>
+          <div class="rel-table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 90px;">Method</th>
+                  <th style="width: 280px;">Endpoint Route</th>
+                  <th style="width: 130px;">Access Level</th>
+                  <th>Purpose &amp; Business Logic</th>
+                  <th style="width: 320px;">Request Payload / Query</th>
+                  <th style="width: 140px;">Response Status</th>
+                </tr>
+              </thead>
+              <tbody class="api-table-body">
+                <tr class="api-row" data-text="register user signup email phone password account">
+                  <td><span class="badge-method post">POST</span></td>
+                  <td><code>/api/v1/auth/register</code></td>
+                  <td><span class="badge-auth public">Public</span></td>
+                  <td><strong>User Account Registration:</strong> Creates a new login account. Enforces email or phone uniqueness, validates password strength, hashes via Argon2id, and sets account status to <code>pending_verification</code>.</td>
+                  <td><code>{ "email": "rahul@example.com", "phone": "+919876543210", "password": "StrongPassword123" }</code></td>
+                  <td><code>201 Created</code></td>
+                </tr>
+                <tr class="api-row" data-text="login authenticate session jwt refresh token credentials">
+                  <td><span class="badge-method post">POST</span></td>
+                  <td><code>/api/v1/auth/login</code></td>
+                  <td><span class="badge-auth public">Public</span></td>
+                  <td><strong>Account Authentication:</strong> Verifies email/phone and password credentials, checks account is not suspended/deleted, generates a short-lived JWT access token and rotates refresh token cookie.</td>
+                  <td><code>{ "login": "rahul@example.com", "password": "StrongPassword123" }</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="refresh access token session token rotation">
+                  <td><span class="badge-method post">POST</span></td>
+                  <td><code>/api/v1/auth/refresh</code></td>
+                  <td><span class="badge-auth public">Public (Cookie)</span></td>
+                  <td><strong>Token Rotation &amp; Session Renewal:</strong> Consumes refresh token, detects replay attacks, and issues fresh access token without interrupting user interaction.</td>
+                  <td><code>Cookie: refresh_token=...</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="logout invalidate session revoke token sign out">
+                  <td><span class="badge-method post">POST</span></td>
+                  <td><code>/api/v1/auth/logout</code></td>
+                  <td><span class="badge-auth user">Authenticated</span></td>
+                  <td><strong>Single Device Session Termination:</strong> Revokes current refresh token from <code>login_sessions</code> table and clears HTTP-only authentication cookies.</td>
+                  <td>Header: <code>Bearer JWT</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="logout all revoke all devices security breach">
+                  <td><span class="badge-method post">POST</span></td>
+                  <td><code>/api/v1/auth/logout-all</code></td>
+                  <td><span class="badge-auth user">Authenticated</span></td>
+                  <td><strong>Revoke All Active Sessions:</strong> Terminates all logged-in devices and invalidates all session tokens associated with the user account for immediate security lockdown.</td>
+                  <td>Header: <code>Bearer JWT</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="forgot password reset link token email sms">
+                  <td><span class="badge-method post">POST</span></td>
+                  <td><code>/api/v1/auth/forgot-password</code></td>
+                  <td><span class="badge-auth public">Public</span></td>
+                  <td><strong>Password Reset Request:</strong> Generates a cryptographically secure, time-expiring reset token dispatched via email or SMS. Prevents account enumeration by returning constant response.</td>
+                  <td><code>{ "email": "rahul@example.com" }</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="reset password token new password">
+                  <td><span class="badge-method post">POST</span></td>
+                  <td><code>/api/v1/auth/reset-password</code></td>
+                  <td><span class="badge-auth public">Public</span></td>
+                  <td><strong>Set New Password:</strong> Validates single-use reset token, stores newly hashed password, and revokes all historical login sessions.</td>
+                  <td><code>{ "token": "xyz789...", "new_password": "NewStrongPass456" }</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="verify otp phone email initial activation">
+                  <td><span class="badge-method post">POST</span></td>
+                  <td><code>/api/v1/auth/verify-otp</code></td>
+                  <td><span class="badge-auth public">Public</span></td>
+                  <td><strong>Account Activation OTP Verification:</strong> Confirms phone/email ownership code, activating the account from <code>pending</code> to <code>active</code> status.</td>
+                  <td><code>{ "contact": "+919876543210", "otp_code": "489201" }</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 2. User Account Management APIs -->
+        <div class="api-category-block" data-category="auth" id="sec-users">
+          <div class="api-category-header" onclick="toggleSection('sec-users')">
+            <div class="api-category-title-wrap">
+              <div class="api-category-title"><i data-lucide="user" style="color: var(--mat-indigo);"></i> 2. User Account Management APIs</div>
+              <span class="api-count-tag">6 Endpoints</span>
+            </div>
+            <div class="api-category-header-right">
+              <span class="section-state-pill" id="badge-sec-users">Expanded</span>
+              <i data-lucide="chevron-down" class="section-toggle-icon"></i>
+            </div>
+          </div>
+          <div class="rel-table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 90px;">Method</th>
+                  <th style="width: 280px;">Endpoint Route</th>
+                  <th style="width: 130px;">Access Level</th>
+                  <th>Purpose &amp; Business Logic</th>
+                  <th style="width: 320px;">Request Payload / Query</th>
+                  <th style="width: 140px;">Response Status</th>
+                </tr>
+              </thead>
+              <tbody class="api-table-body">
+                <tr class="api-row" data-text="get me user current account details">
+                  <td><span class="badge-method get">GET</span></td>
+                  <td><code>/api/v1/users/me</code></td>
+                  <td><span class="badge-auth user">Authenticated</span></td>
+                  <td><strong>Current Account Retrieval:</strong> Identifies the caller securely from the JWT session claims. Returns account ID, email, phone, role, verification status, and audit timestamps. Never leaks password hash.</td>
+                  <td>Header: <code>Bearer JWT</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="patch update me user contact phone email">
+                  <td><span class="badge-method patch">PATCH</span></td>
+                  <td><code>/api/v1/users/me</code></td>
+                  <td><span class="badge-auth user">Authenticated</span></td>
+                  <td><strong>Update Account Contact Details:</strong> Allows user to update phone or email. Protected against privilege escalation (users cannot alter role, status, or ID). Triggers re-verification workflow if contact changes.</td>
+                  <td><code>{ "phone": "+919811223344" }</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="patch change password current password security">
+                  <td><span class="badge-method patch">PATCH</span></td>
+                  <td><code>/api/v1/users/me/password</code></td>
+                  <td><span class="badge-auth user">Authenticated</span></td>
+                  <td><strong>Change Password:</strong> Requires current password confirmation, verifies password policy, and logs an entry in <code>audit_logs</code>.</td>
+                  <td><code>{ "current_password": "OldPass123", "new_password": "NewStrongPass456" }</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="get user sessions active devices ip useragent">
+                  <td><span class="badge-method get">GET</span></td>
+                  <td><code>/api/v1/users/me/sessions</code></td>
+                  <td><span class="badge-auth user">Authenticated</span></td>
+                  <td><strong>List Active Login Sessions:</strong> Returns user's logged-in devices, IP addresses, locations, browser user-agents, and last active timestamps.</td>
+                  <td>Header: <code>Bearer JWT</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="delete remote terminate single session device">
+                  <td><span class="badge-method delete">DELETE</span></td>
+                  <td><code>/api/v1/users/me/sessions/:sessionId</code></td>
+                  <td><span class="badge-auth user">Authenticated</span></td>
+                  <td><strong>Revoke Specific Remote Session:</strong> Immediately invalidates a specific active session from another phone or browser.</td>
+                  <td>Path: <code>sessionId (UUID)</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="delete soft delete user account deactivate gdpr">
+                  <td><span class="badge-method delete">DELETE</span></td>
+                  <td><code>/api/v1/users/me</code></td>
+                  <td><span class="badge-auth user">Authenticated</span></td>
+                  <td><strong>Soft Delete User Account:</strong> Deactivates user account, revokes manager associations, and hides linked matrimonial profiles from discovery.</td>
+                  <td><code>{ "confirm_password": "StrongPassword123" }</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 3. Matrimonial Profile Management APIs -->
+        <div class="api-category-block" data-category="profile" id="sec-profiles">
+          <div class="api-category-header" onclick="toggleSection('sec-profiles')">
+            <div class="api-category-title-wrap">
+              <div class="api-category-title"><i data-lucide="heart" style="color: var(--mat-rose);"></i> 3. Matrimonial Profile Management APIs</div>
+              <span class="api-count-tag">6 Endpoints</span>
+            </div>
+            <div class="api-category-header-right">
+              <span class="section-state-pill" id="badge-sec-profiles">Expanded</span>
+              <i data-lucide="chevron-down" class="section-toggle-icon"></i>
+            </div>
+          </div>
+          <div class="rel-table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 90px;">Method</th>
+                  <th style="width: 280px;">Endpoint Route</th>
+                  <th style="width: 130px;">Access Level</th>
+                  <th>Purpose &amp; Business Logic</th>
+                  <th style="width: 320px;">Request Payload / Query</th>
+                  <th style="width: 140px;">Response Status</th>
+                </tr>
+              </thead>
+              <tbody class="api-table-body">
+                <tr class="api-row" data-text="post create profile matrimonial bio personal family">
+                  <td><span class="badge-method post">POST</span></td>
+                  <td><code>/api/v1/profiles</code></td>
+                  <td><span class="badge-auth user">Authenticated</span></td>
+                  <td><strong>Create Matrimonial Profile:</strong> Instantiates new matrimonial profile. Transactionally assigns the authenticated creator as the profile <code>owner</code> in <code>profile_managers</code> table.</td>
+                  <td><code>{ "display_name": "Pooja Sharma", "gender": "female", "dob": "1998-05-14", "marital_status": "never_married", "religion": "Hindu", "mother_tongue": "Hindi", "height_cm": 165, "education": "B.Tech", "occupation": "Software Engineer", "relationship_to_profile": "self" }</code></td>
+                  <td><code>201 Created</code></td>
+                </tr>
+                <tr class="api-row" data-text="get my profiles list managed matrimonial profiles">
+                  <td><span class="badge-method get">GET</span></td>
+                  <td><code>/api/v1/profiles/my-profiles</code></td>
+                  <td><span class="badge-auth user">Authenticated</span></td>
+                  <td><strong>List User's Managed Profiles:</strong> Fetches all matrimonial profiles that the user is authorized to manage (e.g. self profile, daughter's profile, brother's profile) with active permission roles.</td>
+                  <td>Header: <code>Bearer JWT</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="get single profile details public private view">
+                  <td><span class="badge-method get">GET</span></td>
+                  <td><code>/api/v1/profiles/:profileId</code></td>
+                  <td><span class="badge-auth user">Authenticated</span></td>
+                  <td><strong>Retrieve Matrimonial Profile:</strong> Enforces viewer authorization. If requested by an authorized manager, returns full private details. If requested by another candidate, applies privacy masking (blurred photos, hidden contact info unless interest accepted).</td>
+                  <td>Path: <code>profileId</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="put update profile edit bio education occupation">
+                  <td><span class="badge-method put">PUT</span></td>
+                  <td><code>/api/v1/profiles/:profileId</code></td>
+                  <td><span class="badge-auth manager">Manager (Owner/Editor)</span></td>
+                  <td><strong>Update Profile Details:</strong> Full edit of matrimonial profile attributes (personal, educational, cultural, and family data). Validates manager has <code>owner</code> or <code>editor</code> permission role.</td>
+                  <td><code>{ "display_name": "Pooja Sharma", "about_me": "Passionate software architect...", "annual_income_range": "15L - 25L", "family_values": "traditional", "family_type": "nuclear" }</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="patch toggle profile status visibility active hidden">
+                  <td><span class="badge-method patch">PATCH</span></td>
+                  <td><code>/api/v1/profiles/:profileId/status</code></td>
+                  <td><span class="badge-auth manager">Manager (Owner/Admin)</span></td>
+                  <td><strong>Toggle Visibility / Status:</strong> Temporarily hide profile from search discovery (e.g. marriage fixed, taking a break) or reactivate.</td>
+                  <td><code>{ "status": "hidden" }</code> (active | hidden | closed)</td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="delete profile soft delete archive remove matrimonial">
+                  <td><span class="badge-method delete">DELETE</span></td>
+                  <td><code>/api/v1/profiles/:profileId</code></td>
+                  <td><span class="badge-auth manager">Owner Only</span></td>
+                  <td><strong>Archive / Delete Profile:</strong> Soft-deletes the matrimonial profile. Restricted exclusively to the primary <code>owner</code> manager. Cleans up active matches and notifications.</td>
+                  <td>Path: <code>profileId</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 4. Multi-Manager & Family Delegation APIs -->
+        <div class="api-category-block" data-category="manager" id="sec-managers">
+          <div class="api-category-header" onclick="toggleSection('sec-managers')">
+            <div class="api-category-title-wrap">
+              <div class="api-category-title"><i data-lucide="users" style="color: var(--mat-rose);"></i> 4. Multi-Manager &amp; Family Delegation APIs</div>
+              <span class="api-count-tag">5 Endpoints</span>
+            </div>
+            <div class="api-category-header-right">
+              <span class="section-state-pill" id="badge-sec-managers">Expanded</span>
+              <i data-lucide="chevron-down" class="section-toggle-icon"></i>
+            </div>
+          </div>
+          <div class="rel-table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 90px;">Method</th>
+                  <th style="width: 280px;">Endpoint Route</th>
+                  <th style="width: 130px;">Access Level</th>
+                  <th>Purpose &amp; Business Logic</th>
+                  <th style="width: 320px;">Request Payload / Query</th>
+                  <th style="width: 140px;">Response Status</th>
+                </tr>
+              </thead>
+              <tbody class="api-table-body">
+                <tr class="api-row" data-text="get list profile managers family members roles permissions">
+                  <td><span class="badge-method get">GET</span></td>
+                  <td><code>/api/v1/profiles/:profileId/managers</code></td>
+                  <td><span class="badge-auth manager">Authorized Manager</span></td>
+                  <td><strong>List Profile Managers:</strong> Returns all authorized user accounts managing this matrimonial profile, their relationship (father, mother, self), permission role (owner, editor, viewer), and invitation status.</td>
+                  <td>Path: <code>profileId</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="post invite manager family father mother brother permission">
+                  <td><span class="badge-method post">POST</span></td>
+                  <td><code>/api/v1/profiles/:profileId/managers/invite</code></td>
+                  <td><span class="badge-auth manager">Owner / Admin</span></td>
+                  <td><strong>Invite Family Manager:</strong> Invites a relative by email or phone to co-manage the profile. Generates a secure invitation token and sets manager status to <code>invited</code>.</td>
+                  <td><code>{ "email": "father@example.com", "relationship_to_profile": "father", "permission_role": "editor" }</code></td>
+                  <td><code>201 Created</code></td>
+                </tr>
+                <tr class="api-row" data-text="post accept manager invitation family token">
+                  <td><span class="badge-method post">POST</span></td>
+                  <td><code>/api/v1/managers/accept-invitation</code></td>
+                  <td><span class="badge-auth user">Authenticated</span></td>
+                  <td><strong>Accept Manager Invitation:</strong> Invited family member accepts delegation. Links the authenticated user ID to the <code>profile_managers</code> entry and sets status to <code>active</code>.</td>
+                  <td><code>{ "invitation_token": "inv_token_9831..." }</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="patch update manager role permission editor viewer">
+                  <td><span class="badge-method patch">PATCH</span></td>
+                  <td><code>/api/v1/profiles/:profileId/managers/:managerId</code></td>
+                  <td><span class="badge-auth manager">Owner Only</span></td>
+                  <td><strong>Update Manager Permission:</strong> Upgrades or downgrades co-manager permissions (e.g. from <code>viewer</code> to <code>editor</code>). Restricted to primary profile owner.</td>
+                  <td><code>{ "permission_role": "editor" }</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="delete revoke remove manager family access">
+                  <td><span class="badge-method delete">DELETE</span></td>
+                  <td><code>/api/v1/profiles/:profileId/managers/:managerId</code></td>
+                  <td><span class="badge-auth manager">Owner Only</span></td>
+                  <td><strong>Revoke Manager Access:</strong> Deauthorizes a family manager. Removes their access to manage or view private proposals for this matrimonial profile.</td>
+                  <td>Path: <code>profileId, managerId</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 5. KYC & Identity Verification APIs -->
+        <div class="api-category-block" data-category="kyc" id="sec-kyc">
+          <div class="api-category-header" onclick="toggleSection('sec-kyc')">
+            <div class="api-category-title-wrap">
+              <div class="api-category-title"><i data-lucide="shield-alert" style="color: var(--mat-emerald);"></i> 5. KYC &amp; Identity Verification APIs</div>
+              <span class="api-count-tag">4 Endpoints</span>
+            </div>
+            <div class="api-category-header-right">
+              <span class="section-state-pill" id="badge-sec-kyc">Expanded</span>
+              <i data-lucide="chevron-down" class="section-toggle-icon"></i>
+            </div>
+          </div>
+          <div class="rel-table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 90px;">Method</th>
+                  <th style="width: 280px;">Endpoint Route</th>
+                  <th style="width: 130px;">Access Level</th>
+                  <th>Purpose &amp; Business Logic</th>
+                  <th style="width: 320px;">Request Payload / Query</th>
+                  <th style="width: 140px;">Response Status</th>
+                </tr>
+              </thead>
+              <tbody class="api-table-body">
+                <tr class="api-row" data-text="get verifications me kyc government id status badge">
+                  <td><span class="badge-method get">GET</span></td>
+                  <td><code>/api/v1/verifications/me</code></td>
+                  <td><span class="badge-auth user">Authenticated</span></td>
+                  <td><strong>Retrieve Verification Status:</strong> Checks status of account KYC tiers (Govt ID / Aadhaar verification, phone verification, salary certificate, education credential).</td>
+                  <td>Header: <code>Bearer JWT</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="post submit verification doc govt id income proof kyc">
+                  <td><span class="badge-method post">POST</span></td>
+                  <td><code>/api/v1/verifications/submit</code></td>
+                  <td><span class="badge-auth user">Authenticated</span></td>
+                  <td><strong>Submit KYC Document:</strong> Submits government identification or credentials for automated OCR / administrative review. Stored with encrypted document hashes.</td>
+                  <td><code>{ "verification_type": "government_id", "document_url": "https://secure-s3.../doc.enc", "provider_reference": "digilocker_99182" }</code></td>
+                  <td><code>202 Accepted</code></td>
+                </tr>
+                <tr class="api-row" data-text="post send verification otp contact phone email">
+                  <td><span class="badge-method post">POST</span></td>
+                  <td><code>/api/v1/verifications/send-otp</code></td>
+                  <td><span class="badge-auth user">Authenticated</span></td>
+                  <td><strong>Send Contact Verification OTP:</strong> Dispatches a time-limited OTP to verify ownership of an updated phone number or email address.</td>
+                  <td><code>{ "type": "phone", "target": "+919876543210" }</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="post verify contact otp confirm verified badge">
+                  <td><span class="badge-method post">POST</span></td>
+                  <td><code>/api/v1/verifications/verify-otp</code></td>
+                  <td><span class="badge-auth user">Authenticated</span></td>
+                  <td><strong>Verify Contact OTP:</strong> Confirms submitted OTP code, marking the contact method as verified and awarding a verification trust badge to the profile.</td>
+                  <td><code>{ "type": "phone", "otp": "942180" }</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 6. Addresses & Geographical Location APIs -->
+        <div class="api-category-block" data-category="profile" id="sec-addresses">
+          <div class="api-category-header" onclick="toggleSection('sec-addresses')">
+            <div class="api-category-title-wrap">
+              <div class="api-category-title"><i data-lucide="map-pin" style="color: var(--mat-cyan);"></i> 6. Addresses &amp; Geographical Location APIs</div>
+              <span class="api-count-tag">4 Endpoints</span>
+            </div>
+            <div class="api-category-header-right">
+              <span class="section-state-pill" id="badge-sec-addresses">Expanded</span>
+              <i data-lucide="chevron-down" class="section-toggle-icon"></i>
+            </div>
+          </div>
+          <div class="rel-table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 90px;">Method</th>
+                  <th style="width: 280px;">Endpoint Route</th>
+                  <th style="width: 130px;">Access Level</th>
+                  <th>Purpose &amp; Business Logic</th>
+                  <th style="width: 320px;">Request Payload / Query</th>
+                  <th style="width: 140px;">Response Status</th>
+                </tr>
+              </thead>
+              <tbody class="api-table-body">
+                <tr class="api-row" data-text="get addresses list profile city state country native current">
+                  <td><span class="badge-method get">GET</span></td>
+                  <td><code>/api/v1/profiles/:profileId/addresses</code></td>
+                  <td><span class="badge-auth user">Authenticated</span></td>
+                  <td><strong>Fetch Profile Addresses:</strong> Retrieves permanent, current work, or ancestral native places for a profile. Enforces privacy rules for non-connected visitors.</td>
+                  <td>Path: <code>profileId</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="post add address city postal native permanent current">
+                  <td><span class="badge-method post">POST</span></td>
+                  <td><code>/api/v1/profiles/:profileId/addresses</code></td>
+                  <td><span class="badge-auth manager">Manager (Owner/Editor)</span></td>
+                  <td><strong>Add Address Record:</strong> Adds a new geographical location record (current residential city, native hometown, or foreign residency).</td>
+                  <td><code>{ "address_type": "current", "city": "Bengaluru", "state": "Karnataka", "country": "India", "postal_code": "560100" }</code></td>
+                  <td><code>201 Created</code></td>
+                </tr>
+                <tr class="api-row" data-text="put update address location details">
+                  <td><span class="badge-method put">PUT</span></td>
+                  <td><code>/api/v1/profiles/:profileId/addresses/:addressId</code></td>
+                  <td><span class="badge-auth manager">Manager (Owner/Editor)</span></td>
+                  <td><strong>Update Address Record:</strong> Edits existing address entry for relocations or job city transfers.</td>
+                  <td><code>{ "city": "Gurugram", "state": "Haryana", "postal_code": "122002" }</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="delete remove address record location">
+                  <td><span class="badge-method delete">DELETE</span></td>
+                  <td><code>/api/v1/profiles/:profileId/addresses/:addressId</code></td>
+                  <td><span class="badge-auth manager">Manager (Owner/Editor)</span></td>
+                  <td><strong>Delete Address Record:</strong> Removes non-primary address from profile.</td>
+                  <td>Path: <code>profileId, addressId</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 7. Profile Photos & Privacy Controls APIs -->
+        <div class="api-category-block" data-category="kyc" id="sec-photos">
+          <div class="api-category-header" onclick="toggleSection('sec-photos')">
+            <div class="api-category-title-wrap">
+              <div class="api-category-title"><i data-lucide="image" style="color: var(--mat-gold);"></i> 7. Profile Photos &amp; Privacy Controls APIs</div>
+              <span class="api-count-tag">5 Endpoints</span>
+            </div>
+            <div class="api-category-header-right">
+              <span class="section-state-pill" id="badge-sec-photos">Expanded</span>
+              <i data-lucide="chevron-down" class="section-toggle-icon"></i>
+            </div>
+          </div>
+          <div class="rel-table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 90px;">Method</th>
+                  <th style="width: 280px;">Endpoint Route</th>
+                  <th style="width: 130px;">Access Level</th>
+                  <th>Purpose &amp; Business Logic</th>
+                  <th style="width: 320px;">Request Payload / Query</th>
+                  <th style="width: 140px;">Response Status</th>
+                </tr>
+              </thead>
+              <tbody class="api-table-body">
+                <tr class="api-row" data-text="get photos list profile gallery blurred watermark">
+                  <td><span class="badge-method get">GET</span></td>
+                  <td><code>/api/v1/profiles/:profileId/photos</code></td>
+                  <td><span class="badge-auth user">Authenticated</span></td>
+                  <td><strong>Retrieve Profile Gallery:</strong> Returns approved photos for a profile. Automatically watermarks or applies privacy blur depending on the viewer's connection status and candidate's photo privacy settings.</td>
+                  <td>Path: <code>profileId</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="post upload photo moderation pending profile picture">
+                  <td><span class="badge-method post">POST</span></td>
+                  <td><code>/api/v1/profiles/:profileId/photos/upload</code></td>
+                  <td><span class="badge-auth manager">Manager (Owner/Editor)</span></td>
+                  <td><strong>Upload Profile Photo:</strong> Uploads an image to cloud storage. Inserts record into <code>profile_photos</code> with <code>approval_status: pending</code> awaiting automated/manual moderation check.</td>
+                  <td><code>Multipart/form-data: file (JPG/PNG max 5MB)</code></td>
+                  <td><code>201 Created</code></td>
+                </tr>
+                <tr class="api-row" data-text="patch set primary photo thumbnail display avatar">
+                  <td><span class="badge-method patch">PATCH</span></td>
+                  <td><code>/api/v1/profiles/:profileId/photos/:photoId/primary</code></td>
+                  <td><span class="badge-auth manager">Manager (Owner/Editor)</span></td>
+                  <td><strong>Set Primary Thumbnail:</strong> Sets designated photo as primary display picture for search result cards; resets previous primary.</td>
+                  <td>Path: <code>profileId, photoId</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="patch toggle photo privacy blur visible only connected">
+                  <td><span class="badge-method patch">PATCH</span></td>
+                  <td><code>/api/v1/profiles/:profileId/photos/:photoId/privacy</code></td>
+                  <td><span class="badge-auth manager">Manager (Owner/Editor)</span></td>
+                  <td><strong>Toggle Photo Privacy:</strong> Allows female/male candidates to hide photos behind a blur filter until an interest proposal is mutually accepted.</td>
+                  <td><code>{ "is_blurred_for_free": true, "show_on_request_only": true }</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="delete photo remove image gallery">
+                  <td><span class="badge-method delete">DELETE</span></td>
+                  <td><code>/api/v1/profiles/:profileId/photos/:photoId</code></td>
+                  <td><span class="badge-auth manager">Manager (Owner/Editor)</span></td>
+                  <td><strong>Delete Photo:</strong> Permanently removes a photo from the gallery and cloud storage.</td>
+                  <td>Path: <code>profileId, photoId</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 8. Partner Preferences & Matching Criteria APIs -->
+        <div class="api-category-block" data-category="search" id="sec-preferences">
+          <div class="api-category-header" onclick="toggleSection('sec-preferences')">
+            <div class="api-category-title-wrap">
+              <div class="api-category-title"><i data-lucide="sliders-horizontal" style="color: var(--mat-rose);"></i> 8. Partner Preferences &amp; Criteria APIs</div>
+              <span class="api-count-tag">2 Endpoints</span>
+            </div>
+            <div class="api-category-header-right">
+              <span class="section-state-pill" id="badge-sec-preferences">Expanded</span>
+              <i data-lucide="chevron-down" class="section-toggle-icon"></i>
+            </div>
+          </div>
+          <div class="rel-table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 90px;">Method</th>
+                  <th style="width: 280px;">Endpoint Route</th>
+                  <th style="width: 130px;">Access Level</th>
+                  <th>Purpose &amp; Business Logic</th>
+                  <th style="width: 320px;">Request Payload / Query</th>
+                  <th style="width: 140px;">Response Status</th>
+                </tr>
+              </thead>
+              <tbody class="api-table-body">
+                <tr class="api-row" data-text="get partner preferences age height religion education criteria">
+                  <td><span class="badge-method get">GET</span></td>
+                  <td><code>/api/v1/profiles/:profileId/preferences</code></td>
+                  <td><span class="badge-auth manager">Authorized Manager</span></td>
+                  <td><strong>Retrieve Partner Preferences:</strong> Retrieves configured matchmaking criteria (desired age range, height bounds, education, caste, marital status, location, income thresholds).</td>
+                  <td>Path: <code>profileId</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="put update partner preferences matchmaking filter criteria">
+                  <td><span class="badge-method put">PUT</span></td>
+                  <td><code>/api/v1/profiles/:profileId/preferences</code></td>
+                  <td><span class="badge-auth manager">Manager (Owner/Editor)</span></td>
+                  <td><strong>Upsert Partner Preferences:</strong> Updates candidate's partner criteria used by recommendation algorithms to score compatibility and filter matches.</td>
+                  <td><code>{ "min_age": 24, "max_age": 29, "min_height_cm": 160, "max_height_cm": 180, "marital_status_allowed": ["never_married"], "education_pref": ["B.Tech", "MBA"], "preferred_cities": ["Bengaluru", "Mumbai"] }</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 9. Profile Search, Discovery & Recommendations APIs -->
+        <div class="api-category-block" data-category="search" id="sec-discovery">
+          <div class="api-category-header" onclick="toggleSection('sec-discovery')">
+            <div class="api-category-title-wrap">
+              <div class="api-category-title"><i data-lucide="sparkles" style="color: var(--mat-gold);"></i> 9. Profile Discovery &amp; Search Engine APIs</div>
+              <span class="api-count-tag">3 Endpoints</span>
+            </div>
+            <div class="api-category-header-right">
+              <span class="section-state-pill" id="badge-sec-discovery">Expanded</span>
+              <i data-lucide="chevron-down" class="section-toggle-icon"></i>
+            </div>
+          </div>
+          <div class="rel-table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 90px;">Method</th>
+                  <th style="width: 280px;">Endpoint Route</th>
+                  <th style="width: 130px;">Access Level</th>
+                  <th>Purpose &amp; Business Logic</th>
+                  <th style="width: 320px;">Request Payload / Query</th>
+                  <th style="width: 140px;">Response Status</th>
+                </tr>
+              </thead>
+              <tbody class="api-table-body">
+                <tr class="api-row" data-text="get search profiles query filter age height caste city page limit">
+                  <td><span class="badge-method get">GET</span></td>
+                  <td><code>/api/v1/search/profiles</code></td>
+                  <td><span class="badge-auth user">Authenticated</span></td>
+                  <td><strong>Advanced Profile Search:</strong> High-performance multi-criteria search. Filters by opposite gender, age range, height, religion, education, occupation, city, with verification badges and photo-only flags. Supports keyset pagination. Excludes blocked accounts.</td>
+                  <td>Query: <code>?gender=female&amp;min_age=23&amp;max_age=28&amp;city=Pune&amp;verified_only=true&amp;page=1&amp;limit=20</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="get daily recommendations discovery partner match score algorithm">
+                  <td><span class="badge-method get">GET</span></td>
+                  <td><code>/api/v1/discovery/daily-recommendations</code></td>
+                  <td><span class="badge-auth manager">Manager</span></td>
+                  <td><strong>Daily Algorithmic Recommendations:</strong> Delivers daily personalized match suggestions calculated by matching candidate's <code>partner_preferences</code> with candidate profiles.</td>
+                  <td>Query: <code>?profile_id=105&amp;limit=10</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="get discovery near me geo location search distance radius">
+                  <td><span class="badge-method get">GET</span></td>
+                  <td><code>/api/v1/discovery/near-me</code></td>
+                  <td><span class="badge-auth user">Authenticated</span></td>
+                  <td><strong>Location-Based Discovery:</strong> Identifies potential candidates living within specified city radius or same metropolitan area.</td>
+                  <td>Query: <code>?profile_id=105&amp;radius_km=50</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 10. Taxonomy, Categories & Hobbies APIs -->
+        <div class="api-category-block" data-category="profile" id="sec-taxonomy">
+          <div class="api-category-header" onclick="toggleSection('sec-taxonomy')">
+            <div class="api-category-title-wrap">
+              <div class="api-category-title"><i data-lucide="tags" style="color: var(--mat-indigo);"></i> 10. Taxonomy, Categories &amp; Hobbies APIs</div>
+              <span class="api-count-tag">4 Endpoints</span>
+            </div>
+            <div class="api-category-header-right">
+              <span class="section-state-pill" id="badge-sec-taxonomy">Expanded</span>
+              <i data-lucide="chevron-down" class="section-toggle-icon"></i>
+            </div>
+          </div>
+          <div class="rel-table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 90px;">Method</th>
+                  <th style="width: 280px;">Endpoint Route</th>
+                  <th style="width: 130px;">Access Level</th>
+                  <th>Purpose &amp; Business Logic</th>
+                  <th style="width: 320px;">Request Payload / Query</th>
+                  <th style="width: 140px;">Response Status</th>
+                </tr>
+              </thead>
+              <tbody class="api-table-body">
+                <tr class="api-row" data-text="get categories lookups dropdowns education religion occupation">
+                  <td><span class="badge-method get">GET</span></td>
+                  <td><code>/api/v1/categories</code></td>
+                  <td><span class="badge-auth public">Public</span></td>
+                  <td><strong>Standardized Category Lookups:</strong> Returns master lookup data for education degrees, occupations, religions, mother tongues, and income brackets. Heavily cached via Redis.</td>
+                  <td>Query: <code>?type=education</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="get hobbies master list interests lifestyle music sports">
+                  <td><span class="badge-method get">GET</span></td>
+                  <td><code>/api/v1/hobbies</code></td>
+                  <td><span class="badge-auth public">Public</span></td>
+                  <td><strong>Standardized Hobbies List:</strong> Returns standardized catalog of lifestyle hobbies, sports, arts, and interests.</td>
+                  <td>Query: <code>?limit=100</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="get profile hobbies list selected interests">
+                  <td><span class="badge-method get">GET</span></td>
+                  <td><code>/api/v1/profiles/:profileId/hobbies</code></td>
+                  <td><span class="badge-auth user">Authenticated</span></td>
+                  <td><strong>Fetch Profile Hobbies:</strong> Lists all hobbies associated with a given matrimonial profile.</td>
+                  <td>Path: <code>profileId</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="put sync profile hobbies composite key profile_hobbies">
+                  <td><span class="badge-method put">PUT</span></td>
+                  <td><code>/api/v1/profiles/:profileId/hobbies</code></td>
+                  <td><span class="badge-auth manager">Manager (Owner/Editor)</span></td>
+                  <td><strong>Sync Profile Hobbies:</strong> Synchronizes composite table <code>profile_hobbies</code> with selected hobby IDs. Atomic bulk insert/delete.</td>
+                  <td><code>{ "hobby_ids": [3, 7, 12, 19] }</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 11. Interests & Proposals Lifecycle APIs -->
+        <div class="api-category-block" data-category="interest" id="sec-interests">
+          <div class="api-category-header" onclick="toggleSection('sec-interests')">
+            <div class="api-category-title-wrap">
+              <div class="api-category-title"><i data-lucide="send" style="color: var(--mat-rose);"></i> 11. Interests &amp; Proposals Lifecycle APIs</div>
+              <span class="api-count-tag">5 Endpoints</span>
+            </div>
+            <div class="api-category-header-right">
+              <span class="section-state-pill" id="badge-sec-interests">Expanded</span>
+              <i data-lucide="chevron-down" class="section-toggle-icon"></i>
+            </div>
+          </div>
+          <div class="rel-table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 90px;">Method</th>
+                  <th style="width: 280px;">Endpoint Route</th>
+                  <th style="width: 130px;">Access Level</th>
+                  <th>Purpose &amp; Business Logic</th>
+                  <th style="width: 320px;">Request Payload / Query</th>
+                  <th style="width: 140px;">Response Status</th>
+                </tr>
+              </thead>
+              <tbody class="api-table-body">
+                <tr class="api-row" data-text="post send interest proposal connect express interest">
+                  <td><span class="badge-method post">POST</span></td>
+                  <td><code>/api/v1/interests/send</code></td>
+                  <td><span class="badge-auth manager">Manager</span></td>
+                  <td><strong>Send Interest Proposal:</strong> Initiates marriage proposal from sender profile to receiver profile. Validates non-self proposal, checks receiver has not blocked sender, enforces daily quota, and triggers push/email notification.</td>
+                  <td><code>{ "sender_profile_id": 105, "receiver_profile_id": 204, "message_note": "Namaste, we loved Pooja's profile and would love to connect." }</code></td>
+                  <td><code>201 Created</code></td>
+                </tr>
+                <tr class="api-row" data-text="get sent interests list outgoing proposals status">
+                  <td><span class="badge-method get">GET</span></td>
+                  <td><code>/api/v1/interests/sent</code></td>
+                  <td><span class="badge-auth manager">Manager</span></td>
+                  <td><strong>List Sent Interests:</strong> Returns outgoing proposals sent by the profile with current status (<code>pending</code>, <code>accepted</code>, <code>declined</code>).</td>
+                  <td>Query: <code>?profile_id=105&amp;status=pending</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="get received interests list incoming proposals requests">
+                  <td><span class="badge-method get">GET</span></td>
+                  <td><code>/api/v1/interests/received</code></td>
+                  <td><span class="badge-auth manager">Manager</span></td>
+                  <td><strong>List Incoming Interests:</strong> Retrieves pending marriage requests received by the candidate profile awaiting review.</td>
+                  <td>Query: <code>?profile_id=105&amp;status=pending</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="patch respond interest accept decline proposal">
+                  <td><span class="badge-method patch">PATCH</span></td>
+                  <td><code>/api/v1/interests/:interestId/respond</code></td>
+                  <td><span class="badge-auth manager">Receiver Manager</span></td>
+                  <td><strong>Accept or Decline Proposal:</strong> Responds to interest. If <code>accepted</code>, transactionally creates an entry in <code>matches</code> table, unlocks messaging permissions, and un-blurs private contact details.</td>
+                  <td><code>{ "status": "accepted" }</code> (accepted | declined)</td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="delete cancel pending interest proposal recall">
+                  <td><span class="badge-method delete">DELETE</span></td>
+                  <td><code>/api/v1/interests/:interestId</code></td>
+                  <td><span class="badge-auth manager">Sender Manager</span></td>
+                  <td><strong>Withdraw / Cancel Interest:</strong> Sender cancels an unanswered pending proposal.</td>
+                  <td>Path: <code>interestId</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 12. Mutual Matches & Favorites (Shortlisting) APIs -->
+        <div class="api-category-block" data-category="interest" id="sec-matches">
+          <div class="api-category-header" onclick="toggleSection('sec-matches')">
+            <div class="api-category-title-wrap">
+              <div class="api-category-title"><i data-lucide="bookmark" style="color: var(--mat-gold);"></i> 12. Matches &amp; Favorites (Shortlisting) APIs</div>
+              <span class="api-count-tag">5 Endpoints</span>
+            </div>
+            <div class="api-category-header-right">
+              <span class="section-state-pill" id="badge-sec-matches">Expanded</span>
+              <i data-lucide="chevron-down" class="section-toggle-icon"></i>
+            </div>
+          </div>
+          <div class="rel-table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 90px;">Method</th>
+                  <th style="width: 280px;">Endpoint Route</th>
+                  <th style="width: 130px;">Access Level</th>
+                  <th>Purpose &amp; Business Logic</th>
+                  <th style="width: 320px;">Request Payload / Query</th>
+                  <th style="width: 140px;">Response Status</th>
+                </tr>
+              </thead>
+              <tbody class="api-table-body">
+                <tr class="api-row" data-text="get matches list mutual connections accepted proposals">
+                  <td><span class="badge-method get">GET</span></td>
+                  <td><code>/api/v1/matches</code></td>
+                  <td><span class="badge-auth manager">Manager</span></td>
+                  <td><strong>Retrieve Mutual Matches:</strong> Returns all connected candidates where interests were reciprocated and communication is authorized. Includes compatibility scores.</td>
+                  <td>Query: <code>?profile_id=105</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="get match compatibility breakdown score horoscope lifestyle">
+                  <td><span class="badge-method get">GET</span></td>
+                  <td><code>/api/v1/matches/:matchId/compatibility</code></td>
+                  <td><span class="badge-auth manager">Manager</span></td>
+                  <td><strong>Compatibility Score Breakdown:</strong> Detailed analytical breakdown of match affinity across lifestyle, cultural alignment, education, and partner preferences.</td>
+                  <td>Path: <code>matchId</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="post favorite bookmark shortlist profile candidate">
+                  <td><span class="badge-method post">POST</span></td>
+                  <td><code>/api/v1/favorites/:profileId</code></td>
+                  <td><span class="badge-auth user">Authenticated</span></td>
+                  <td><strong>Shortlist Candidate Profile:</strong> Saves candidate into user's personal bookmark list for family review. Enforces unique constraint on <code>(user_id, favorite_profile_id)</code>.</td>
+                  <td>Path: <code>profileId</code></td>
+                  <td><code>201 Created</code></td>
+                </tr>
+                <tr class="api-row" data-text="get list favorites shortlisted saved bookmarks profiles">
+                  <td><span class="badge-method get">GET</span></td>
+                  <td><code>/api/v1/favorites</code></td>
+                  <td><span class="badge-auth user">Authenticated</span></td>
+                  <td><strong>List Shortlisted Profiles:</strong> Returns all profiles bookmarked by the authenticated user account.</td>
+                  <td>Query: <code>?page=1&amp;limit=20</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="delete remove favorite unbookmark shortlist">
+                  <td><span class="badge-method delete">DELETE</span></td>
+                  <td><code>/api/v1/favorites/:profileId</code></td>
+                  <td><span class="badge-auth user">Authenticated</span></td>
+                  <td><strong>Remove from Shortlist:</strong> Removes profile from saved favorites.</td>
+                  <td>Path: <code>profileId</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 13. Safety, Blocking & Abuse Reporting APIs -->
+        <div class="api-category-block" data-category="admin" id="sec-safety">
+          <div class="api-category-header" onclick="toggleSection('sec-safety')">
+            <div class="api-category-title-wrap">
+              <div class="api-category-title"><i data-lucide="shield-x" style="color: var(--mat-rose);"></i> 13. Safety, Blocking &amp; Abuse Reporting APIs</div>
+              <span class="api-count-tag">4 Endpoints</span>
+            </div>
+            <div class="api-category-header-right">
+              <span class="section-state-pill" id="badge-sec-safety">Expanded</span>
+              <i data-lucide="chevron-down" class="section-toggle-icon"></i>
+            </div>
+          </div>
+          <div class="rel-table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 90px;">Method</th>
+                  <th style="width: 280px;">Endpoint Route</th>
+                  <th style="width: 130px;">Access Level</th>
+                  <th>Purpose &amp; Business Logic</th>
+                  <th style="width: 320px;">Request Payload / Query</th>
+                  <th style="width: 140px;">Response Status</th>
+                </tr>
+              </thead>
+              <tbody class="api-table-body">
+                <tr class="api-row" data-text="post block user blocker blocked stop communication hide">
+                  <td><span class="badge-method post">POST</span></td>
+                  <td><code>/api/v1/blocks/user</code></td>
+                  <td><span class="badge-auth user">Authenticated</span></td>
+                  <td><strong>Block User Account:</strong> Prevents abusive accounts from searching, viewing, or messaging profiles. Immediately terminates active chat threads between both parties.</td>
+                  <td><code>{ "blocked_user_id": 302, "reason": "inappropriate_behavior" }</code></td>
+                  <td><code>201 Created</code></td>
+                </tr>
+                <tr class="api-row" data-text="get list blocked users blocks">
+                  <td><span class="badge-method get">GET</span></td>
+                  <td><code>/api/v1/blocks</code></td>
+                  <td><span class="badge-auth user">Authenticated</span></td>
+                  <td><strong>List Blocked Accounts:</strong> Retrieves all accounts blocked by the current user.</td>
+                  <td>Header: <code>Bearer JWT</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="delete unblock user account remove block">
+                  <td><span class="badge-method delete">DELETE</span></td>
+                  <td><code>/api/v1/blocks/:blockId</code></td>
+                  <td><span class="badge-auth user">Authenticated</span></td>
+                  <td><strong>Unblock User Account:</strong> Reverses block, permitting future interaction.</td>
+                  <td>Path: <code>blockId</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="post report profile fake harassment fraud abuse moderation">
+                  <td><span class="badge-method post">POST</span></td>
+                  <td><code>/api/v1/reports</code></td>
+                  <td><span class="badge-auth user">Authenticated</span></td>
+                  <td><strong>Report Profile / Fraud:</strong> Flags a profile for fraudulent credentials, fake photos, impersonation, or extortion. Automatically alerts safety moderation team.</td>
+                  <td><code>{ "reported_profile_id": 412, "reason": "fake_photos", "details": "Photos belong to a public influencer." }</code></td>
+                  <td><code>201 Created</code></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 14. Real-Time Messaging & Direct Conversations APIs -->
+        <div class="api-category-block" data-category="chat" id="sec-chat">
+          <div class="api-category-header" onclick="toggleSection('sec-chat')">
+            <div class="api-category-title-wrap">
+              <div class="api-category-title"><i data-lucide="message-square" style="color: var(--mat-cyan);"></i> 14. Real-Time Messaging &amp; Chat APIs</div>
+              <span class="api-count-tag">5 Endpoints</span>
+            </div>
+            <div class="api-category-header-right">
+              <span class="section-state-pill" id="badge-sec-chat">Expanded</span>
+              <i data-lucide="chevron-down" class="section-toggle-icon"></i>
+            </div>
+          </div>
+          <div class="rel-table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 90px;">Method</th>
+                  <th style="width: 280px;">Endpoint Route</th>
+                  <th style="width: 130px;">Access Level</th>
+                  <th>Purpose &amp; Business Logic</th>
+                  <th style="width: 320px;">Request Payload / Query</th>
+                  <th style="width: 140px;">Response Status</th>
+                </tr>
+              </thead>
+              <tbody class="api-table-body">
+                <tr class="api-row" data-text="get conversations list chat threads mutual matches">
+                  <td><span class="badge-method get">GET</span></td>
+                  <td><code>/api/v1/conversations</code></td>
+                  <td><span class="badge-auth manager">Manager</span></td>
+                  <td><strong>List Active Conversations:</strong> Fetches all unlocked chat channels for a profile. Verifies mutual interest exists and neither profile has blocked the other.</td>
+                  <td>Query: <code>?profile_id=105</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="get messages conversation chat history pagination cursor">
+                  <td><span class="badge-method get">GET</span></td>
+                  <td><code>/api/v1/conversations/:conversationId/messages</code></td>
+                  <td><span class="badge-auth manager">Participant Manager</span></td>
+                  <td><strong>Retrieve Message History:</strong> Keyset paginated chat history. Validates user is an authorized manager of one of the participating matrimonial profiles.</td>
+                  <td>Query: <code>?cursor=msg_9812&amp;limit=50</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="post send message chat conversation text media">
+                  <td><span class="badge-method post">POST</span></td>
+                  <td><code>/api/v1/conversations/:conversationId/messages</code></td>
+                  <td><span class="badge-auth manager">Participant Manager</span></td>
+                  <td><strong>Send Message:</strong> Sends chat message. Records sender's user ID and acting profile ID. Dispatches real-time WebSocket event to all conversation participants.</td>
+                  <td><code>{ "sender_profile_id": 105, "content": "Hello! Would tomorrow at 6 PM work for a family phone call?" }</code></td>
+                  <td><code>201 Created</code></td>
+                </tr>
+                <tr class="api-row" data-text="patch mark messages read receipt conversation">
+                  <td><span class="badge-method patch">PATCH</span></td>
+                  <td><code>/api/v1/conversations/:conversationId/read</code></td>
+                  <td><span class="badge-auth manager">Participant Manager</span></td>
+                  <td><strong>Update Read Receipts:</strong> Updates <code>last_read_message_id</code> in <code>conversation_participants</code>, clearing unread badge counters.</td>
+                  <td><code>{ "last_read_message_id": 99201 }</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="ws websocket real time chat typing indicators presence">
+                  <td><span class="badge-method ws">WS</span></td>
+                  <td><code>/api/v1/ws/chat</code></td>
+                  <td><span class="badge-auth user">Authenticated</span></td>
+                  <td><strong>Real-Time WebSocket Gateway:</strong> Handles live bi-directional socket connection for incoming message delivery, live typing status, and online presence indicators.</td>
+                  <td>Handshake: <code>Bearer JWT query/header</code></td>
+                  <td><code>101 Switching Protocols</code></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 15. Notifications Center APIs -->
+        <div class="api-category-block" data-category="chat" id="sec-notifications">
+          <div class="api-category-header" onclick="toggleSection('sec-notifications')">
+            <div class="api-category-title-wrap">
+              <div class="api-category-title"><i data-lucide="bell" style="color: var(--mat-gold);"></i> 15. Notification Center APIs</div>
+              <span class="api-count-tag">3 Endpoints</span>
+            </div>
+            <div class="api-category-header-right">
+              <span class="section-state-pill" id="badge-sec-notifications">Expanded</span>
+              <i data-lucide="chevron-down" class="section-toggle-icon"></i>
+            </div>
+          </div>
+          <div class="rel-table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 90px;">Method</th>
+                  <th style="width: 280px;">Endpoint Route</th>
+                  <th style="width: 130px;">Access Level</th>
+                  <th>Purpose &amp; Business Logic</th>
+                  <th style="width: 320px;">Request Payload / Query</th>
+                  <th style="width: 140px;">Response Status</th>
+                </tr>
+              </thead>
+              <tbody class="api-table-body">
+                <tr class="api-row" data-text="get notifications feed alerts unread count interest message">
+                  <td><span class="badge-method get">GET</span></td>
+                  <td><code>/api/v1/notifications</code></td>
+                  <td><span class="badge-auth user">Authenticated</span></td>
+                  <td><strong>Retrieve Notification Feed:</strong> Returns unread alert count and paginated activity feed (new interests received, accepted proposals, photo approval updates, messages).</td>
+                  <td>Query: <code>?page=1&amp;unread_only=false</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="patch mark single notification read badge">
+                  <td><span class="badge-method patch">PATCH</span></td>
+                  <td><code>/api/v1/notifications/:id/read</code></td>
+                  <td><span class="badge-auth user">Authenticated</span></td>
+                  <td><strong>Mark Single Notification Read:</strong> Updates single notification record's <code>is_read</code> status to true.</td>
+                  <td>Path: <code>id</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="patch mark all notifications read clear badges">
+                  <td><span class="badge-method patch">PATCH</span></td>
+                  <td><code>/api/v1/notifications/read-all</code></td>
+                  <td><span class="badge-auth user">Authenticated</span></td>
+                  <td><strong>Mark All Notifications Read:</strong> Bulk resets all pending unread notifications for the caller's account.</td>
+                  <td>None</td>
+                  <td><code>200 OK</code></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 16. Admin Moderation & Audit Logs APIs -->
+        <div class="api-category-block" data-category="admin" id="sec-admin">
+          <div class="api-category-header" onclick="toggleSection('sec-admin')">
+            <div class="api-category-title-wrap">
+              <div class="api-category-title"><i data-lucide="shield" style="color: var(--mat-rose);"></i> 16. Admin Moderation &amp; Audit Logs APIs</div>
+              <span class="api-count-tag">6 Endpoints</span>
+            </div>
+            <div class="api-category-header-right">
+              <span class="section-state-pill" id="badge-sec-admin">Expanded</span>
+              <i data-lucide="chevron-down" class="section-toggle-icon"></i>
+            </div>
+          </div>
+          <div class="rel-table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 90px;">Method</th>
+                  <th style="width: 280px;">Endpoint Route</th>
+                  <th style="width: 130px;">Access Level</th>
+                  <th>Purpose &amp; Business Logic</th>
+                  <th style="width: 320px;">Request Payload / Query</th>
+                  <th style="width: 140px;">Response Status</th>
+                </tr>
+              </thead>
+              <tbody class="api-table-body">
+                <tr class="api-row" data-text="get admin users list all accounts filter status role">
+                  <td><span class="badge-method get">GET</span></td>
+                  <td><code>/api/v1/admin/users</code></td>
+                  <td><span class="badge-auth admin">Admin Only</span></td>
+                  <td><strong>Admin Users Management:</strong> Search and paginate all registered user accounts with filtering by account status (active, pending, suspended).</td>
+                  <td>Query: <code>?status=suspended&amp;page=1</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="patch admin update user status suspend ban activate">
+                  <td><span class="badge-method patch">PATCH</span></td>
+                  <td><code>/api/v1/admin/users/:userId/status</code></td>
+                  <td><span class="badge-auth admin">Admin Only</span></td>
+                  <td><strong>Admin Account Suspension / Ban:</strong> Modifies target user's <code>account_status</code> (e.g. suspend fraudster, reactivate verified user). Logs mandatory entry in <code>audit_logs</code>.</td>
+                  <td><code>{ "account_status": "suspended", "reason": "Violated matrimonial code of conduct" }</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="get admin photos pending moderation queue review">
+                  <td><span class="badge-method get">GET</span></td>
+                  <td><code>/api/v1/admin/photos/pending</code></td>
+                  <td><span class="badge-auth admin">Admin / Moderator</span></td>
+                  <td><strong>Photo Moderation Queue:</strong> Retrieves batch of uploaded photos with status <code>pending</code> awaiting human moderation review.</td>
+                  <td>Query: <code>?limit=25</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="patch admin review photo approve reject moderation">
+                  <td><span class="badge-method patch">PATCH</span></td>
+                  <td><code>/api/v1/admin/photos/:photoId/review</code></td>
+                  <td><span class="badge-auth admin">Admin / Moderator</span></td>
+                  <td><strong>Approve / Reject Profile Photo:</strong> Updates <code>approval_status</code> to approved or rejected. Sends notification to profile manager with rejection grounds if disqualified.</td>
+                  <td><code>{ "approval_status": "approved" }</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="get admin reports abuse complaints review resolution">
+                  <td><span class="badge-method get">GET</span></td>
+                  <td><code>/api/v1/admin/reports</code></td>
+                  <td><span class="badge-auth admin">Admin Only</span></td>
+                  <td><strong>Abuse &amp; Fraud Reports Review:</strong> Lists unresolved complaints reported by users against suspicious profiles.</td>
+                  <td>Query: <code>?status=open</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+                <tr class="api-row" data-text="get admin audit logs security compliance actor trail">
+                  <td><span class="badge-method get">GET</span></td>
+                  <td><code>/api/v1/admin/audit-logs</code></td>
+                  <td><span class="badge-auth admin">Admin Only</span></td>
+                  <td><strong>Query Security Audit Trail:</strong> Queries immutable audit logs for administrative actions, privilege elevations, login anomalies, and account suspensions.</td>
+                  <td>Query: <code>?action=ban_account&amp;limit=50</code></td>
+                  <td><code>200 OK</code></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- VIEW 2: The Core 3-Tier Multi-Manager Architecture Model -->
+    <section id="view-architecture" class="view-section">
+      <div class="diagram-card">
+        <div class="diagram-header">
+          <div>
+            <div class="diagram-title">
+              <i data-lucide="layers" style="color: var(--mat-rose);"></i>
+              The 3-Tier Multi-Manager Family Authorization Model
+            </div>
+            <div class="diagram-sub">
+              Separating authentication credentials from candidate matrimonial profiles allows family members (parents, siblings, candidates) to securely collaborate on the same matrimonial profile with strict permissions.
+            </div>
+          </div>
+        </div>
+
+        <div class="callout-box">
+          <div class="callout-title">
+            <i data-lucide="alert-circle" style="color: var(--mat-rose);"></i>
+            Fundamental Database Design Principle
+          </div>
+          <div class="callout-desc">
+            Never conflate the <strong>Login Account</strong> (email, phone, credentials, KYC, sessions) with the <strong>Matrimonial Profile</strong> (biodata, age, caste, horoscopes, partner preferences). Many users can manage the same profile (father &amp; daughter), and a single user can manage multiple profiles (father managing profiles for both son and daughter).
+          </div>
+        </div>
+
+        <!-- The 3 Pillars Cards -->
+        <div class="pillar-separation-grid">
+          <div class="principle-card">
+            <div class="principle-header">
+              <div class="principle-icon" style="background: var(--mat-indigo-subtle); color: var(--mat-indigo);">
+                <i data-lucide="key-round"></i>
+              </div>
+              <div>
+                <div class="principle-title">1. Users (Auth Accounts)</div>
+                <div class="principle-subtitle">Authentication Boundary</div>
+              </div>
+            </div>
+            <p class="principle-desc">Accounts used strictly for logging into the platform. Has credentials, active sessions, and KYC verification.</p>
+            <ul class="principle-bullets">
+              <li><i data-lucide="check"></i> <code>user_id</code> (PK, UUID or BigInt)</li>
+              <li><i data-lucide="check"></i> Email and Phone uniqueness</li>
+              <li><i data-lucide="check"></i> Argon2id / Bcrypt password hash</li>
+              <li><i data-lucide="check"></i> Owns <code>login_sessions</code> &amp; KYC verifications</li>
+            </ul>
+          </div>
+
+          <div class="principle-card">
+            <div class="principle-header">
+              <div class="principle-icon" style="background: var(--mat-rose-subtle); color: var(--mat-rose);">
+                <i data-lucide="heart"></i>
+              </div>
+              <div>
+                <div class="principle-title">2. Profiles (Matrimonial Data)</div>
+                <div class="principle-subtitle">Biodata &amp; Search Entity</div>
+              </div>
+            </div>
+            <p class="principle-desc">Information about the individual seeking a partner. Discoverable in search and matchmaking algorithms.</p>
+            <ul class="principle-bullets">
+              <li><i data-lucide="check"></i> <code>profile_id</code> (PK)</li>
+              <li><i data-lucide="check"></i> Display name, DOB, height, religion, education</li>
+              <li><i data-lucide="check"></i> Owns photos, addresses, preferences, hobbies</li>
+              <li><i data-lucide="check"></i> Target of interest proposals and matches</li>
+            </ul>
+          </div>
+
+          <div class="principle-card">
+            <div class="principle-header">
+              <div class="principle-icon" style="background: var(--mat-gold-subtle); color: var(--mat-gold);">
+                <i data-lucide="shield-check"></i>
+              </div>
+              <div>
+                <div class="principle-title">3. Profile Managers (M:N Bridge)</div>
+                <div class="principle-subtitle">Authorization &amp; RBAC</div>
+              </div>
+            </div>
+            <p class="principle-desc">The join table resolving the M:N relationship with fine-grained permissions and family relationship tags.</p>
+            <ul class="principle-bullets">
+              <li><i data-lucide="check"></i> Composite Unique on <code>(profile_id, user_id)</code></li>
+              <li><i data-lucide="check"></i> <code>relationship_to_profile</code>: self, father, mother, etc.</li>
+              <li><i data-lucide="check"></i> <code>permission_role</code>: owner, editor, viewer</li>
+              <li><i data-lucide="check"></i> Status tracking: <code>invited</code>, <code>active</code>, <code>revoked</code></li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Mermaid Flow for Family Collaboration -->
+        <div class="diagram-title" style="margin-top: 28px;">
+          <i data-lucide="workflow" style="color: var(--mat-gold);"></i>
+          Real-World Scenario: Father &amp; Daughter Co-Managing a Profile
+        </div>
+        <div class="diagram-sub">
+          Visualizing how database records connect when a father registers first and later invites his daughter to collaborate.
+        </div>
+
+        <pre class="mermaid">
+graph LR
+    subgraph User Accounts
+        U1["User #1 (Father)<br/>rahul.father@mail.com"]
+        U2["User #2 (Daughter / Candidate)<br/>pooja.sharma@mail.com"]
+    end
+
+    subgraph Permission Matrix (profile_managers)
+        PM1["Manager #1<br/>Relationship: Father<br/>Role: Admin / Editor"]
+        PM2["Manager #2<br/>Relationship: Self<br/>Role: Owner"]
+    end
+
+    subgraph Matrimonial Entity
+        P["Matrimonial Profile #105<br/>Pooja Sharma (26, Software Engineer)<br/>Bio, Photos, Preferences"]
+    end
+
+    U1 -->|Maps to| PM1
+    U2 -->|Maps to| PM2
+    PM1 -->|Authorized to Manage| P
+    PM2 -->|Primary Owner of| P
+
+    classDef user fill:#e0e7ff,stroke:#4f46e5,stroke-width:2px,color:#1e1b4b;
+    classDef manager fill:#ffe4e6,stroke:#e11d48,stroke-width:2px,color:#881337;
+    classDef profile fill:#fef3c7,stroke:#d97706,stroke-width:2px,color:#78350f;
+
+    class U1,U2 user;
+    class PM1,PM2 manager;
+    class P profile;
+        </pre>
+
+      </div>
+    </section>
+
+    <!-- VIEW 3: Enterprise ER Diagram (21 Tables) -->
+    <section id="view-erd" class="view-section">
+      <div class="diagram-card">
+        <div class="diagram-header">
+          <div>
+            <div class="diagram-title">
+              <i data-lucide="network" style="color: var(--mat-rose);"></i>
+              Complete Matrimonial Entity-Relationship Diagram (Mermaid.js)
+            </div>
+            <div class="diagram-sub">
+              Visualizing all 21 production entities across Account Identity, Matrimonial Profiles, Matchmaking Taxonomy, Real-Time Chat, and Safety Moderation.
+            </div>
+          </div>
+          <span class="diagram-badge">21 RELATIONAL TABLES</span>
+        </div>
+
+        <pre class="mermaid">
+erDiagram
+    USERS ||--o{ USER_VERIFICATIONS : "submits (1:N)"
+    USERS ||--o{ PROFILE_MANAGERS : "authorizes (1:N)"
+    PROFILES ||--o{ PROFILE_MANAGERS : "managed by (1:N)"
+    PROFILES ||--o{ USER_ADDRESSES : "located at (1:N)"
+    PROFILES ||--o{ PROFILE_PHOTOS : "displays (1:N)"
+    PROFILES ||--|| PARTNER_PREFERENCES : "defines criteria (1:1)"
+    
+    PROFILES ||--o{ PROFILE_HOBBIES : "participates in (1:N)"
+    HOBBIES ||--o{ PROFILE_HOBBIES : "categorizes (1:N)"
+    CATEGORIES ||--o{ PROFILES : "standardizes lookups"
+    
+    PROFILES ||--o{ INTERESTS : "sends proposal (1:N)"
+    PROFILES ||--o{ INTERESTS : "receives proposal (1:N)"
+    
+    PROFILES ||--o{ MATCHES : "profile 1 in match (1:N)"
+    PROFILES ||--o{ MATCHES : "profile 2 in match (1:N)"
+    
+    USERS ||--o{ FAVORITES : "bookmarks (1:N)"
+    PROFILES ||--o{ FAVORITES : "saved as target (1:N)"
+    
+    USERS ||--o{ USER_BLOCKS : "blocker account (1:N)"
+    USERS ||--o{ USER_BLOCKS : "blocked account (1:N)"
+    
+    USERS ||--o{ USER_REPORTS : "reporter account (1:N)"
+    PROFILES ||--o{ USER_REPORTS : "reported target profile (1:N)"
+    
+    CONVERSATIONS ||--o{ CONVERSATION_PARTICIPANTS : "includes (1:N)"
+    USERS ||--o{ CONVERSATION_PARTICIPANTS : "participating account (1:N)"
+    PROFILES ||--o{ CONVERSATION_PARTICIPANTS : "acting profile (1:N)"
+    CONVERSATIONS ||--o{ MESSAGES : "contains messages (1:N)"
+    USERS ||--o{ MESSAGES : "sent by user (1:N)"
+    
+    USERS ||--o{ NOTIFICATIONS : "notifies user (1:N)"
+    USERS ||--o{ LOGIN_SESSIONS : "active login tokens (1:N)"
+    USERS ||--o{ AUDIT_LOGS : "performed by actor (1:N)"
+        </pre>
+      </div>
+    </section>
+
+    <!-- VIEW 4: Relationship Matrix & Cardinality Rules -->
+    <section id="view-matrix" class="view-section">
+      <div class="diagram-card">
+        <div class="diagram-header">
+          <div>
+            <div class="diagram-title">
+              <i data-lucide="table-properties" style="color: var(--mat-rose);"></i>
+              System Relationship Matrix &amp; Business Cardinalities
+            </div>
+            <div class="diagram-sub">
+              Detailed audit of all database relationships, foreign key bindings, cardinality types, and cascade deletion rules.
+            </div>
+          </div>
+        </div>
+
+        <div class="rel-table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Parent Entity</th>
+                <th>Child Entity</th>
+                <th style="width: 140px;">Cardinality</th>
+                <th>Foreign Key / Join</th>
+                <th>Business Logic &amp; Constraints</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>users</code></td>
+                <td><code>profile_managers</code></td>
+                <td><span class="badge-cardinality one-to-many">1 : N</span></td>
+                <td><code>profile_managers.user_id</code></td>
+                <td>A single user account can manage multiple matrimonial profiles (e.g., father managing son &amp; daughter).</td>
+              </tr>
+              <tr>
+                <td><code>profiles</code></td>
+                <td><code>profile_managers</code></td>
+                <td><span class="badge-cardinality one-to-many">1 : N</span></td>
+                <td><code>profile_managers.profile_id</code></td>
+                <td>A single matrimonial profile can be co-managed by multiple family members with roles (Owner, Editor, Viewer). Unique on <code>(profile_id, user_id)</code>.</td>
+              </tr>
+              <tr>
+                <td><code>users</code></td>
+                <td><code>user_verifications</code></td>
+                <td><span class="badge-cardinality one-to-many">1 : N</span></td>
+                <td><code>user_verifications.user_id</code></td>
+                <td>A user submits KYC records (government ID, phone OTP, salary proof).</td>
+              </tr>
+              <tr>
+                <td><code>profiles</code></td>
+                <td><code>user_addresses</code></td>
+                <td><span class="badge-cardinality one-to-many">1 : N</span></td>
+                <td><code>user_addresses.profile_id</code></td>
+                <td>Profile associates multiple locations (current residence city, permanent hometown, native place).</td>
+              </tr>
+              <tr>
+                <td><code>profiles</code></td>
+                <td><code>profile_photos</code></td>
+                <td><span class="badge-cardinality one-to-many">1 : N</span></td>
+                <td><code>profile_photos.profile_id</code></td>
+                <td>Gallery of photos with 1 primary display picture; moderated before public display.</td>
+              </tr>
+              <tr>
+                <td><code>profiles</code></td>
+                <td><code>partner_preferences</code></td>
+                <td><span class="badge-cardinality one-to-one">1 : 1</span></td>
+                <td><code>partner_preferences.profile_id</code></td>
+                <td>Each profile has exactly one set of partner criteria (age, height, religion, education preferences).</td>
+              </tr>
+              <tr>
+                <td><code>profiles</code> &amp; <code>hobbies</code></td>
+                <td><code>profile_hobbies</code></td>
+                <td><span class="badge-cardinality many-to-many">M : N</span></td>
+                <td><code>(profile_id, hobby_id)</code></td>
+                <td>Composite primary key join table associating standardized lifestyle hobbies with candidate profiles.</td>
+              </tr>
+              <tr>
+                <td><code>profiles</code></td>
+                <td><code>interests</code></td>
+                <td><span class="badge-cardinality one-to-many">1 : N</span></td>
+                <td><code>interests.sender_profile_id</code> &amp; <code>receiver_profile_id</code></td>
+                <td>2-way marriage proposal requests. Unique constraint prevents sending duplicate requests in the same direction while pending.</td>
+              </tr>
+              <tr>
+                <td><code>profiles</code></td>
+                <td><code>matches</code></td>
+                <td><span class="badge-cardinality one-to-many">1 : N</span></td>
+                <td><code>matches.profile_id_1</code> &amp; <code>profile_id_2</code></td>
+                <td>Formed when an interest proposal is accepted. Unique constraint on <code>LEAST(p1, p2), GREATEST(p1, p2)</code> prevents duplicate match pairs.</td>
+              </tr>
+              <tr>
+                <td><code>users</code> &amp; <code>profiles</code></td>
+                <td><code>favorites</code></td>
+                <td><span class="badge-cardinality one-to-many">1 : N</span></td>
+                <td><code>favorites.user_id</code> &amp; <code>favorite_profile_id</code></td>
+                <td>User account bookmarks target matrimonial profiles for family consideration. Unique constraint on <code>(user_id, favorite_profile_id)</code>.</td>
+              </tr>
+              <tr>
+                <td><code>users</code></td>
+                <td><code>user_blocks</code></td>
+                <td><span class="badge-cardinality one-to-many">1 : N</span></td>
+                <td><code>user_blocks.blocker_user_id</code> &amp; <code>blocked_user_id</code></td>
+                <td>Blocks unwanted communication. Unique constraint on <code>(blocker_user_id, blocked_user_id)</code>.</td>
+              </tr>
+              <tr>
+                <td><code>users</code> &amp; <code>profiles</code></td>
+                <td><code>user_reports</code></td>
+                <td><span class="badge-cardinality one-to-many">1 : N</span></td>
+                <td><code>user_reports.reporter_user_id</code> &amp; <code>reported_profile_id</code></td>
+                <td>Abuse &amp; fraud complaints logged against suspicious profiles for administrator moderation.</td>
+              </tr>
+              <tr>
+                <td><code>conversations</code></td>
+                <td><code>conversation_participants</code></td>
+                <td><span class="badge-cardinality one-to-many">1 : N</span></td>
+                <td><code>conversation_participants.conversation_id</code></td>
+                <td>Participants in a chat channel (user account + acting profile ID + read receipts).</td>
+              </tr>
+              <tr>
+                <td><code>conversations</code></td>
+                <td><code>messages</code></td>
+                <td><span class="badge-cardinality one-to-many">1 : N</span></td>
+                <td><code>messages.conversation_id</code></td>
+                <td>Real-time chat messages between matched candidates and their authorized managers.</td>
+              </tr>
+              <tr>
+                <td><code>users</code></td>
+                <td><code>notifications</code></td>
+                <td><span class="badge-cardinality one-to-many">1 : N</span></td>
+                <td><code>notifications.user_id</code></td>
+                <td>Platform alerts (interests, match notifications, moderation status updates).</td>
+              </tr>
+              <tr>
+                <td><code>users</code></td>
+                <td><code>login_sessions</code></td>
+                <td><span class="badge-cardinality one-to-many">1 : N</span></td>
+                <td><code>login_sessions.user_id</code></td>
+                <td>Tracks active authentication sessions and hashed refresh tokens.</td>
+              </tr>
+              <tr>
+                <td><code>users</code></td>
+                <td><code>audit_logs</code></td>
+                <td><span class="badge-cardinality one-to-many">1 : N</span></td>
+                <td><code>audit_logs.actor_user_id</code></td>
+                <td>Security audit trail capturing critical administrative actions and role delegations.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 5: Complete 21-Table Schema Dictionary -->
+    <section id="view-schema" class="view-section">
+      <div class="diagram-card">
+        <div class="diagram-header">
+          <div>
+            <div class="diagram-title">
+              <i data-lucide="layout-grid" style="color: var(--mat-rose);"></i>
+              Complete Production Schema Dictionary (21 Relational Tables)
+            </div>
+            <div class="diagram-sub">
+              Field definitions, primary keys, foreign keys, constraints, and data types across the entire matrimonial architecture.
+            </div>
+          </div>
+        </div>
+
+        <div class="schema-grid">
+
+          <!-- 1. users -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="table-name"><i data-lucide="key"></i> users</div>
+              <span class="table-category-tag auth">Identity</span>
+            </div>
+            <div class="table-purpose">Authentication accounts used strictly for logging in.</div>
+            <ul class="field-list">
+              <li class="field-item"><div class="field-left"><span class="field-name">user_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">email</span> <span class="tag-uk">UK</span></div><span class="field-type">VARCHAR(255)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">phone</span> <span class="tag-uk">UK</span></div><span class="field-type">VARCHAR(25)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">password_hash</span></div><span class="field-type">VARCHAR(255)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">role</span></div><span class="field-type">ENUM(member, admin, moderator)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">account_status</span></div><span class="field-type">ENUM(pending, active, suspended)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">created_at</span></div><span class="field-type">TIMESTAMP</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">updated_at</span></div><span class="field-type">TIMESTAMP</span></li>
+            </ul>
+          </div>
+
+          <!-- 2. profiles -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="table-name"><i data-lucide="heart"></i> profiles</div>
+              <span class="table-category-tag profile">Candidate</span>
+            </div>
+            <div class="table-purpose">Matrimonial information about the person seeking a partner.</div>
+            <ul class="field-list">
+              <li class="field-item"><div class="field-left"><span class="field-name">profile_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">display_name</span></div><span class="field-type">VARCHAR(150)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">gender</span></div><span class="field-type">ENUM(male, female, other)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">dob</span></div><span class="field-type">DATE</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">marital_status</span></div><span class="field-type">ENUM(never_married, divorced, widowed)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">height_cm</span></div><span class="field-type">INT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">religion</span></div><span class="field-type">VARCHAR(100)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">mother_tongue</span></div><span class="field-type">VARCHAR(100)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">education</span></div><span class="field-type">VARCHAR(150)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">occupation</span></div><span class="field-type">VARCHAR(150)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">annual_income_range</span></div><span class="field-type">VARCHAR(50)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">about_me</span></div><span class="field-type">TEXT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">is_visible</span></div><span class="field-type">BOOLEAN DEFAULT TRUE</span></li>
+            </ul>
+          </div>
+
+          <!-- 3. profile_managers -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="table-name"><i data-lucide="shield"></i> profile_managers</div>
+              <span class="table-category-tag auth">Delegation</span>
+            </div>
+            <div class="table-purpose">Resolves which user accounts can manage which matrimonial profiles.</div>
+            <ul class="field-list">
+              <li class="field-item"><div class="field-left"><span class="field-name">profile_manager_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">profile_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">user_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">relationship_to_profile</span></div><span class="field-type">ENUM(self, father, mother, sibling, relative)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">permission_role</span></div><span class="field-type">ENUM(owner, admin, editor, viewer)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">status</span></div><span class="field-type">ENUM(invited, active, revoked)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">created_at</span></div><span class="field-type">TIMESTAMP</span></li>
+            </ul>
+          </div>
+
+          <!-- 4. user_verifications -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="table-name"><i data-lucide="check-circle-2"></i> user_verifications</div>
+              <span class="table-category-tag auth">KYC</span>
+            </div>
+            <div class="table-purpose">Stores identity verification evidence and badge approvals.</div>
+            <ul class="field-list">
+              <li class="field-item"><div class="field-left"><span class="field-name">verification_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">user_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">verification_type</span></div><span class="field-type">ENUM(government_id, phone, email, income)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">status</span></div><span class="field-type">ENUM(pending, verified, rejected)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">provider_reference</span></div><span class="field-type">VARCHAR(255)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">verified_at</span></div><span class="field-type">TIMESTAMP</span></li>
+            </ul>
+          </div>
+
+          <!-- 5. user_addresses -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="table-name"><i data-lucide="map-pin"></i> user_addresses</div>
+              <span class="table-category-tag profile">Location</span>
+            </div>
+            <div class="table-purpose">Current, permanent, and native geographical coordinates.</div>
+            <ul class="field-list">
+              <li class="field-item"><div class="field-left"><span class="field-name">address_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">profile_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">address_type</span></div><span class="field-type">ENUM(current, permanent, native)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">city</span></div><span class="field-type">VARCHAR(100)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">state</span></div><span class="field-type">VARCHAR(100)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">country</span></div><span class="field-type">VARCHAR(100)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">postal_code</span></div><span class="field-type">VARCHAR(20)</span></li>
+            </ul>
+          </div>
+
+          <!-- 6. profile_photos -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="table-name"><i data-lucide="camera"></i> profile_photos</div>
+              <span class="table-category-tag profile">Media</span>
+            </div>
+            <div class="table-purpose">Candidate photos with moderation workflow and privacy blur.</div>
+            <ul class="field-list">
+              <li class="field-item"><div class="field-left"><span class="field-name">photo_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">profile_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">photo_url</span></div><span class="field-type">VARCHAR(500)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">approval_status</span></div><span class="field-type">ENUM(pending, approved, rejected)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">is_primary</span></div><span class="field-type">BOOLEAN DEFAULT FALSE</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">is_blurred_for_free</span></div><span class="field-type">BOOLEAN DEFAULT FALSE</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">created_at</span></div><span class="field-type">TIMESTAMP</span></li>
+            </ul>
+          </div>
+
+          <!-- 7. partner_preferences -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="table-name"><i data-lucide="sliders"></i> partner_preferences</div>
+              <span class="table-category-tag search">Criteria</span>
+            </div>
+            <div class="table-purpose">1:1 candidate expectations for matching algorithms.</div>
+            <ul class="field-list">
+              <li class="field-item"><div class="field-left"><span class="field-name">preference_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">profile_id</span> <span class="tag-fk">FK</span> <span class="tag-uk">UK</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">min_age</span> / <span class="field-name">max_age</span></div><span class="field-type">INT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">min_height_cm</span> / <span class="field-name">max_height_cm</span></div><span class="field-type">INT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">marital_status_allowed</span></div><span class="field-type">VARCHAR(150)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">education_pref</span></div><span class="field-type">VARCHAR(255)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">preferred_cities</span></div><span class="field-type">TEXT</span></li>
+            </ul>
+          </div>
+
+          <!-- 8. categories -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="table-name"><i data-lucide="list"></i> categories</div>
+              <span class="table-category-tag search">Taxonomy</span>
+            </div>
+            <div class="table-purpose">Master lookup values for education, religions, and occupations.</div>
+            <ul class="field-list">
+              <li class="field-item"><div class="field-left"><span class="field-name">category_id</span> <span class="tag-pk">PK</span></div><span class="field-type">INT AUTO_INC</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">category_type</span></div><span class="field-type">VARCHAR(50)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">category_name</span></div><span class="field-type">VARCHAR(150)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">is_active</span></div><span class="field-type">BOOLEAN DEFAULT TRUE</span></li>
+            </ul>
+          </div>
+
+          <!-- 9. hobbies -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="table-name"><i data-lucide="smile"></i> hobbies</div>
+              <span class="table-category-tag search">Lifestyle</span>
+            </div>
+            <div class="table-purpose">Standardized catalog of lifestyle interests and sports.</div>
+            <ul class="field-list">
+              <li class="field-item"><div class="field-left"><span class="field-name">hobby_id</span> <span class="tag-pk">PK</span></div><span class="field-type">INT AUTO_INC</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">hobby_name</span> <span class="tag-uk">UK</span></div><span class="field-type">VARCHAR(100)</span></li>
+            </ul>
+          </div>
+
+          <!-- 10. profile_hobbies -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="table-name"><i data-lucide="link"></i> profile_hobbies</div>
+              <span class="table-category-tag search">Junction</span>
+            </div>
+            <div class="table-purpose">Composite M:N join table for candidate hobbies.</div>
+            <ul class="field-list">
+              <li class="field-item"><div class="field-left"><span class="field-name">profile_id</span> <span class="tag-pk">PK</span><span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">hobby_id</span> <span class="tag-pk">PK</span><span class="tag-fk">FK</span></div><span class="field-type">INT</span></li>
+            </ul>
+          </div>
+
+          <!-- 11. interests -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="table-name"><i data-lucide="send"></i> interests</div>
+              <span class="table-category-tag search">Proposals</span>
+            </div>
+            <div class="table-purpose">Marriage interest proposals between sender and receiver profiles.</div>
+            <ul class="field-list">
+              <li class="field-item"><div class="field-left"><span class="field-name">interest_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">sender_profile_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">receiver_profile_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">status</span></div><span class="field-type">ENUM(pending, accepted, declined, cancelled)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">created_at</span></div><span class="field-type">TIMESTAMP</span></li>
+            </ul>
+          </div>
+
+          <!-- 12. matches -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="table-name"><i data-lucide="sparkles"></i> matches</div>
+              <span class="table-category-tag search">Affinity</span>
+            </div>
+            <div class="table-purpose">Reciprocated matches unlocking communication channels.</div>
+            <ul class="field-list">
+              <li class="field-item"><div class="field-left"><span class="field-name">match_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">profile_id_1</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">profile_id_2</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">match_status</span></div><span class="field-type">ENUM(active, dismissed, married)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">match_score</span></div><span class="field-type">DECIMAL(5,2)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">created_at</span></div><span class="field-type">TIMESTAMP</span></li>
+            </ul>
+          </div>
+
+          <!-- 13. favorites -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="table-name"><i data-lucide="bookmark"></i> favorites</div>
+              <span class="table-category-tag search">Shortlist</span>
+            </div>
+            <div class="table-purpose">User bookmarks for profiles under family consideration.</div>
+            <ul class="field-list">
+              <li class="field-item"><div class="field-left"><span class="field-name">favorite_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">user_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">favorite_profile_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">created_at</span></div><span class="field-type">TIMESTAMP</span></li>
+            </ul>
+          </div>
+
+          <!-- 14. user_blocks -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="table-name"><i data-lucide="shield-x"></i> user_blocks</div>
+              <span class="table-category-tag auth">Safety</span>
+            </div>
+            <div class="table-purpose">Prohibits interaction between blocked user accounts.</div>
+            <ul class="field-list">
+              <li class="field-item"><div class="field-left"><span class="field-name">block_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">blocker_user_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">blocked_user_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">created_at</span></div><span class="field-type">TIMESTAMP</span></li>
+            </ul>
+          </div>
+
+          <!-- 15. user_reports -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="table-name"><i data-lucide="alert-triangle"></i> user_reports</div>
+              <span class="table-category-tag auth">Trust</span>
+            </div>
+            <div class="table-purpose">Abuse, fraud, and fake profile incident reports.</div>
+            <ul class="field-list">
+              <li class="field-item"><div class="field-left"><span class="field-name">report_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">reporter_user_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">reported_profile_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">reason</span></div><span class="field-type">VARCHAR(150)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">status</span></div><span class="field-type">ENUM(open, reviewed, resolved, dismissed)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">created_at</span></div><span class="field-type">TIMESTAMP</span></li>
+            </ul>
+          </div>
+
+          <!-- 16. conversations -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="table-name"><i data-lucide="message-square"></i> conversations</div>
+              <span class="table-category-tag comm">Chat</span>
+            </div>
+            <div class="table-purpose">1:1 messaging channels between matched candidates.</div>
+            <ul class="field-list">
+              <li class="field-item"><div class="field-left"><span class="field-name">conversation_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">profile_id_1</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">profile_id_2</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">created_at</span></div><span class="field-type">TIMESTAMP</span></li>
+            </ul>
+          </div>
+
+          <!-- 17. conversation_participants -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="table-name"><i data-lucide="users-2"></i> conversation_participants</div>
+              <span class="table-category-tag comm">Chat</span>
+            </div>
+            <div class="table-purpose">Maps managers and candidates to chat channels with read receipts.</div>
+            <ul class="field-list">
+              <li class="field-item"><div class="field-left"><span class="field-name">participant_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">conversation_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">user_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">last_read_message_id</span></div><span class="field-type">BIGINT</span></li>
+            </ul>
+          </div>
+
+          <!-- 18. messages -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="table-name"><i data-lucide="mail"></i> messages</div>
+              <span class="table-category-tag comm">Chat</span>
+            </div>
+            <div class="table-purpose">Encrypted real-time text and media chat messages.</div>
+            <ul class="field-list">
+              <li class="field-item"><div class="field-left"><span class="field-name">message_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">conversation_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">sender_user_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">content</span></div><span class="field-type">TEXT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">created_at</span></div><span class="field-type">TIMESTAMP</span></li>
+            </ul>
+          </div>
+
+          <!-- 19. notifications -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="table-name"><i data-lucide="bell"></i> notifications</div>
+              <span class="table-category-tag comm">Alerts</span>
+            </div>
+            <div class="table-purpose">User notification feed for activity alerts.</div>
+            <ul class="field-list">
+              <li class="field-item"><div class="field-left"><span class="field-name">notification_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">user_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">title</span> / <span class="field-name">message</span></div><span class="field-type">VARCHAR(255) / TEXT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">is_read</span></div><span class="field-type">BOOLEAN DEFAULT FALSE</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">created_at</span></div><span class="field-type">TIMESTAMP</span></li>
+            </ul>
+          </div>
+
+          <!-- 20. login_sessions -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="table-name"><i data-lucide="smartphone"></i> login_sessions</div>
+              <span class="table-category-tag auth">Security</span>
+            </div>
+            <div class="table-purpose">Active authentication session tracking and device revoking.</div>
+            <ul class="field-list">
+              <li class="field-item"><div class="field-left"><span class="field-name">session_id</span> <span class="tag-pk">PK</span></div><span class="field-type">VARCHAR(64)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">user_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">refresh_token_hash</span></div><span class="field-type">VARCHAR(255)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">ip_address</span> / <span class="field-name">user_agent</span></div><span class="field-type">VARCHAR(45) / VARCHAR(255)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">expires_at</span></div><span class="field-type">TIMESTAMP</span></li>
+            </ul>
+          </div>
+
+          <!-- 21. audit_logs -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="table-name"><i data-lucide="file-text"></i> audit_logs</div>
+              <span class="table-category-tag auth">Audit</span>
+            </div>
+            <div class="table-purpose">Immutable security logs for admin and sensitive account changes.</div>
+            <ul class="field-list">
+              <li class="field-item"><div class="field-left"><span class="field-name">log_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">actor_user_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">action</span></div><span class="field-type">VARCHAR(100)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">target_entity</span> / <span class="field-name">target_id</span></div><span class="field-type">VARCHAR(50) / VARCHAR(50)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">details_json</span></div><span class="field-type">JSON</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">created_at</span></div><span class="field-type">TIMESTAMP</span></li>
+            </ul>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 6: Pipelines & Workflows -->
+    <section id="view-workflows" class="view-section">
+      <div class="diagram-card">
+        <div class="diagram-header">
+          <div>
+            <div class="diagram-title">
+              <i data-lucide="workflow" style="color: var(--mat-rose);"></i>
+              Core Matrimonial System Lifecycles &amp; Workflows
+            </div>
+            <div class="diagram-sub">
+              Step-by-step state machine transitions for Interest Proposals, Multi-Manager Onboarding, and Photo Moderation.
+            </div>
+          </div>
+        </div>
+
+        <!-- 1. Interest Proposal Lifecycle -->
+        <div class="diagram-title" style="margin-top: 10px;">
+          <i data-lucide="heart-handshake" style="color: var(--mat-rose);"></i>
+          1. Marriage Interest &amp; Proposal Lifecycle Pipeline
+        </div>
+        <div class="diagram-sub">
+          From Search Discovery &rarr; Expressing Interest &rarr; Family Review &rarr; Mutual Acceptance &rarr; Unlocked Communication.
+        </div>
+        <pre class="mermaid">
+stateDiagram-v2
+    [*] --> Search_Discovery : Candidate / Manager finds profile
+    Search_Discovery --> Send_Interest : POST /api/v1/interests/send
+    Send_Interest --> Pending : Interest created & Notification sent
+    
+    Pending --> Accepted : PATCH /api/v1/interests/:id/respond (accepted)
+    Pending --> Declined : PATCH /api/v1/interests/:id/respond (declined)
+    Pending --> Cancelled : DELETE /api/v1/interests/:id (by sender)
+    
+    Accepted --> Matches_Created : Auto-inserts into matches table
+    Matches_Created --> Unlock_Chat : Unlocks 1:1 Conversation
+    Matches_Created --> Unlock_Contacts : Un-blurs verified phone & photos
+    
+    Declined --> [*]
+    Cancelled --> [*]
+    Unlock_Chat --> [*]
+        </pre>
+
+        <!-- 2. Family Manager Invitation Flow -->
+        <div class="diagram-title" style="margin-top: 36px;">
+          <i data-lucide="user-plus" style="color: var(--mat-indigo);"></i>
+          2. Multi-Manager Family Invitation &amp; Delegation Flow
+        </div>
+        <div class="diagram-sub">
+          Shows how a daughter (Owner) delegates management access to her father with controlled permissions.
+        </div>
+        <pre class="mermaid">
+sequenceDiagram
+    autonumber
+    actor Owner as Candidate / Owner (Daughter)
+    participant API as Backend REST API
+    participant DB as Database
+    actor Relative as Relative (Father)
+
+    Owner->>API: POST /api/v1/profiles/:id/managers/invite (email, role: editor)
+    API->>DB: INSERT into profile_managers (status: invited, token: hash)
+    API-->>Relative: Dispatches Email / SMS Invitation Token
+    Relative->>API: POST /api/v1/auth/login or /register
+    Relative->>API: POST /api/v1/managers/accept-invitation (token)
+    API->>DB: UPDATE profile_managers SET status='active', user_id=FatherID
+    API->>DB: INSERT into audit_logs (action: 'manager_delegated')
+    API-->>Relative: 200 OK (Access Granted as Profile Editor)
+        </pre>
+      </div>
+    </section>
+
+    <!-- VIEW 7: Production SQL DDL -->
+    <section id="view-ddl" class="view-section">
+      <div class="diagram-card">
+        <div class="diagram-header">
+          <div>
+            <div class="diagram-title">
+              <i data-lucide="code" style="color: var(--mat-rose);"></i>
+              Production SQL DDL &amp; Indexing Strategy
+            </div>
+            <div class="diagram-sub">
+              Complete DDL schema with Foreign Keys, Cascades, Composite Constraints, and High-Performance B-Tree Search Indexes.
+            </div>
+          </div>
+        </div>
+
+        <div style="position: relative;">
+          <button class="copy-btn" onclick="copyDdl()"><i data-lucide="copy" style="width: 14px; height: 14px;"></i> Copy SQL DDL</button>
+          <pre class="sql-code-block"><code id="sqlDdlCode">-- =========================================================================
+-- MATRIMONIAL PLATFORM DATABASE DDL (PostgreSQL / MySQL Compatible)
+-- Enterprise Schema with Multi-Manager Delegation, Matchmaking & Privacy
+-- =========================================================================
+
+-- 1. USERS: Authentication Accounts (Strictly separated from Profiles)
+CREATE TABLE users (
+    user_id BIGSERIAL PRIMARY KEY,
+    email VARCHAR(255) UNIQUE,
+    phone VARCHAR(25) UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    role VARCHAR(30) DEFAULT 'member' CHECK (role IN ('member', 'admin', 'moderator')),
+    account_status VARCHAR(30) DEFAULT 'pending' CHECK (account_status IN ('pending', 'active', 'suspended', 'deleted')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 2. PROFILES: Matrimonial Information (The person seeking marriage)
+CREATE TABLE profiles (
+    profile_id BIGSERIAL PRIMARY KEY,
+    display_name VARCHAR(150) NOT NULL,
+    gender VARCHAR(20) NOT NULL CHECK (gender IN ('male', 'female', 'other')),
+    dob DATE NOT NULL,
+    marital_status VARCHAR(50) NOT NULL CHECK (marital_status IN ('never_married', 'divorced', 'widowed', 'separated')),
+    height_cm INT CHECK (height_cm BETWEEN 100 AND 250),
+    religion VARCHAR(100),
+    caste VARCHAR(100),
+    sub_caste VARCHAR(100),
+    mother_tongue VARCHAR(100),
+    education VARCHAR(150),
+    occupation VARCHAR(150),
+    annual_income_range VARCHAR(50),
+    family_type VARCHAR(50) DEFAULT 'nuclear' CHECK (family_type IN ('nuclear', 'joint')),
+    family_values VARCHAR(50) DEFAULT 'traditional' CHECK (family_values IN ('traditional', 'moderate', 'liberal')),
+    about_me TEXT,
+    is_visible BOOLEAN DEFAULT TRUE,
+    profile_status VARCHAR(30) DEFAULT 'active' CHECK (profile_status IN ('active', 'hidden', 'deactivated')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 3. PROFILE_MANAGERS: Multi-Manager M:N Authorization Join Table
+CREATE TABLE profile_managers (
+    profile_manager_id BIGSERIAL PRIMARY KEY,
+    profile_id BIGINT NOT NULL REFERENCES profiles(profile_id) ON DELETE CASCADE,
+    user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    relationship_to_profile VARCHAR(50) NOT NULL CHECK (relationship_to_profile IN ('self', 'father', 'mother', 'brother', 'sister', 'relative', 'guardian')),
+    permission_role VARCHAR(30) NOT NULL DEFAULT 'editor' CHECK (permission_role IN ('owner', 'admin', 'editor', 'viewer')),
+    status VARCHAR(30) NOT NULL DEFAULT 'active' CHECK (status IN ('invited', 'active', 'revoked')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_profile_user_manager UNIQUE (profile_id, user_id)
+);
+
+-- 4. USER_VERIFICATIONS: Identity & KYC Trust Badges
+CREATE TABLE user_verifications (
+    verification_id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    verification_type VARCHAR(50) NOT NULL CHECK (verification_type IN ('government_id', 'phone_otp', 'email_otp', 'income_proof')),
+    status VARCHAR(30) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'verified', 'rejected')),
+    provider_reference VARCHAR(255),
+    submitted_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    verified_at TIMESTAMP WITH TIME ZONE
+);
+
+-- 5. USER_ADDRESSES: Geographical Presences
+CREATE TABLE user_addresses (
+    address_id BIGSERIAL PRIMARY KEY,
+    profile_id BIGINT NOT NULL REFERENCES profiles(profile_id) ON DELETE CASCADE,
+    address_type VARCHAR(50) NOT NULL CHECK (address_type IN ('current', 'permanent', 'native')),
+    city VARCHAR(100) NOT NULL,
+    state VARCHAR(100) NOT NULL,
+    country VARCHAR(100) NOT NULL DEFAULT 'India',
+    postal_code VARCHAR(20),
+    is_public BOOLEAN DEFAULT TRUE
+);
+
+-- 6. PROFILE_PHOTOS: Candidate Photo Gallery & Moderation
+CREATE TABLE profile_photos (
+    photo_id BIGSERIAL PRIMARY KEY,
+    profile_id BIGINT NOT NULL REFERENCES profiles(profile_id) ON DELETE CASCADE,
+    photo_url VARCHAR(500) NOT NULL,
+    approval_status VARCHAR(30) DEFAULT 'pending' CHECK (approval_status IN ('pending', 'approved', 'rejected')),
+    is_primary BOOLEAN DEFAULT FALSE,
+    is_blurred_for_free BOOLEAN DEFAULT FALSE,
+    sort_order INT DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 7. PARTNER_PREFERENCES: 1:1 Matchmaking Filter Rules
+CREATE TABLE partner_preferences (
+    preference_id BIGSERIAL PRIMARY KEY,
+    profile_id BIGINT NOT NULL UNIQUE REFERENCES profiles(profile_id) ON DELETE CASCADE,
+    min_age INT DEFAULT 18,
+    max_age INT DEFAULT 70,
+    min_height_cm INT DEFAULT 120,
+    max_height_cm INT DEFAULT 220,
+    marital_status_allowed TEXT,
+    religion_pref TEXT,
+    caste_pref TEXT,
+    education_pref TEXT,
+    occupation_pref TEXT,
+    preferred_cities TEXT,
+    preferred_countries TEXT,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 8. CATEGORIES: Reusable Lookups (Education, Occupation, etc.)
+CREATE TABLE categories (
+    category_id SERIAL PRIMARY KEY,
+    category_type VARCHAR(50) NOT NULL,
+    category_name VARCHAR(150) NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE
+);
+
+-- 9. HOBBIES: Lifestyle & Interest Catalog
+CREATE TABLE hobbies (
+    hobby_id SERIAL PRIMARY KEY,
+    hobby_name VARCHAR(100) NOT NULL UNIQUE
+);
+
+-- 10. PROFILE_HOBBIES: Composite Primary Key Junction
+CREATE TABLE profile_hobbies (
+    profile_id BIGINT NOT NULL REFERENCES profiles(profile_id) ON DELETE CASCADE,
+    hobby_id INT NOT NULL REFERENCES hobbies(hobby_id) ON DELETE CASCADE,
+    PRIMARY KEY (profile_id, hobby_id)
+);
+
+-- 11. INTERESTS: Marriage Proposals
+CREATE TABLE interests (
+    interest_id BIGSERIAL PRIMARY KEY,
+    sender_profile_id BIGINT NOT NULL REFERENCES profiles(profile_id) ON DELETE CASCADE,
+    receiver_profile_id BIGINT NOT NULL REFERENCES profiles(profile_id) ON DELETE CASCADE,
+    status VARCHAR(30) DEFAULT 'pending' CHECK (status IN ('pending', 'accepted', 'declined', 'cancelled')),
+    message_note VARCHAR(500),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    responded_at TIMESTAMP WITH TIME ZONE,
+    CONSTRAINT chk_no_self_interest CHECK (sender_profile_id != receiver_profile_id),
+    CONSTRAINT uq_interest_direction UNIQUE (sender_profile_id, receiver_profile_id)
+);
+
+-- 12. MATCHES: Mutual Connections (Interest Reciprocated)
+CREATE TABLE matches (
+    match_id BIGSERIAL PRIMARY KEY,
+    profile_id_1 BIGINT NOT NULL REFERENCES profiles(profile_id) ON DELETE CASCADE,
+    profile_id_2 BIGINT NOT NULL REFERENCES profiles(profile_id) ON DELETE CASCADE,
+    match_status VARCHAR(30) DEFAULT 'active' CHECK (match_status IN ('active', 'dismissed', 'married')),
+    match_score DECIMAL(5,2),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT chk_match_ordering CHECK (profile_id_1 < profile_id_2),
+    CONSTRAINT uq_match_pair UNIQUE (profile_id_1, profile_id_2)
+);
+
+-- 13. FAVORITES: User Candidate Bookmarks
+CREATE TABLE favorites (
+    favorite_id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    favorite_profile_id BIGINT NOT NULL REFERENCES profiles(profile_id) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_user_favorite UNIQUE (user_id, favorite_profile_id)
+);
+
+-- 14. USER_BLOCKS: Account Blocking
+CREATE TABLE user_blocks (
+    block_id BIGSERIAL PRIMARY KEY,
+    blocker_user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    blocked_user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT chk_no_self_block CHECK (blocker_user_id != blocked_user_id),
+    CONSTRAINT uq_user_block UNIQUE (blocker_user_id, blocked_user_id)
+);
+
+-- 15. USER_REPORTS: Fraud & Abuse Incident Log
+CREATE TABLE user_reports (
+    report_id BIGSERIAL PRIMARY KEY,
+    reporter_user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    reported_profile_id BIGINT NOT NULL REFERENCES profiles(profile_id) ON DELETE CASCADE,
+    reason VARCHAR(150) NOT NULL,
+    details TEXT,
+    status VARCHAR(30) DEFAULT 'open' CHECK (status IN ('open', 'reviewed', 'resolved', 'dismissed')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 16. CONVERSATIONS: 1:1 Channels Between Matched Profiles
+CREATE TABLE conversations (
+    conversation_id BIGSERIAL PRIMARY KEY,
+    profile_id_1 BIGINT NOT NULL REFERENCES profiles(profile_id) ON DELETE CASCADE,
+    profile_id_2 BIGINT NOT NULL REFERENCES profiles(profile_id) ON DELETE CASCADE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT chk_conversation_ordering CHECK (profile_id_1 < profile_id_2),
+    CONSTRAINT uq_conversation_pair UNIQUE (profile_id_1, profile_id_2)
+);
+
+-- 17. CONVERSATION_PARTICIPANTS: Active Channel Actors
+CREATE TABLE conversation_participants (
+    participant_id BIGSERIAL PRIMARY KEY,
+    conversation_id BIGINT NOT NULL REFERENCES conversations(conversation_id) ON DELETE CASCADE,
+    user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    last_read_message_id BIGINT,
+    joined_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_conv_participant UNIQUE (conversation_id, user_id)
+);
+
+-- 18. MESSAGES: Encrypted Real-Time Chat Log
+CREATE TABLE messages (
+    message_id BIGSERIAL PRIMARY KEY,
+    conversation_id BIGINT NOT NULL REFERENCES conversations(conversation_id) ON DELETE CASCADE,
+    sender_user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 19. NOTIFICATIONS: User Activity Feed
+CREATE TABLE notifications (
+    notification_id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    title VARCHAR(255) NOT NULL,
+    message TEXT NOT NULL,
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 20. LOGIN_SESSIONS: Device & Token Session Vault
+CREATE TABLE login_sessions (
+    session_id VARCHAR(64) PRIMARY KEY,
+    user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    refresh_token_hash VARCHAR(255) NOT NULL,
+    ip_address VARCHAR(45),
+    user_agent VARCHAR(255),
+    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 21. AUDIT_LOGS: Immutable Compliance Trail
+CREATE TABLE audit_logs (
+    log_id BIGSERIAL PRIMARY KEY,
+    actor_user_id BIGINT REFERENCES users(user_id) ON DELETE SET NULL,
+    action VARCHAR(100) NOT NULL,
+    target_entity VARCHAR(50),
+    target_id VARCHAR(50),
+    details_json JSON,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- =========================================================================
+-- PERFORMANCE SEARCH INDEXES (B-Tree Multi-Column)
+-- =========================================================================
+CREATE INDEX idx_profiles_search ON profiles (gender, dob, religion, marital_status) WHERE is_visible = TRUE;
+CREATE INDEX idx_profiles_height ON profiles (height_cm);
+CREATE INDEX idx_addresses_city ON user_addresses (city, state, country);
+CREATE INDEX idx_managers_user ON profile_managers (user_id);
+CREATE INDEX idx_managers_profile ON profile_managers (profile_id);
+CREATE INDEX idx_interests_receiver ON interests (receiver_profile_id, status);
+CREATE INDEX idx_interests_sender ON interests (sender_profile_id, status);
+CREATE INDEX idx_messages_conv ON messages (conversation_id, created_at DESC);
+CREATE INDEX idx_notifications_user_unread ON notifications (user_id, is_read);
+CREATE INDEX idx_sessions_user ON login_sessions (user_id, expires_at);
+</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 8: Security & Compliance -->
+    <section id="view-security" class="view-section">
+      <div class="diagram-card">
+        <div class="diagram-header">
+          <div>
+            <div class="diagram-title">
+              <i data-lucide="shield-check" style="color: var(--mat-emerald);"></i>
+              Matrimonial Security Architecture &amp; Data Protection
+            </div>
+            <div class="diagram-sub">
+              Critical safeguards protecting sensitive personal biodata, family privacy, and authentication vectors.
+            </div>
+          </div>
+        </div>
+
+        <div class="security-grid">
+          <div class="security-card">
+            <h4><i data-lucide="lock" style="color: var(--mat-rose);"></i> 1. Modern Password Hashing</h4>
+            <p>Passwords stored exclusively using <strong>Argon2id</strong> (or bcrypt with work factor &ge; 12). Raw passwords never touch database logs, and password hashes are never returned in JSON API responses.</p>
+          </div>
+
+          <div class="security-card">
+            <h4><i data-lucide="eye-off" style="color: var(--mat-gold);"></i> 2. Dynamic Photo &amp; Contact Masking</h4>
+            <p>Female/male candidate phone numbers and un-blurred photos are restricted behind authorized mutual match acceptances. Non-connected searchers only receive masked thumbnails and watermarked previews.</p>
+          </div>
+
+          <div class="security-card">
+            <h4><i data-lucide="users" style="color: var(--mat-indigo);"></i> 3. Server-Side RBAC Verification</h4>
+            <p>Client-provided manager or admin roles are never trusted. Every profile mutation verifies whether the caller's <code>user_id</code> holds an active <code>owner</code> or <code>editor</code> role in <code>profile_managers</code>.</p>
+          </div>
+
+          <div class="security-card">
+            <h4><i data-lucide="shield" style="color: var(--mat-cyan);"></i> 4. Anti-Enumeration &amp; Rate Limiting</h4>
+            <p>Login, password reset, and interest endpoints enforce strict rate limits (Redis token bucket: 5 attempts/min per IP/phone) to thwart brute-force password guessing and account harvesting.</p>
+          </div>
+
+          <div class="security-card">
+            <h4><i data-lucide="refresh-cw" style="color: var(--mat-emerald);"></i> 5. Session Revocation on Security Events</h4>
+            <p>Upon password change, role demotion, or account suspension, all active rows in <code>login_sessions</code> are revoked immediately, killing active refresh tokens across all remote devices.</p>
+          </div>
+
+          <div class="security-card">
+            <h4><i data-lucide="file-check" style="color: var(--mat-purple);"></i> 6. Immutable Compliance Audit Logs</h4>
+            <p>Security-critical events (manager invitations, role changes, profile bans, KYC verification decisions) are recorded with actor ID, IP address, and payload delta in <code>audit_logs</code>.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <div id="toast">DDL copied to clipboard!</div>
+
+  <script>
+    // Theme Management (Light by default)
+    function toggleTheme() {
+      const html = document.documentElement;
+      const currentTheme = html.getAttribute('data-theme') || 'light';
+      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+      
+      html.setAttribute('data-theme', newTheme);
+      localStorage.setItem('matrimonial-theme', newTheme);
+
+      // Update toggle button icon and text
+      const icon = document.getElementById('themeIcon');
+      const text = document.getElementById('themeText');
+      if (newTheme === 'dark') {
+        icon.setAttribute('data-lucide', 'moon');
+        icon.style.color = '#38bdf8';
+        text.innerText = 'Dark';
+      } else {
+        icon.setAttribute('data-lucide', 'sun');
+        icon.style.color = '#d97706';
+        text.innerText = 'Light';
+      }
+      lucide.createIcons();
+    }
+
+    // Toggle Section Collapse / Expand
+    function toggleSection(secId) {
+      const block = document.getElementById(secId);
+      if (!block) return;
+      
+      const badge = document.getElementById('badge-' + secId);
+      const isCollapsed = block.classList.contains('collapsed');
+
+      if (isCollapsed) {
+        block.classList.remove('collapsed');
+        if (badge) badge.innerText = 'Expanded';
+      } else {
+        block.classList.add('collapsed');
+        if (badge) badge.innerText = 'Collapsed';
+      }
+      lucide.createIcons();
+    }
+
+    // Expand All Category Sections
+    function expandAllSections() {
+      document.querySelectorAll('.api-category-block').forEach(block => {
+        block.classList.remove('collapsed');
+        const badge = block.querySelector('.section-state-pill');
+        if (badge) badge.innerText = 'Expanded';
+      });
+      lucide.createIcons();
+    }
+
+    // Collapse All Category Sections
+    function collapseAllSections() {
+      document.querySelectorAll('.api-category-block').forEach(block => {
+        block.classList.add('collapsed');
+        const badge = block.querySelector('.section-state-pill');
+        if (badge) badge.innerText = 'Collapsed';
+      });
+      lucide.createIcons();
+    }
+
+    // Initialize Mermaid.js with clean light theme
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      themeVariables: {
+        darkMode: false,
+        background: '#ffffff',
+        primaryColor: '#ffe4e6',
+        primaryTextColor: '#9f1239',
+        primaryBorderColor: '#e11d48',
+        secondaryColor: '#fef3c7',
+        secondaryTextColor: '#92400e',
+        secondaryBorderColor: '#d97706',
+        tertiaryColor: '#e0e7ff',
+        tertiaryTextColor: '#3730a3',
+        tertiaryBorderColor: '#4f46e5',
+        lineColor: '#e11d48',
+        fontFamily: 'Plus Jakarta Sans',
+        fontSize: '14px'
+      }
+    });
+
+    // View Switching Logic
+    function switchView(viewId, btn) {
+      document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      
+      const targetSec = document.getElementById(viewId);
+      if (targetSec) {
+        targetSec.classList.add('active');
+        btn.classList.add('active');
+      }
+
+      // Re-trigger lucide icons
+      lucide.createIcons();
+    }
+
+    // Filter APIs by Category Pill
+    function filterCategory(cat, btn) {
+      document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+
+      const blocks = document.querySelectorAll('.api-category-block');
+      blocks.forEach(block => {
+        if (cat === 'all' || block.getAttribute('data-category') === cat) {
+          block.style.display = 'block';
+        } else {
+          block.style.display = 'none';
+        }
+      });
+    }
+
+    // Live Search in API Rows
+    function filterApis() {
+      const query = document.getElementById('apiSearchInput').value.toLowerCase().trim();
+      const rows = document.querySelectorAll('.api-row');
+      const blocks = document.querySelectorAll('.api-category-block');
+
+      rows.forEach(row => {
+        const text = (row.getAttribute('data-text') || '') + ' ' + row.innerText.toLowerCase();
+        if (text.includes(query)) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+
+      // Expand block if query matches and hide empty blocks
+      blocks.forEach(block => {
+        const visibleRows = block.querySelectorAll('.api-row:not([style*="display: none"])');
+        if (visibleRows.length === 0 && query !== '') {
+          block.style.display = 'none';
+        } else {
+          block.style.display = 'block';
+          if (query !== '') {
+            block.classList.remove('collapsed');
+            const badge = block.querySelector('.section-state-pill');
+            if (badge) badge.innerText = 'Expanded';
+          }
+        }
+      });
+      lucide.createIcons();
+    }
+
+    // Copy SQL DDL
+    function copyDdl() {
+      const code = document.getElementById('sqlDdlCode').innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        const toast = document.getElementById('toast');
+        toast.style.display = 'block';
+        setTimeout(() => {
+          toast.style.display = 'none';
+        }, 2500);
+      });
+    }
+
+    // Initialize Lucide icons on DOM ready
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+    });
+  </script>
+</body>
+</html>
