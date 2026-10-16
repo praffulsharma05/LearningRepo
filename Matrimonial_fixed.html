@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Matrimonial Website Enterprise Architecture, Database Design & Section-Wise Collapsible REST API Specification. Features multi-manager family access model, 21 relational tables, interactive ERD, and 54 production REST/WebSocket endpoints. Light Theme edition.">
+  <meta name="description" content="Matrimonial Website Enterprise Architecture, Database Design & Section-Wise Collapsible REST API Specification. Features multi-manager family access model, 21 relational tables, interactive ERD, and 75 production REST/WebSocket endpoints. Light Theme edition.">
   <title>Matrimonial System — Database Architecture & Complete API Specification</title>
 
   <!-- Google Fonts -->
@@ -1079,55 +1079,7 @@
 </head>
 <body>
 
-  <header>
-    <div class="container">
-      <div class="badge-pill">
-        <i data-lucide="heart-handshake" style="width: 16px; height: 16px;"></i>
-        Matrimonial Platform System Architecture &bull; Light Theme
-      </div>
-      <h1>Matrimonial Database &amp; Complete API Specification</h1>
-      <p>High-security matchmaking platform architecture separating User Authentication from Matrimonial Profiles via Multi-Manager Family Authorization, 21 relational tables, and 54 production REST/WebSocket endpoints with section-wise collapsible views.</p>
 
-      <!-- Key Metrics Bar -->
-      <div class="stats-bar">
-        <div class="stat-card">
-          <div class="stat-header">
-            <span class="stat-badge pillar-auth">Core Principle</span>
-            <i data-lucide="shield-check" style="width: 18px; height: 18px; color: var(--mat-indigo);"></i>
-          </div>
-          <div class="stat-val">Separated Identities</div>
-          <div class="stat-desc">Strict separation between Login Accounts (<code>users</code>) and Marriage Profiles (<code>profiles</code>).</div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-header">
-            <span class="stat-badge pillar-family">Family Access</span>
-            <i data-lucide="users" style="width: 18px; height: 18px; color: var(--mat-rose);"></i>
-          </div>
-          <div class="stat-val">M : N Multi-Manager</div>
-          <div class="stat-desc">Parents, siblings &amp; candidates co-manage profiles with granular role permissions (Owner, Editor, Viewer).</div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-header">
-            <span class="stat-badge pillar-match">Matchmaking Engine</span>
-            <i data-lucide="sparkles" style="width: 18px; height: 18px; color: var(--mat-gold);"></i>
-          </div>
-          <div class="stat-val">Preferences &amp; Proposals</div>
-          <div class="stat-desc">Algorithmic partner preferences, 2-way interest lifecycles, shortlisting, and mutual match scoring.</div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-header">
-            <span class="stat-badge pillar-security">Production Specs</span>
-            <i data-lucide="webhook" style="width: 18px; height: 18px; color: var(--mat-emerald);"></i>
-          </div>
-          <div class="stat-val">54 REST Endpoints</div>
-          <div class="stat-desc">Complete API specification with route purpose, payloads, HTTP statuses &amp; RBAC rules.</div>
-        </div>
-      </div>
-    </div>
-  </header>
 
   <main class="container">
 
@@ -1141,7 +1093,7 @@
       <div class="toolbar-actions">
         <div class="tab-group" role="tablist">
           <button class="tab-btn active" id="tab-btn-apis" onclick="switchView('view-apis', this)">
-            <i data-lucide="webhook" style="width: 15px; height: 15px;"></i> API Design (54 Endpoints)
+            <i data-lucide="webhook" style="width: 15px; height: 15px;"></i> API Design (75 Endpoints)
           </button>
           <button class="tab-btn" id="tab-btn-architecture" onclick="switchView('view-architecture', this)">
             <i data-lucide="layers" style="width: 15px; height: 15px;"></i> Core Multi-Manager Model
@@ -1173,7 +1125,7 @@
       </div>
     </div>
 
-    <!-- VIEW 1: API Design & Specification (54 Endpoints with Section-Wise Expand/Collapse) -->
+    <!-- VIEW 1: API Design & Specification (75 Endpoints with Section-Wise Expand/Collapse) -->
     <section id="view-apis" class="view-section active">
       <div class="diagram-card">
         <div class="diagram-header">
@@ -1186,7 +1138,7 @@
               Versioned RESTful architecture (<code>/api/v1</code>) and WebSocket protocol with precise business purpose, request payloads, authorization constraints, and response status codes. Click on any section header to collapse or expand it.
             </div>
           </div>
-          <span class="diagram-badge">54 ENDPOINTS &bull; 16 SECTION BLOCKS</span>
+          <span class="diagram-badge">75 ENDPOINTS &bull; 16 SECTION BLOCKS</span>
         </div>
 
         <!-- Filter Bar with Section Controls -->
@@ -1194,11 +1146,11 @@
           <div class="api-filter-left">
             <div class="search-wrapper">
               <i data-lucide="search" class="search-icon"></i>
-              <input type="text" id="apiSearchInput" class="api-search-input" placeholder="Search API route or keyword..." onkeyup="filterApis()">
+              <input type="text" id="apiSearchInput" class="api-search-input" placeholder="Search API route or keyword..." oninput="applyApiFilters()">
             </div>
 
             <div class="api-pills-filter">
-              <button class="filter-pill active" onclick="filterCategory('all', this)">All (54)</button>
+              <button class="filter-pill active" onclick="filterCategory('all', this)">All (75)</button>
               <button class="filter-pill" onclick="filterCategory('auth', this)">Auth &amp; Account</button>
               <button class="filter-pill" onclick="filterCategory('profile', this)">Profiles</button>
               <button class="filter-pill" onclick="filterCategory('manager', this)">Multi-Manager</button>
@@ -2398,19 +2350,19 @@
         </div>
 
         <pre class="mermaid">
-graph LR
-    subgraph User Accounts
-        U1["User #1 (Father)<br/>rahul.father@mail.com"]
-        U2["User #2 (Daughter / Candidate)<br/>pooja.sharma@mail.com"]
+flowchart LR
+    subgraph UA["User Accounts"]
+        U1["User 1 (Father)<br/>rahul.father@mail.com"]
+        U2["User 2 (Daughter / Candidate)<br/>pooja.sharma@mail.com"]
     end
 
-    subgraph Permission Matrix (profile_managers)
-        PM1["Manager #1<br/>Relationship: Father<br/>Role: Admin / Editor"]
-        PM2["Manager #2<br/>Relationship: Self<br/>Role: Owner"]
+    subgraph PM["Permission Matrix - profile_managers"]
+        PM1["Manager 1<br/>Relationship: Father<br/>Role: Admin / Editor"]
+        PM2["Manager 2<br/>Relationship: Self<br/>Role: Owner"]
     end
 
-    subgraph Matrimonial Entity
-        P["Matrimonial Profile #105<br/>Pooja Sharma (26, Software Engineer)<br/>Bio, Photos, Preferences"]
+    subgraph ME["Matrimonial Entity"]
+        P["Matrimonial Profile 105<br/>Pooja Sharma (26, Software Engineer)<br/>Bio, Photos, Preferences"]
     end
 
     U1 -->|Maps to| PM1
@@ -2440,7 +2392,7 @@ graph LR
               Complete Matrimonial Entity-Relationship Diagram (Mermaid.js)
             </div>
             <div class="diagram-sub">
-              Visualizing all 21 production entities across Account Identity, Matrimonial Profiles, Matchmaking Taxonomy, Real-Time Chat, and Safety Moderation.
+              Corrected ERD of all 21 production entities across Account Identity, Matrimonial Profiles, Matchmaking Taxonomy, Real-Time Chat, and Safety Moderation. A review of the original is below the diagram.
             </div>
           </div>
           <span class="diagram-badge">21 RELATIONAL TABLES</span>
@@ -2448,42 +2400,223 @@ graph LR
 
         <pre class="mermaid">
 erDiagram
-    USERS ||--o{ USER_VERIFICATIONS : "submits (1:N)"
-    USERS ||--o{ PROFILE_MANAGERS : "authorizes (1:N)"
-    PROFILES ||--o{ PROFILE_MANAGERS : "managed by (1:N)"
-    PROFILES ||--o{ USER_ADDRESSES : "located at (1:N)"
-    PROFILES ||--o{ PROFILE_PHOTOS : "displays (1:N)"
-    PROFILES ||--|| PARTNER_PREFERENCES : "defines criteria (1:1)"
-    
-    PROFILES ||--o{ PROFILE_HOBBIES : "participates in (1:N)"
-    HOBBIES ||--o{ PROFILE_HOBBIES : "categorizes (1:N)"
-    CATEGORIES ||--o{ PROFILES : "standardizes lookups"
-    
-    PROFILES ||--o{ INTERESTS : "sends proposal (1:N)"
-    PROFILES ||--o{ INTERESTS : "receives proposal (1:N)"
-    
-    PROFILES ||--o{ MATCHES : "profile 1 in match (1:N)"
-    PROFILES ||--o{ MATCHES : "profile 2 in match (1:N)"
-    
-    USERS ||--o{ FAVORITES : "bookmarks (1:N)"
-    PROFILES ||--o{ FAVORITES : "saved as target (1:N)"
-    
-    USERS ||--o{ USER_BLOCKS : "blocker account (1:N)"
-    USERS ||--o{ USER_BLOCKS : "blocked account (1:N)"
-    
-    USERS ||--o{ USER_REPORTS : "reporter account (1:N)"
-    PROFILES ||--o{ USER_REPORTS : "reported target profile (1:N)"
-    
-    CONVERSATIONS ||--o{ CONVERSATION_PARTICIPANTS : "includes (1:N)"
-    USERS ||--o{ CONVERSATION_PARTICIPANTS : "participating account (1:N)"
-    PROFILES ||--o{ CONVERSATION_PARTICIPANTS : "acting profile (1:N)"
-    CONVERSATIONS ||--o{ MESSAGES : "contains messages (1:N)"
-    USERS ||--o{ MESSAGES : "sent by user (1:N)"
-    
-    USERS ||--o{ NOTIFICATIONS : "notifies user (1:N)"
-    USERS ||--o{ LOGIN_SESSIONS : "active login tokens (1:N)"
-    USERS ||--o{ AUDIT_LOGS : "performed by actor (1:N)"
+    USERS {
+        bigint user_id PK
+        string email UK
+        string phone UK
+        string password_hash
+        string role
+        string account_status
+        timestamp created_at
+        timestamp updated_at
+    }
+    PROFILES {
+        bigint profile_id PK
+        string display_name
+        string gender
+        date dob
+        string marital_status
+        int height_cm
+        string religion
+        string caste
+        string education
+        string occupation
+        boolean is_visible
+        string profile_status
+    }
+    PROFILE_MANAGERS {
+        bigint profile_manager_id PK
+        bigint profile_id FK
+        bigint user_id FK "NULL until invite accepted"
+        string relationship_to_profile
+        string permission_role
+        string status
+        string invited_email
+        string invitation_token_hash UK
+        timestamp invitation_expires_at
+        tinyint active_owner UK "generated: one owner per profile"
+    }
+    USER_VERIFICATIONS {
+        bigint verification_id PK
+        bigint user_id FK
+        string verification_type
+        string status
+        string provider_reference
+        timestamp verified_at
+    }
+    USER_ADDRESSES {
+        bigint address_id PK
+        bigint profile_id FK
+        string address_type
+        string city
+        string state
+        string country
+    }
+    PROFILE_PHOTOS {
+        bigint photo_id PK
+        bigint profile_id FK
+        string photo_url
+        string approval_status
+        boolean is_primary
+    }
+    PARTNER_PREFERENCES {
+        bigint preference_id PK
+        bigint profile_id FK, UK
+        int min_age
+        int max_age
+        int min_height_cm
+        int max_height_cm
+    }
+    CATEGORIES {
+        int category_id PK
+        string category_type
+        string category_name
+        boolean is_active
+    }
+    HOBBIES {
+        int hobby_id PK
+        string hobby_name UK
+    }
+    PROFILE_HOBBIES {
+        bigint profile_id PK, FK
+        int hobby_id PK, FK
+    }
+    INTERESTS {
+        bigint interest_id PK
+        bigint sender_profile_id FK
+        bigint receiver_profile_id FK
+        string status
+        string message_note
+        timestamp responded_at
+    }
+    MATCHES {
+        bigint match_id PK
+        bigint interest_id FK, UK "nullable"
+        bigint profile_id_1 FK
+        bigint profile_id_2 FK
+        string match_status
+        decimal match_score
+    }
+    FAVORITES {
+        bigint favorite_id PK
+        bigint user_id FK
+        bigint favorite_profile_id FK
+    }
+    USER_BLOCKS {
+        bigint block_id PK
+        bigint blocker_user_id FK
+        bigint blocked_user_id FK
+    }
+    USER_REPORTS {
+        bigint report_id PK
+        bigint reporter_user_id FK
+        bigint reported_profile_id FK
+        string reason
+        string status
+    }
+    CONVERSATIONS {
+        bigint conversation_id PK
+        bigint profile_id_1 FK
+        bigint profile_id_2 FK
+    }
+    CONVERSATION_PARTICIPANTS {
+        bigint participant_id PK
+        bigint conversation_id FK
+        bigint user_id FK
+        bigint acting_profile_id FK
+        bigint last_read_message_id FK "nullable"
+    }
+    MESSAGES {
+        bigint message_id PK
+        bigint conversation_id FK
+        bigint sender_user_id FK
+        text content
+        timestamp created_at
+    }
+    NOTIFICATIONS {
+        bigint notification_id PK
+        bigint user_id FK
+        string title
+        boolean is_read
+    }
+    LOGIN_SESSIONS {
+        string session_id PK
+        bigint user_id FK
+        string refresh_token_hash
+        timestamp expires_at
+    }
+    AUDIT_LOGS {
+        bigint log_id PK
+        bigint actor_user_id FK "nullable"
+        string action
+        string ip_address
+        timestamp created_at
+    }
+
+    USERS ||--o{ USER_VERIFICATIONS : submits
+    USERS |o--o{ PROFILE_MANAGERS : authorizes
+    PROFILES ||--o{ PROFILE_MANAGERS : managed_by
+    PROFILES ||--o{ USER_ADDRESSES : locates
+    PROFILES ||--o{ PROFILE_PHOTOS : displays
+    PROFILES ||--o| PARTNER_PREFERENCES : defines
+
+    PROFILES ||--o{ PROFILE_HOBBIES : has
+    HOBBIES ||--o{ PROFILE_HOBBIES : classifies
+
+    PROFILES ||--o{ INTERESTS : sends
+    PROFILES ||--o{ INTERESTS : receives
+    INTERESTS |o--o| MATCHES : accepted_into
+    PROFILES ||--o{ MATCHES : is_profile_1
+    PROFILES ||--o{ MATCHES : is_profile_2
+
+    USERS ||--o{ FAVORITES : bookmarks
+    PROFILES ||--o{ FAVORITES : bookmarked_in
+
+    USERS ||--o{ USER_BLOCKS : blocks
+    USERS ||--o{ USER_BLOCKS : blocked_by
+
+    USERS ||--o{ USER_REPORTS : files
+    PROFILES ||--o{ USER_REPORTS : reported_in
+
+    PROFILES ||--o{ CONVERSATIONS : is_profile_1
+    PROFILES ||--o{ CONVERSATIONS : is_profile_2
+    CONVERSATIONS ||--o{ CONVERSATION_PARTICIPANTS : includes
+    USERS ||--o{ CONVERSATION_PARTICIPANTS : joins
+    PROFILES ||--o{ CONVERSATION_PARTICIPANTS : acts_as
+    MESSAGES |o--o{ CONVERSATION_PARTICIPANTS : last_read
+
+    CONVERSATIONS ||--o{ MESSAGES : contains
+    USERS ||--o{ MESSAGES : sends
+
+    USERS ||--o{ NOTIFICATIONS : receives
+    USERS ||--o{ LOGIN_SESSIONS : owns
+    USERS |o--o{ AUDIT_LOGS : performs
         </pre>
+
+        <div class="diagram-title" style="margin-top: 28px;">
+          <i data-lucide="search-check" style="color: var(--mat-gold);"></i>
+          ER Diagram Review: Was the Original Correct?
+        </div>
+        <div class="diagram-sub" style="margin-bottom: 14px;">
+          <strong>Verdict: partially correct.</strong> The 21 tables and the user / profile / manager separation were sound, but several relationships were wrong or missing, and a few columns disagreed with the SQL DDL. The diagram above is the corrected version. <code>categories</code> stays a stand-alone lookup table: <code>profiles</code> stores religion, education etc. as text, so no FK exists.
+        </div>
+        <div class="rel-table-container">
+          <table>
+            <thead><tr><th>#</th><th>Problem in original ERD</th><th>Correction</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td><code>CATEGORIES ||--o{ PROFILES</code> drew a relationship that has no foreign key anywhere in the DDL.</td><td>Removed. <code>categories</code> is a standalone lookup served by <code>GET /categories</code>.</td></tr>
+              <tr><td>2</td><td><code>PROFILES ||--|| PARTNER_PREFERENCES</code> made preferences mandatory for every profile.</td><td>Now <code>||--o|</code> (zero or one). A new profile has no preferences until it saves them.</td></tr>
+              <tr><td>3</td><td><code>interests</code>, <code>matches</code>, <code>conversations</code> each have two profile FKs but only one line was drawn.</td><td>Two labelled relationships each (sends / receives, is_profile_1 / is_profile_2).</td></tr>
+              <tr><td>4</td><td><code>user_blocks</code> has <code>blocker_user_id</code> and <code>blocked_user_id</code>, but only one line was drawn.</td><td>Both relationships drawn (blocks / blocked_by).</td></tr>
+              <tr><td>5</td><td><code>PROFILES ||--o{ CONVERSATION_PARTICIPANTS</code> was drawn, but the table had no profile column.</td><td>Added <code>acting_profile_id</code> (FK) to the DDL, dictionary and ERD.</td></tr>
+              <tr><td>6</td><td>The invitation flow inserts a manager row before the invitee has an account, but <code>user_id</code> was NOT NULL and no invitation columns existed.</td><td><code>user_id</code> is nullable; added <code>invited_email</code>, <code>invitation_token_hash</code>, <code>invitation_expires_at</code>. Relationship is now <code>|o--o{</code>.</td></tr>
+              <tr><td>7</td><td>Nothing linked an accepted interest to its match, although the workflow says accepting auto-creates a match.</td><td>Added <code>matches.interest_id</code> (nullable, unique FK).</td></tr>
+              <tr><td>8</td><td><code>last_read_message_id</code> had no relationship or FK.</td><td>Added FK to <code>messages</code> (ON DELETE SET NULL) with an ALTER TABLE, because of the circular reference.</td></tr>
+              <tr><td>9</td><td><code>audit_logs.actor_user_id</code> is nullable (ON DELETE SET NULL) but was drawn as mandatory. The security tab also promised IP logging with no column.</td><td>Relationship is now <code>|o--o{</code>; added <code>ip_address</code>.</td></tr>
+              <tr><td>10</td><td>Wrong types: <code>expires_at</code> and <code>created_at</code> were <code>string</code>; key columns like <code>profile_managers.status</code> were missing.</td><td>Timestamps typed correctly; missing columns added. A generated <code>active_owner</code> column now enforces one owner per profile.</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </section>
 
@@ -2568,14 +2701,14 @@ erDiagram
                 <td><code>interests</code></td>
                 <td><span class="badge-cardinality one-to-many">1 : N</span></td>
                 <td><code>interests.sender_profile_id</code> &amp; <code>receiver_profile_id</code></td>
-                <td>2-way marriage proposal requests. Unique constraint prevents sending duplicate requests in the same direction while pending.</td>
+                <td>Marriage proposals. Two FKs (sender, receiver). Unique <code>(sender_profile_id, receiver_profile_id)</code> allows one row per direction; re-sending after a decline or cancel reopens the same row. Self-interest is blocked by a trigger.</td>
               </tr>
               <tr>
                 <td><code>profiles</code></td>
                 <td><code>matches</code></td>
                 <td><span class="badge-cardinality one-to-many">1 : N</span></td>
                 <td><code>matches.profile_id_1</code> &amp; <code>profile_id_2</code></td>
-                <td>Formed when an interest proposal is accepted. Unique constraint on <code>LEAST(p1, p2), GREATEST(p1, p2)</code> prevents duplicate match pairs.</td>
+                <td>Formed when an interest is accepted (<code>matches.interest_id</code>). A trigger forces <code>profile_id_1 &lt; profile_id_2</code>, so the unique pair prevents duplicates in either direction.</td>
               </tr>
               <tr>
                 <td><code>users</code> &amp; <code>profiles</code></td>
@@ -2631,7 +2764,21 @@ erDiagram
                 <td><code>audit_logs</code></td>
                 <td><span class="badge-cardinality one-to-many">1 : N</span></td>
                 <td><code>audit_logs.actor_user_id</code></td>
-                <td>Security audit trail capturing critical administrative actions and role delegations.</td>
+                <td>Security audit trail capturing critical administrative actions and role delegations. FK is nullable (SET NULL) so logs survive user deletion.</td>
+              </tr>
+              <tr>
+                <td><code>profiles</code></td>
+                <td><code>conversation_participants</code></td>
+                <td><span class="badge-cardinality one-to-many">1 : N</span></td>
+                <td><code>conversation_participants.acting_profile_id</code></td>
+                <td>Records which profile a manager is chatting on behalf of (one user may manage several profiles).</td>
+              </tr>
+              <tr>
+                <td><code>interests</code></td>
+                <td><code>matches</code></td>
+                <td><span class="badge-cardinality one-to-one">1 : 0..1</span></td>
+                <td><code>matches.interest_id</code></td>
+                <td>An accepted interest produces at most one match. Nullable so matches can also come from system suggestions.</td>
               </tr>
             </tbody>
           </table>
@@ -2669,7 +2816,7 @@ erDiagram
               <li class="field-item"><div class="field-left"><span class="field-name">phone</span> <span class="tag-uk">UK</span></div><span class="field-type">VARCHAR(25)</span></li>
               <li class="field-item"><div class="field-left"><span class="field-name">password_hash</span></div><span class="field-type">VARCHAR(255)</span></li>
               <li class="field-item"><div class="field-left"><span class="field-name">role</span></div><span class="field-type">ENUM(member, admin, moderator)</span></li>
-              <li class="field-item"><div class="field-left"><span class="field-name">account_status</span></div><span class="field-type">ENUM(pending, active, suspended)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">account_status</span></div><span class="field-type">ENUM(pending, pending_verification, active, suspended, deleted)</span></li>
               <li class="field-item"><div class="field-left"><span class="field-name">created_at</span></div><span class="field-type">TIMESTAMP</span></li>
               <li class="field-item"><div class="field-left"><span class="field-name">updated_at</span></div><span class="field-type">TIMESTAMP</span></li>
             </ul>
@@ -2687,7 +2834,7 @@ erDiagram
               <li class="field-item"><div class="field-left"><span class="field-name">display_name</span></div><span class="field-type">VARCHAR(150)</span></li>
               <li class="field-item"><div class="field-left"><span class="field-name">gender</span></div><span class="field-type">ENUM(male, female, other)</span></li>
               <li class="field-item"><div class="field-left"><span class="field-name">dob</span></div><span class="field-type">DATE</span></li>
-              <li class="field-item"><div class="field-left"><span class="field-name">marital_status</span></div><span class="field-type">ENUM(never_married, divorced, widowed)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">marital_status</span></div><span class="field-type">ENUM(never_married, divorced, widowed, separated)</span></li>
               <li class="field-item"><div class="field-left"><span class="field-name">height_cm</span></div><span class="field-type">INT</span></li>
               <li class="field-item"><div class="field-left"><span class="field-name">religion</span></div><span class="field-type">VARCHAR(100)</span></li>
               <li class="field-item"><div class="field-left"><span class="field-name">mother_tongue</span></div><span class="field-type">VARCHAR(100)</span></li>
@@ -2709,11 +2856,15 @@ erDiagram
             <ul class="field-list">
               <li class="field-item"><div class="field-left"><span class="field-name">profile_manager_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
               <li class="field-item"><div class="field-left"><span class="field-name">profile_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
-              <li class="field-item"><div class="field-left"><span class="field-name">user_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
-              <li class="field-item"><div class="field-left"><span class="field-name">relationship_to_profile</span></div><span class="field-type">ENUM(self, father, mother, sibling, relative)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">user_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT NULL</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">relationship_to_profile</span></div><span class="field-type">ENUM(self, father, mother, brother, sister, relative, guardian)</span></li>
               <li class="field-item"><div class="field-left"><span class="field-name">permission_role</span></div><span class="field-type">ENUM(owner, admin, editor, viewer)</span></li>
               <li class="field-item"><div class="field-left"><span class="field-name">status</span></div><span class="field-type">ENUM(invited, active, revoked)</span></li>
               <li class="field-item"><div class="field-left"><span class="field-name">created_at</span></div><span class="field-type">TIMESTAMP</span></li>
+                          <li class="field-item"><div class="field-left"><span class="field-name">invited_email</span></div><span class="field-type">VARCHAR(255) NULL</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">invitation_token_hash</span> <span class="tag-uk">UK</span></div><span class="field-type">VARCHAR(255) NULL</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">invitation_expires_at</span></div><span class="field-type">TIMESTAMP NULL</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">active_owner</span> <span class="tag-uk">UK</span></div><span class="field-type">TINYINT GENERATED</span></li>
             </ul>
           </div>
 
@@ -2727,7 +2878,7 @@ erDiagram
             <ul class="field-list">
               <li class="field-item"><div class="field-left"><span class="field-name">verification_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
               <li class="field-item"><div class="field-left"><span class="field-name">user_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
-              <li class="field-item"><div class="field-left"><span class="field-name">verification_type</span></div><span class="field-type">ENUM(government_id, phone, email, income)</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">verification_type</span></div><span class="field-type">ENUM(government_id, phone_otp, email_otp, income_proof)</span></li>
               <li class="field-item"><div class="field-left"><span class="field-name">status</span></div><span class="field-type">ENUM(pending, verified, rejected)</span></li>
               <li class="field-item"><div class="field-left"><span class="field-name">provider_reference</span></div><span class="field-type">VARCHAR(255)</span></li>
               <li class="field-item"><div class="field-left"><span class="field-name">verified_at</span></div><span class="field-type">TIMESTAMP</span></li>
@@ -2859,6 +3010,7 @@ erDiagram
               <li class="field-item"><div class="field-left"><span class="field-name">match_status</span></div><span class="field-type">ENUM(active, dismissed, married)</span></li>
               <li class="field-item"><div class="field-left"><span class="field-name">match_score</span></div><span class="field-type">DECIMAL(5,2)</span></li>
               <li class="field-item"><div class="field-left"><span class="field-name">created_at</span></div><span class="field-type">TIMESTAMP</span></li>
+                          <li class="field-item"><div class="field-left"><span class="field-name">interest_id</span> <span class="tag-fk">FK</span> <span class="tag-uk">UK</span></div><span class="field-type">BIGINT NULL</span></li>
             </ul>
           </div>
 
@@ -2935,7 +3087,8 @@ erDiagram
               <li class="field-item"><div class="field-left"><span class="field-name">participant_id</span> <span class="tag-pk">PK</span></div><span class="field-type">BIGINT AUTO_INC</span></li>
               <li class="field-item"><div class="field-left"><span class="field-name">conversation_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
               <li class="field-item"><div class="field-left"><span class="field-name">user_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
-              <li class="field-item"><div class="field-left"><span class="field-name">last_read_message_id</span></div><span class="field-type">BIGINT</span></li>
+              <li class="field-item"><div class="field-left"><span class="field-name">last_read_message_id</span></div><span class="field-type">BIGINT NULL (FK to messages)</span></li>
+                          <li class="field-item"><div class="field-left"><span class="field-name">acting_profile_id</span> <span class="tag-fk">FK</span></div><span class="field-type">BIGINT</span></li>
             </ul>
           </div>
 
@@ -3001,6 +3154,7 @@ erDiagram
               <li class="field-item"><div class="field-left"><span class="field-name">target_entity</span> / <span class="field-name">target_id</span></div><span class="field-type">VARCHAR(50) / VARCHAR(50)</span></li>
               <li class="field-item"><div class="field-left"><span class="field-name">details_json</span></div><span class="field-type">JSON</span></li>
               <li class="field-item"><div class="field-left"><span class="field-name">created_at</span></div><span class="field-type">TIMESTAMP</span></li>
+                          <li class="field-item"><div class="field-left"><span class="field-name">ip_address</span></div><span class="field-type">VARCHAR(45)</span></li>
             </ul>
           </div>
 
@@ -3037,12 +3191,12 @@ stateDiagram-v2
     Search_Discovery --> Send_Interest : POST /api/v1/interests/send
     Send_Interest --> Pending : Interest created & Notification sent
     
-    Pending --> Accepted : PATCH /api/v1/interests/:id/respond (accepted)
-    Pending --> Declined : PATCH /api/v1/interests/:id/respond (declined)
-    Pending --> Cancelled : DELETE /api/v1/interests/:id (by sender)
+    Pending --> Accepted : PATCH /api/v1/interests/{id}/respond (accepted)
+    Pending --> Declined : PATCH /api/v1/interests/{id}/respond (declined)
+    Pending --> Cancelled : DELETE /api/v1/interests/{id} (by sender)
     
     Accepted --> Matches_Created : Auto-inserts into matches table
-    Matches_Created --> Unlock_Chat : Unlocks 1:1 Conversation
+    Matches_Created --> Unlock_Chat : Unlocks 1-to-1 Conversation
     Matches_Created --> Unlock_Contacts : Un-blurs verified phone & photos
     
     Declined --> [*]
@@ -3067,11 +3221,11 @@ sequenceDiagram
     actor Relative as Relative (Father)
 
     Owner->>API: POST /api/v1/profiles/:id/managers/invite (email, role: editor)
-    API->>DB: INSERT into profile_managers (status: invited, token: hash)
+    API->>DB: INSERT into profile_managers (status invited, user_id NULL, invited_email, token hash)
     API-->>Relative: Dispatches Email / SMS Invitation Token
     Relative->>API: POST /api/v1/auth/login or /register
     Relative->>API: POST /api/v1/managers/accept-invitation (token)
-    API->>DB: UPDATE profile_managers SET status='active', user_id=FatherID
+    API->>DB: UPDATE profile_managers SET status='active', user_id=FatherID, token cleared
     API->>DB: INSERT into audit_logs (action: 'manager_delegated')
     API-->>Relative: 200 OK (Access Granted as Profile Editor)
         </pre>
@@ -3096,30 +3250,33 @@ sequenceDiagram
         <div style="position: relative;">
           <button class="copy-btn" onclick="copyDdl()"><i data-lucide="copy" style="width: 14px; height: 14px;"></i> Copy SQL DDL</button>
           <pre class="sql-code-block"><code id="sqlDdlCode">-- =========================================================================
--- MATRIMONIAL PLATFORM DATABASE DDL (PostgreSQL / MySQL Compatible)
+-- MATRIMONIAL PLATFORM DATABASE DDL (MySQL 8.0+ Production Schema)
 -- Enterprise Schema with Multi-Manager Delegation, Matchmaking & Privacy
 -- =========================================================================
 
 -- 1. USERS: Authentication Accounts (Strictly separated from Profiles)
-CREATE TABLE users (
-    user_id BIGSERIAL PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS users (
+    user_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(255) UNIQUE,
     phone VARCHAR(25) UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
-    role VARCHAR(30) DEFAULT 'member' CHECK (role IN ('member', 'admin', 'moderator')),
-    account_status VARCHAR(30) DEFAULT 'pending' CHECK (account_status IN ('pending', 'active', 'suspended', 'deleted')),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
+    role VARCHAR(30) DEFAULT 'member',
+    account_status VARCHAR(30) DEFAULT 'pending_verification',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT chk_users_role CHECK (role IN ('member', 'admin', 'moderator')),
+    CONSTRAINT chk_users_status CHECK (account_status IN ('pending', 'pending_verification', 'active', 'suspended', 'deleted')),
+    CONSTRAINT chk_users_contact CHECK (email IS NOT NULL OR phone IS NOT NULL)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 2. PROFILES: Matrimonial Information (The person seeking marriage)
-CREATE TABLE profiles (
-    profile_id BIGSERIAL PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS profiles (
+    profile_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     display_name VARCHAR(150) NOT NULL,
-    gender VARCHAR(20) NOT NULL CHECK (gender IN ('male', 'female', 'other')),
+    gender VARCHAR(20) NOT NULL,
     dob DATE NOT NULL,
-    marital_status VARCHAR(50) NOT NULL CHECK (marital_status IN ('never_married', 'divorced', 'widowed', 'separated')),
-    height_cm INT CHECK (height_cm BETWEEN 100 AND 250),
+    marital_status VARCHAR(50) NOT NULL,
+    height_cm INT,
     religion VARCHAR(100),
     caste VARCHAR(100),
     sub_caste VARCHAR(100),
@@ -3127,66 +3284,92 @@ CREATE TABLE profiles (
     education VARCHAR(150),
     occupation VARCHAR(150),
     annual_income_range VARCHAR(50),
-    family_type VARCHAR(50) DEFAULT 'nuclear' CHECK (family_type IN ('nuclear', 'joint')),
-    family_values VARCHAR(50) DEFAULT 'traditional' CHECK (family_values IN ('traditional', 'moderate', 'liberal')),
+    family_type VARCHAR(50) DEFAULT 'nuclear',
+    family_values VARCHAR(50) DEFAULT 'traditional',
     about_me TEXT,
     is_visible BOOLEAN DEFAULT TRUE,
-    profile_status VARCHAR(30) DEFAULT 'active' CHECK (profile_status IN ('active', 'hidden', 'deactivated')),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
+    profile_status VARCHAR(30) DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT chk_profiles_gender CHECK (gender IN ('male', 'female', 'other')),
+    CONSTRAINT chk_profiles_marital CHECK (marital_status IN ('never_married', 'divorced', 'widowed', 'separated')),
+    CONSTRAINT chk_profiles_height CHECK (height_cm BETWEEN 100 AND 250),
+    CONSTRAINT chk_profiles_family_type CHECK (family_type IN ('nuclear', 'joint')),
+    CONSTRAINT chk_profiles_family_values CHECK (family_values IN ('traditional', 'moderate', 'liberal')),
+    CONSTRAINT chk_profiles_status CHECK (profile_status IN ('active', 'hidden', 'deactivated'))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 3. PROFILE_MANAGERS: Multi-Manager M:N Authorization Join Table
-CREATE TABLE profile_managers (
-    profile_manager_id BIGSERIAL PRIMARY KEY,
-    profile_id BIGINT NOT NULL REFERENCES profiles(profile_id) ON DELETE CASCADE,
-    user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    relationship_to_profile VARCHAR(50) NOT NULL CHECK (relationship_to_profile IN ('self', 'father', 'mother', 'brother', 'sister', 'relative', 'guardian')),
-    permission_role VARCHAR(30) NOT NULL DEFAULT 'editor' CHECK (permission_role IN ('owner', 'admin', 'editor', 'viewer')),
-    status VARCHAR(30) NOT NULL DEFAULT 'active' CHECK (status IN ('invited', 'active', 'revoked')),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT uq_profile_user_manager UNIQUE (profile_id, user_id)
-);
+--    user_id is NULL while an invitation is pending (invitee may not have an account yet).
+CREATE TABLE IF NOT EXISTS profile_managers (
+    profile_manager_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    profile_id BIGINT UNSIGNED NOT NULL,
+    user_id BIGINT UNSIGNED NULL,
+    relationship_to_profile VARCHAR(50) NOT NULL,
+    permission_role VARCHAR(30) NOT NULL DEFAULT 'editor',
+    status VARCHAR(30) NOT NULL DEFAULT 'active',
+    invited_email VARCHAR(255) NULL,
+    invitation_token_hash VARCHAR(255) NULL,
+    invitation_expires_at TIMESTAMP NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    -- 1 only for the single active owner of a profile, otherwise NULL (NULLs never collide in UNIQUE)
+    active_owner TINYINT GENERATED ALWAYS AS (CASE WHEN permission_role = 'owner' AND status = 'active' THEN 1 END) STORED,
+    CONSTRAINT uq_profile_user_manager UNIQUE (profile_id, user_id),
+    CONSTRAINT uq_invitation_token UNIQUE (invitation_token_hash),
+    CONSTRAINT uq_one_active_owner UNIQUE (profile_id, active_owner),
+    CONSTRAINT fk_pm_profile FOREIGN KEY (profile_id) REFERENCES profiles(profile_id) ON DELETE CASCADE,
+    CONSTRAINT fk_pm_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    CONSTRAINT chk_pm_relation CHECK (relationship_to_profile IN ('self', 'father', 'mother', 'brother', 'sister', 'relative', 'guardian')),
+    CONSTRAINT chk_pm_role CHECK (permission_role IN ('owner', 'admin', 'editor', 'viewer')),
+    CONSTRAINT chk_pm_status CHECK (status IN ('invited', 'active', 'revoked'))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 4. USER_VERIFICATIONS: Identity & KYC Trust Badges
-CREATE TABLE user_verifications (
-    verification_id BIGSERIAL PRIMARY KEY,
-    user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    verification_type VARCHAR(50) NOT NULL CHECK (verification_type IN ('government_id', 'phone_otp', 'email_otp', 'income_proof')),
-    status VARCHAR(30) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'verified', 'rejected')),
+CREATE TABLE IF NOT EXISTS user_verifications (
+    verification_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT UNSIGNED NOT NULL,
+    verification_type VARCHAR(50) NOT NULL,
+    status VARCHAR(30) NOT NULL DEFAULT 'pending',
     provider_reference VARCHAR(255),
-    submitted_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    verified_at TIMESTAMP WITH TIME ZONE
-);
+    submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    verified_at TIMESTAMP NULL,
+    CONSTRAINT fk_uv_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    CONSTRAINT chk_uv_type CHECK (verification_type IN ('government_id', 'phone_otp', 'email_otp', 'income_proof')),
+    CONSTRAINT chk_uv_status CHECK (status IN ('pending', 'verified', 'rejected'))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 5. USER_ADDRESSES: Geographical Presences
-CREATE TABLE user_addresses (
-    address_id BIGSERIAL PRIMARY KEY,
-    profile_id BIGINT NOT NULL REFERENCES profiles(profile_id) ON DELETE CASCADE,
-    address_type VARCHAR(50) NOT NULL CHECK (address_type IN ('current', 'permanent', 'native')),
+CREATE TABLE IF NOT EXISTS user_addresses (
+    address_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    profile_id BIGINT UNSIGNED NOT NULL,
+    address_type VARCHAR(50) NOT NULL,
     city VARCHAR(100) NOT NULL,
     state VARCHAR(100) NOT NULL,
     country VARCHAR(100) NOT NULL DEFAULT 'India',
     postal_code VARCHAR(20),
-    is_public BOOLEAN DEFAULT TRUE
-);
+    is_public BOOLEAN DEFAULT TRUE,
+    CONSTRAINT fk_ua_profile FOREIGN KEY (profile_id) REFERENCES profiles(profile_id) ON DELETE CASCADE,
+    CONSTRAINT chk_ua_type CHECK (address_type IN ('current', 'permanent', 'native'))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 6. PROFILE_PHOTOS: Candidate Photo Gallery & Moderation
-CREATE TABLE profile_photos (
-    photo_id BIGSERIAL PRIMARY KEY,
-    profile_id BIGINT NOT NULL REFERENCES profiles(profile_id) ON DELETE CASCADE,
+CREATE TABLE IF NOT EXISTS profile_photos (
+    photo_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    profile_id BIGINT UNSIGNED NOT NULL,
     photo_url VARCHAR(500) NOT NULL,
-    approval_status VARCHAR(30) DEFAULT 'pending' CHECK (approval_status IN ('pending', 'approved', 'rejected')),
+    approval_status VARCHAR(30) DEFAULT 'pending',
     is_primary BOOLEAN DEFAULT FALSE,
     is_blurred_for_free BOOLEAN DEFAULT FALSE,
     sort_order INT DEFAULT 0,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_pph_profile FOREIGN KEY (profile_id) REFERENCES profiles(profile_id) ON DELETE CASCADE,
+    CONSTRAINT chk_pph_status CHECK (approval_status IN ('pending', 'approved', 'rejected'))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 7. PARTNER_PREFERENCES: 1:1 Matchmaking Filter Rules
-CREATE TABLE partner_preferences (
-    preference_id BIGSERIAL PRIMARY KEY,
-    profile_id BIGINT NOT NULL UNIQUE REFERENCES profiles(profile_id) ON DELETE CASCADE,
+CREATE TABLE IF NOT EXISTS partner_preferences (
+    preference_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    profile_id BIGINT UNSIGNED NOT NULL UNIQUE,
     min_age INT DEFAULT 18,
     max_age INT DEFAULT 70,
     min_height_cm INT DEFAULT 120,
@@ -3198,159 +3381,258 @@ CREATE TABLE partner_preferences (
     occupation_pref TEXT,
     preferred_cities TEXT,
     preferred_countries TEXT,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_pref_profile FOREIGN KEY (profile_id) REFERENCES profiles(profile_id) ON DELETE CASCADE,
+    CONSTRAINT chk_pref_age CHECK (min_age <= max_age),
+    CONSTRAINT chk_pref_height CHECK (min_height_cm <= max_height_cm)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 8. CATEGORIES: Reusable Lookups (Education, Occupation, etc.)
-CREATE TABLE categories (
-    category_id SERIAL PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS categories (
+    category_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     category_type VARCHAR(50) NOT NULL,
     category_name VARCHAR(150) NOT NULL,
     is_active BOOLEAN DEFAULT TRUE
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 9. HOBBIES: Lifestyle & Interest Catalog
-CREATE TABLE hobbies (
-    hobby_id SERIAL PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS hobbies (
+    hobby_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     hobby_name VARCHAR(100) NOT NULL UNIQUE
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 10. PROFILE_HOBBIES: Composite Primary Key Junction
-CREATE TABLE profile_hobbies (
-    profile_id BIGINT NOT NULL REFERENCES profiles(profile_id) ON DELETE CASCADE,
-    hobby_id INT NOT NULL REFERENCES hobbies(hobby_id) ON DELETE CASCADE,
-    PRIMARY KEY (profile_id, hobby_id)
-);
+CREATE TABLE IF NOT EXISTS profile_hobbies (
+    profile_id BIGINT UNSIGNED NOT NULL,
+    hobby_id INT UNSIGNED NOT NULL,
+    PRIMARY KEY (profile_id, hobby_id),
+    CONSTRAINT fk_ph_profile FOREIGN KEY (profile_id) REFERENCES profiles(profile_id) ON DELETE CASCADE,
+    CONSTRAINT fk_ph_hobby FOREIGN KEY (hobby_id) REFERENCES hobbies(hobby_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 11. INTERESTS: Marriage Proposals
-CREATE TABLE interests (
-    interest_id BIGSERIAL PRIMARY KEY,
-    sender_profile_id BIGINT NOT NULL REFERENCES profiles(profile_id) ON DELETE CASCADE,
-    receiver_profile_id BIGINT NOT NULL REFERENCES profiles(profile_id) ON DELETE CASCADE,
-    status VARCHAR(30) DEFAULT 'pending' CHECK (status IN ('pending', 'accepted', 'declined', 'cancelled')),
+CREATE TABLE IF NOT EXISTS interests (
+    interest_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    sender_profile_id BIGINT UNSIGNED NOT NULL,
+    receiver_profile_id BIGINT UNSIGNED NOT NULL,
+    status VARCHAR(30) DEFAULT 'pending',
     message_note VARCHAR(500),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    responded_at TIMESTAMP WITH TIME ZONE,
-    CONSTRAINT chk_no_self_interest CHECK (sender_profile_id != receiver_profile_id),
-    CONSTRAINT uq_interest_direction UNIQUE (sender_profile_id, receiver_profile_id)
-);
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    responded_at TIMESTAMP NULL,
+    CONSTRAINT uq_interest_direction UNIQUE (sender_profile_id, receiver_profile_id),
+    CONSTRAINT fk_int_sender FOREIGN KEY (sender_profile_id) REFERENCES profiles(profile_id) ON DELETE CASCADE,
+    CONSTRAINT fk_int_receiver FOREIGN KEY (receiver_profile_id) REFERENCES profiles(profile_id) ON DELETE CASCADE,
+    CONSTRAINT chk_int_status CHECK (status IN ('pending', 'accepted', 'declined', 'cancelled'))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 12. MATCHES: Mutual Connections (Interest Reciprocated)
-CREATE TABLE matches (
-    match_id BIGSERIAL PRIMARY KEY,
-    profile_id_1 BIGINT NOT NULL REFERENCES profiles(profile_id) ON DELETE CASCADE,
-    profile_id_2 BIGINT NOT NULL REFERENCES profiles(profile_id) ON DELETE CASCADE,
-    match_status VARCHAR(30) DEFAULT 'active' CHECK (match_status IN ('active', 'dismissed', 'married')),
+CREATE TABLE IF NOT EXISTS matches (
+    match_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    interest_id BIGINT UNSIGNED NULL UNIQUE,
+    profile_id_1 BIGINT UNSIGNED NOT NULL,
+    profile_id_2 BIGINT UNSIGNED NOT NULL,
+    match_status VARCHAR(30) DEFAULT 'active',
     match_score DECIMAL(5,2),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT chk_match_ordering CHECK (profile_id_1 < profile_id_2),
-    CONSTRAINT uq_match_pair UNIQUE (profile_id_1, profile_id_2)
-);
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_match_pair UNIQUE (profile_id_1, profile_id_2),
+    CONSTRAINT fk_match_p1 FOREIGN KEY (profile_id_1) REFERENCES profiles(profile_id) ON DELETE CASCADE,
+    CONSTRAINT fk_match_p2 FOREIGN KEY (profile_id_2) REFERENCES profiles(profile_id) ON DELETE CASCADE,
+    CONSTRAINT fk_match_interest FOREIGN KEY (interest_id) REFERENCES interests(interest_id) ON DELETE SET NULL,
+    CONSTRAINT chk_match_status CHECK (match_status IN ('active', 'dismissed', 'married'))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 13. FAVORITES: User Candidate Bookmarks
-CREATE TABLE favorites (
-    favorite_id BIGSERIAL PRIMARY KEY,
-    user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    favorite_profile_id BIGINT NOT NULL REFERENCES profiles(profile_id) ON DELETE CASCADE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT uq_user_favorite UNIQUE (user_id, favorite_profile_id)
-);
+CREATE TABLE IF NOT EXISTS favorites (
+    favorite_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT UNSIGNED NOT NULL,
+    favorite_profile_id BIGINT UNSIGNED NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_user_favorite UNIQUE (user_id, favorite_profile_id),
+    CONSTRAINT fk_fav_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    CONSTRAINT fk_fav_profile FOREIGN KEY (favorite_profile_id) REFERENCES profiles(profile_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 14. USER_BLOCKS: Account Blocking
-CREATE TABLE user_blocks (
-    block_id BIGSERIAL PRIMARY KEY,
-    blocker_user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    blocked_user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT chk_no_self_block CHECK (blocker_user_id != blocked_user_id),
-    CONSTRAINT uq_user_block UNIQUE (blocker_user_id, blocked_user_id)
-);
+CREATE TABLE IF NOT EXISTS user_blocks (
+    block_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    blocker_user_id BIGINT UNSIGNED NOT NULL,
+    blocked_user_id BIGINT UNSIGNED NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_user_block UNIQUE (blocker_user_id, blocked_user_id),
+    CONSTRAINT fk_ub_blocker FOREIGN KEY (blocker_user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    CONSTRAINT fk_ub_blocked FOREIGN KEY (blocked_user_id) REFERENCES users(user_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 15. USER_REPORTS: Fraud & Abuse Incident Log
-CREATE TABLE user_reports (
-    report_id BIGSERIAL PRIMARY KEY,
-    reporter_user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    reported_profile_id BIGINT NOT NULL REFERENCES profiles(profile_id) ON DELETE CASCADE,
+CREATE TABLE IF NOT EXISTS user_reports (
+    report_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    reporter_user_id BIGINT UNSIGNED NOT NULL,
+    reported_profile_id BIGINT UNSIGNED NOT NULL,
     reason VARCHAR(150) NOT NULL,
     details TEXT,
-    status VARCHAR(30) DEFAULT 'open' CHECK (status IN ('open', 'reviewed', 'resolved', 'dismissed')),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
+    status VARCHAR(30) DEFAULT 'open',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_ur_reporter FOREIGN KEY (reporter_user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    CONSTRAINT fk_ur_reported FOREIGN KEY (reported_profile_id) REFERENCES profiles(profile_id) ON DELETE CASCADE,
+    CONSTRAINT chk_ur_status CHECK (status IN ('open', 'reviewed', 'resolved', 'dismissed'))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 16. CONVERSATIONS: 1:1 Channels Between Matched Profiles
-CREATE TABLE conversations (
-    conversation_id BIGSERIAL PRIMARY KEY,
-    profile_id_1 BIGINT NOT NULL REFERENCES profiles(profile_id) ON DELETE CASCADE,
-    profile_id_2 BIGINT NOT NULL REFERENCES profiles(profile_id) ON DELETE CASCADE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT chk_conversation_ordering CHECK (profile_id_1 < profile_id_2),
-    CONSTRAINT uq_conversation_pair UNIQUE (profile_id_1, profile_id_2)
-);
+CREATE TABLE IF NOT EXISTS conversations (
+    conversation_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    profile_id_1 BIGINT UNSIGNED NOT NULL,
+    profile_id_2 BIGINT UNSIGNED NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_conversation_pair UNIQUE (profile_id_1, profile_id_2),
+    CONSTRAINT fk_conv_p1 FOREIGN KEY (profile_id_1) REFERENCES profiles(profile_id) ON DELETE CASCADE,
+    CONSTRAINT fk_conv_p2 FOREIGN KEY (profile_id_2) REFERENCES profiles(profile_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 17. CONVERSATION_PARTICIPANTS: Active Channel Actors
-CREATE TABLE conversation_participants (
-    participant_id BIGSERIAL PRIMARY KEY,
-    conversation_id BIGINT NOT NULL REFERENCES conversations(conversation_id) ON DELETE CASCADE,
-    user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-    last_read_message_id BIGINT,
-    joined_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT uq_conv_participant UNIQUE (conversation_id, user_id)
-);
+CREATE TABLE IF NOT EXISTS conversation_participants (
+    participant_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    conversation_id BIGINT UNSIGNED NOT NULL,
+    user_id BIGINT UNSIGNED NOT NULL,
+    acting_profile_id BIGINT UNSIGNED NOT NULL,
+    last_read_message_id BIGINT UNSIGNED,
+    joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_conv_participant UNIQUE (conversation_id, user_id),
+    CONSTRAINT fk_cp_conv FOREIGN KEY (conversation_id) REFERENCES conversations(conversation_id) ON DELETE CASCADE,
+    CONSTRAINT fk_cp_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    CONSTRAINT fk_cp_profile FOREIGN KEY (acting_profile_id) REFERENCES profiles(profile_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 18. MESSAGES: Encrypted Real-Time Chat Log
-CREATE TABLE messages (
-    message_id BIGSERIAL PRIMARY KEY,
-    conversation_id BIGINT NOT NULL REFERENCES conversations(conversation_id) ON DELETE CASCADE,
-    sender_user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+-- 18. MESSAGES: Real-Time Chat Log
+CREATE TABLE IF NOT EXISTS messages (
+    message_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    conversation_id BIGINT UNSIGNED NOT NULL,
+    sender_user_id BIGINT UNSIGNED NOT NULL,
     content TEXT NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_msg_conv FOREIGN KEY (conversation_id) REFERENCES conversations(conversation_id) ON DELETE CASCADE,
+    CONSTRAINT fk_msg_sender FOREIGN KEY (sender_user_id) REFERENCES users(user_id) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 18b. Circular FK (conversation_participants <-> messages) added after both tables exist
+ALTER TABLE conversation_participants
+    ADD CONSTRAINT fk_cp_last_read FOREIGN KEY (last_read_message_id) REFERENCES messages(message_id) ON DELETE SET NULL;
 
 -- 19. NOTIFICATIONS: User Activity Feed
-CREATE TABLE notifications (
-    notification_id BIGSERIAL PRIMARY KEY,
-    user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+CREATE TABLE IF NOT EXISTS notifications (
+    notification_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT UNSIGNED NOT NULL,
     title VARCHAR(255) NOT NULL,
     message TEXT NOT NULL,
     is_read BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_notif_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 20. LOGIN_SESSIONS: Device & Token Session Vault
-CREATE TABLE login_sessions (
+CREATE TABLE IF NOT EXISTS login_sessions (
     session_id VARCHAR(64) PRIMARY KEY,
-    user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    user_id BIGINT UNSIGNED NOT NULL,
     refresh_token_hash VARCHAR(255) NOT NULL,
     ip_address VARCHAR(45),
     user_agent VARCHAR(255),
-    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
+    expires_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_ls_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 21. AUDIT_LOGS: Immutable Compliance Trail
-CREATE TABLE audit_logs (
-    log_id BIGSERIAL PRIMARY KEY,
-    actor_user_id BIGINT REFERENCES users(user_id) ON DELETE SET NULL,
+CREATE TABLE IF NOT EXISTS audit_logs (
+    log_id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    actor_user_id BIGINT UNSIGNED NULL,
     action VARCHAR(100) NOT NULL,
     target_entity VARCHAR(50),
     target_id VARCHAR(50),
+    ip_address VARCHAR(45),
     details_json JSON,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_al_user FOREIGN KEY (actor_user_id) REFERENCES users(user_id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- =========================================================================
--- PERFORMANCE SEARCH INDEXES (B-Tree Multi-Column)
+-- INTEGRITY TRIGGERS
+-- MySQL rejects CHECK constraints on columns used in cascading foreign keys
+-- (error 3823), so self-reference / ordering rules are enforced here instead.
 -- =========================================================================
-CREATE INDEX idx_profiles_search ON profiles (gender, dob, religion, marital_status) WHERE is_visible = TRUE;
+DELIMITER $$
+
+CREATE TRIGGER trg_interests_bi BEFORE INSERT ON interests FOR EACH ROW
+BEGIN
+    IF NEW.sender_profile_id = NEW.receiver_profile_id THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'A profile cannot send an interest to itself';
+    END IF;
+END$$
+
+CREATE TRIGGER trg_interests_bu BEFORE UPDATE ON interests FOR EACH ROW
+BEGIN
+    IF NEW.sender_profile_id = NEW.receiver_profile_id THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'A profile cannot send an interest to itself';
+    END IF;
+END$$
+
+CREATE TRIGGER trg_matches_bi BEFORE INSERT ON matches FOR EACH ROW
+BEGIN
+    IF NEW.profile_id_1 >= NEW.profile_id_2 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'matches requires profile_id_1 < profile_id_2';
+    END IF;
+END$$
+
+CREATE TRIGGER trg_matches_bu BEFORE UPDATE ON matches FOR EACH ROW
+BEGIN
+    IF NEW.profile_id_1 >= NEW.profile_id_2 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'matches requires profile_id_1 < profile_id_2';
+    END IF;
+END$$
+
+CREATE TRIGGER trg_conversations_bi BEFORE INSERT ON conversations FOR EACH ROW
+BEGIN
+    IF NEW.profile_id_1 >= NEW.profile_id_2 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'conversations requires profile_id_1 < profile_id_2';
+    END IF;
+END$$
+
+CREATE TRIGGER trg_conversations_bu BEFORE UPDATE ON conversations FOR EACH ROW
+BEGIN
+    IF NEW.profile_id_1 >= NEW.profile_id_2 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'conversations requires profile_id_1 < profile_id_2';
+    END IF;
+END$$
+
+CREATE TRIGGER trg_blocks_bi BEFORE INSERT ON user_blocks FOR EACH ROW
+BEGIN
+    IF NEW.blocker_user_id = NEW.blocked_user_id THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'A user cannot block themselves';
+    END IF;
+END$$
+
+CREATE TRIGGER trg_blocks_bu BEFORE UPDATE ON user_blocks FOR EACH ROW
+BEGIN
+    IF NEW.blocker_user_id = NEW.blocked_user_id THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'A user cannot block themselves';
+    END IF;
+END$$
+
+DELIMITER ;
+
+-- =========================================================================
+-- PERFORMANCE SEARCH INDEXES (B-Tree Multi-Column MySQL Indexes)
+-- =========================================================================
+CREATE INDEX idx_profiles_search ON profiles (gender, dob, religion, marital_status, is_visible);
 CREATE INDEX idx_profiles_height ON profiles (height_cm);
 CREATE INDEX idx_addresses_city ON user_addresses (city, state, country);
 CREATE INDEX idx_managers_user ON profile_managers (user_id);
-CREATE INDEX idx_managers_profile ON profile_managers (profile_id);
+CREATE INDEX idx_managers_invited_email ON profile_managers (invited_email, status);
 CREATE INDEX idx_interests_receiver ON interests (receiver_profile_id, status);
 CREATE INDEX idx_interests_sender ON interests (sender_profile_id, status);
-CREATE INDEX idx_messages_conv ON messages (conversation_id, created_at DESC);
+CREATE INDEX idx_messages_conv ON messages (conversation_id, created_at);
 CREATE INDEX idx_notifications_user_unread ON notifications (user_id, is_read);
 CREATE INDEX idx_sessions_user ON login_sessions (user_id, expires_at);
+CREATE INDEX idx_reports_status ON user_reports (status, created_at);
+CREATE INDEX idx_audit_actor ON audit_logs (actor_user_id, created_at);
 </code></pre>
         </div>
       </div>
@@ -3410,167 +3692,169 @@ CREATE INDEX idx_sessions_user ON login_sessions (user_id, expires_at);
   <div id="toast">DDL copied to clipboard!</div>
 
   <script>
-    // Theme Management (Light by default)
-    function toggleTheme() {
-      const html = document.documentElement;
-      const currentTheme = html.getAttribute('data-theme') || 'light';
-      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-      
-      html.setAttribute('data-theme', newTheme);
-      localStorage.setItem('matrimonial-theme', newTheme);
+    // ---------- Theme ----------
+    const THEME_KEY = 'matrimonial-theme';
+    function getSavedTheme() { try { return localStorage.getItem(THEME_KEY); } catch (e) { return null; } }
+    function saveTheme(t) { try { localStorage.setItem(THEME_KEY, t); } catch (e) {} }
 
-      // Update toggle button icon and text
+    function applyThemeUI(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
       const icon = document.getElementById('themeIcon');
       const text = document.getElementById('themeText');
-      if (newTheme === 'dark') {
-        icon.setAttribute('data-lucide', 'moon');
-        icon.style.color = '#38bdf8';
-        text.innerText = 'Dark';
+      if (theme === 'dark') {
+        icon.setAttribute('data-lucide', 'moon'); icon.style.color = '#38bdf8'; text.innerText = 'Dark';
       } else {
-        icon.setAttribute('data-lucide', 'sun');
-        icon.style.color = '#d97706';
-        text.innerText = 'Light';
+        icon.setAttribute('data-lucide', 'sun'); icon.style.color = '#d97706'; text.innerText = 'Light';
       }
-      lucide.createIcons();
+      if (window.lucide) lucide.createIcons();
     }
 
-    // Toggle Section Collapse / Expand
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme') || 'light';
+      const next = current === 'light' ? 'dark' : 'light';
+      saveTheme(next);
+      applyThemeUI(next);
+      initMermaid(next);
+      // Reset every diagram so it re-renders with the new palette (hidden tabs render lazily)
+      document.querySelectorAll('pre.mermaid[data-processed]').forEach(el => {
+        el.removeAttribute('data-processed');
+        el.innerHTML = el.dataset.src;
+      });
+      const active = document.querySelector('.view-section.active');
+      if (active) renderMermaidIn(active);
+    }
+
+    // ---------- Mermaid ----------
+    function mermaidConfig(theme) {
+      const dark = theme === 'dark';
+      return {
+        startOnLoad: false,            // never render while a tab is display:none
+        theme: 'base',
+        securityLevel: 'loose',
+        er: { useMaxWidth: false },
+        themeVariables: dark ? {
+          darkMode: true, background: '#0c1424',
+          primaryColor: '#3b1020', primaryTextColor: '#fecdd3', primaryBorderColor: '#f43f5e',
+          secondaryColor: '#3a2a08', tertiaryColor: '#1e1b4b',
+          lineColor: '#fb7185', textColor: '#e2e8f0', mainBkg: '#14223d', nodeBorder: '#f43f5e',
+          attributeBackgroundColorOdd: '#101b30', attributeBackgroundColorEven: '#14223d',
+          fontFamily: 'Plus Jakarta Sans', fontSize: '14px'
+        } : {
+          darkMode: false, background: '#ffffff',
+          primaryColor: '#ffe4e6', primaryTextColor: '#9f1239', primaryBorderColor: '#e11d48',
+          secondaryColor: '#fef3c7', secondaryTextColor: '#92400e', secondaryBorderColor: '#d97706',
+          tertiaryColor: '#e0e7ff', tertiaryTextColor: '#3730a3', tertiaryBorderColor: '#4f46e5',
+          lineColor: '#e11d48', textColor: '#0f172a',
+          attributeBackgroundColorOdd: '#ffffff', attributeBackgroundColorEven: '#fff1f2',
+          fontFamily: 'Plus Jakarta Sans', fontSize: '14px'
+        }
+      };
+    }
+    function initMermaid(theme) { if (window.mermaid) mermaid.initialize(mermaidConfig(theme)); }
+
+    async function renderMermaidIn(root) {
+      if (!window.mermaid) return;
+      const nodes = Array.from(root.querySelectorAll('pre.mermaid')).filter(n => !n.hasAttribute('data-processed'));
+      for (const node of nodes) {
+        try {
+          await mermaid.run({ nodes: [node] });
+        } catch (e) {
+          console.error('Mermaid render failed:', e);
+          node.innerHTML = '<span style="color:#b91c1c;font-weight:600">Diagram failed to render. See browser console.</span>';
+          node.setAttribute('data-processed', 'true');
+        }
+      }
+    }
+
+    // ---------- Sections ----------
     function toggleSection(secId) {
       const block = document.getElementById(secId);
       if (!block) return;
-      
-      const badge = document.getElementById('badge-' + secId);
-      const isCollapsed = block.classList.contains('collapsed');
-
-      if (isCollapsed) {
-        block.classList.remove('collapsed');
-        if (badge) badge.innerText = 'Expanded';
-      } else {
-        block.classList.add('collapsed');
-        if (badge) badge.innerText = 'Collapsed';
-      }
-      lucide.createIcons();
+      const badge = block.querySelector('.section-state-pill');
+      const collapsed = block.classList.toggle('collapsed');
+      if (badge) badge.innerText = collapsed ? 'Collapsed' : 'Expanded';
     }
-
-    // Expand All Category Sections
-    function expandAllSections() {
+    function setAllSections(collapse) {
       document.querySelectorAll('.api-category-block').forEach(block => {
-        block.classList.remove('collapsed');
+        block.classList.toggle('collapsed', collapse);
         const badge = block.querySelector('.section-state-pill');
-        if (badge) badge.innerText = 'Expanded';
+        if (badge) badge.innerText = collapse ? 'Collapsed' : 'Expanded';
       });
-      lucide.createIcons();
     }
+    function expandAllSections() { setAllSections(false); }
+    function collapseAllSections() { setAllSections(true); }
 
-    // Collapse All Category Sections
-    function collapseAllSections() {
-      document.querySelectorAll('.api-category-block').forEach(block => {
-        block.classList.add('collapsed');
-        const badge = block.querySelector('.section-state-pill');
-        if (badge) badge.innerText = 'Collapsed';
-      });
-      lucide.createIcons();
-    }
-
-    // Initialize Mermaid.js with clean light theme
-    mermaid.initialize({
-      startOnLoad: true,
-      theme: 'default',
-      themeVariables: {
-        darkMode: false,
-        background: '#ffffff',
-        primaryColor: '#ffe4e6',
-        primaryTextColor: '#9f1239',
-        primaryBorderColor: '#e11d48',
-        secondaryColor: '#fef3c7',
-        secondaryTextColor: '#92400e',
-        secondaryBorderColor: '#d97706',
-        tertiaryColor: '#e0e7ff',
-        tertiaryTextColor: '#3730a3',
-        tertiaryBorderColor: '#4f46e5',
-        lineColor: '#e11d48',
-        fontFamily: 'Plus Jakarta Sans',
-        fontSize: '14px'
-      }
-    });
-
-    // View Switching Logic
+    // ---------- View switching ----------
     function switchView(viewId, btn) {
+      const target = document.getElementById(viewId);
+      if (!target) return;
       document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      
-      const targetSec = document.getElementById(viewId);
-      if (targetSec) {
-        targetSec.classList.add('active');
-        btn.classList.add('active');
-      }
-
-      // Re-trigger lucide icons
-      lucide.createIcons();
+      target.classList.add('active');
+      btn.classList.add('active');
+      renderMermaidIn(target);   // render only now that the tab is visible
+      if (window.lucide) lucide.createIcons();
     }
 
-    // Filter APIs by Category Pill
+    // ---------- API filters (category + search work together) ----------
+    let activeCategory = 'all';
     function filterCategory(cat, btn) {
+      activeCategory = cat;
       document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
       btn.classList.add('active');
-
-      const blocks = document.querySelectorAll('.api-category-block');
-      blocks.forEach(block => {
-        if (cat === 'all' || block.getAttribute('data-category') === cat) {
-          block.style.display = 'block';
-        } else {
-          block.style.display = 'none';
+      applyApiFilters();
+    }
+    function applyApiFilters() {
+      const q = document.getElementById('apiSearchInput').value.toLowerCase().trim();
+      document.querySelectorAll('.api-row').forEach(row => {
+        const text = ((row.getAttribute('data-text') || '') + ' ' + row.textContent).toLowerCase();
+        row.style.display = (!q || text.includes(q)) ? '' : 'none';
+      });
+      document.querySelectorAll('.api-category-block').forEach(block => {
+        const catOk = activeCategory === 'all' || block.getAttribute('data-category') === activeCategory;
+        const hasMatch = Array.from(block.querySelectorAll('.api-row')).some(r => r.style.display !== 'none');
+        const show = catOk && (q === '' || hasMatch);
+        block.style.display = show ? '' : 'none';
+        if (show && q !== '') {
+          block.classList.remove('collapsed');
+          const badge = block.querySelector('.section-state-pill');
+          if (badge) badge.innerText = 'Expanded';
         }
       });
     }
+    function filterApis() { applyApiFilters(); }
 
-    // Live Search in API Rows
-    function filterApis() {
-      const query = document.getElementById('apiSearchInput').value.toLowerCase().trim();
-      const rows = document.querySelectorAll('.api-row');
-      const blocks = document.querySelectorAll('.api-category-block');
-
-      rows.forEach(row => {
-        const text = (row.getAttribute('data-text') || '') + ' ' + row.innerText.toLowerCase();
-        if (text.includes(query)) {
-          row.style.display = '';
-        } else {
-          row.style.display = 'none';
-        }
-      });
-
-      // Expand block if query matches and hide empty blocks
-      blocks.forEach(block => {
-        const visibleRows = block.querySelectorAll('.api-row:not([style*="display: none"])');
-        if (visibleRows.length === 0 && query !== '') {
-          block.style.display = 'none';
-        } else {
-          block.style.display = 'block';
-          if (query !== '') {
-            block.classList.remove('collapsed');
-            const badge = block.querySelector('.section-state-pill');
-            if (badge) badge.innerText = 'Expanded';
-          }
-        }
-      });
-      lucide.createIcons();
+    // ---------- Copy DDL (works without HTTPS / clipboard API) ----------
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.innerText = msg; toast.style.display = 'block';
+      setTimeout(() => { toast.style.display = 'none'; }, 2500);
     }
-
-    // Copy SQL DDL
     function copyDdl() {
       const code = document.getElementById('sqlDdlCode').innerText;
-      navigator.clipboard.writeText(code).then(() => {
-        const toast = document.getElementById('toast');
-        toast.style.display = 'block';
-        setTimeout(() => {
-          toast.style.display = 'none';
-        }, 2500);
-      });
+      const fallback = () => {
+        const ta = document.createElement('textarea');
+        ta.value = code; ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        let ok = false;
+        try { ok = document.execCommand('copy'); } catch (e) {}
+        document.body.removeChild(ta);
+        showToast(ok ? 'DDL copied to clipboard!' : 'Copy failed. Select the SQL manually.');
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(code).then(() => showToast('DDL copied to clipboard!')).catch(fallback);
+      } else { fallback(); }
     }
 
-    // Initialize Lucide icons on DOM ready
+    // ---------- Startup ----------
     document.addEventListener('DOMContentLoaded', () => {
-      lucide.createIcons();
+      const theme = getSavedTheme() || 'light';
+      applyThemeUI(theme);
+      document.querySelectorAll('pre.mermaid').forEach(el => { el.dataset.src = el.innerHTML; });
+      initMermaid(theme);
+      const active = document.querySelector('.view-section.active');
+      if (active) renderMermaidIn(active);
+      if (window.lucide) lucide.createIcons();
     });
   </script>
 </body>

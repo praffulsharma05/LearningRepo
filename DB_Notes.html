@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Database Notes - user_id Column</title>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #1e1e2f, #0f0f1a);
+      color: #e0e0e0;
+      padding: 2rem;
+      line-height: 1.6;
+    }
+    h1 {
+      text-align: center;
+      color: #61dafb;
+    }
+    .card {
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin: 1rem auto;
+      max-width: 800px;
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+      backdrop-filter: blur(8px);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+    th, td {
+      padding: 0.75rem;
+      text-align: left;
+    }
+    th {
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+    }
+    tr:nth-child(even) {
+      background: rgba(255,255,255,0.05);
+    }
+    a {
+      color: #69f0ae;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>user_id Column Specification</h1>
+    <p>This column is designed to uniquely identify each user record in the <code>users</code> table.</p>
+    <table>
+      <tr><th>Attribute</th><th>Description</th></tr>
+      <tr><td>Column name</td><td><code>user_id</code> – unique identifier for the user.</td></tr>
+      <tr><td>Type</td><td><code>BIGINT</code> – stores large whole numbers.</td></tr>
+      <tr><td>Unsigned</td><td><code>UNSIGNED</code> – allows zero and positive numbers only.</td></tr>
+      <tr><td>Auto Increment</td><td><code>AUTO_INCREMENT</code> – MySQL automatically generates the next ID.</td></tr>
+      <tr><td>Key</td><td><code>PRIMARY KEY</code> – uniquely identifies each user record.</td></tr>
+    </table>
+    <p>Use this column as the primary reference for user‑related operations.</p>
+  </div>
+<div class="card">
+  <h1>Email Column Specification</h1>
+  <p>This column stores user email addresses and must be unique across all accounts.</p>
+  <table>
+    <tr><th>Attribute</th><th>Description</th></tr>
+    <tr><td>Column name</td><td><code>email</code> – user's email address.</td></tr>
+    <tr><td>Constraint</td><td><code>UNIQUE</code> – prevents two accounts from having the same email.</td></tr>
+  </table>
+</div>
+<div class="card">
+  <h1>Timestamp Column Specification</h1>
+  <p>This column stores the date and time a record was created or updated.</p>
+  <table>
+    <tr><th>Attribute</th><th>Description</th></tr>
+    <tr><td>Column name</td><td><code>created_at</code> – timestamp of when the row was created.</td></tr>
+    <tr><td>Type</td><td><code>TIMESTAMP</code> – stores date and time.</td></tr>
+    <tr><td>Constraint</td><td><code>NOT NULL</code> – a timestamp must exist.</td></tr>
+    <tr><td>Default</td><td><code>DEFAULT CURRENT_TIMESTAMP</code> – automatically saves the current database time when the row is created.</td></tr>
+  </table>
+</div>
+<div class="card">
+  <h1>Constraint Specification</h1>
+  <p>A constraint defines a named rule for the table.</p>
+  <table>
+    <tr><th>Attribute</th><th>Description</th></tr>
+    <tr><td>Name</td><td><code>chk_email_or_phone</code> – the name given to this rule.</td></tr>
+    <tr><td>Condition</td><td><code>CHECK (...)</code> – specifies the condition that must be satisfied.</td></tr>
+    <tr><td>Check</td><td><code>IS NOT NULL</code> – ensures a value is provided.</td></tr>
+    <tr><td>Logic</td><td><code>OR</code> – at least one of the conditions must be true.</td></tr>
+  </table>
+</div>
+</body>
+</html>
