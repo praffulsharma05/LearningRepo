@@ -3312,7 +3312,7 @@ CREATE TABLE IF NOT EXISTS profile_managers (
     invitation_token_hash VARCHAR(255) NULL,
     invitation_expires_at TIMESTAMP NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    -- 1 only for the single active owner of a profile, otherwise NULL (NULLs never collide in UNIQUE)
+    -- 1 only for the single active owner of   a profile, otherwise NULL (NULLs never collide in UNIQUE)
     active_owner TINYINT GENERATED ALWAYS AS (CASE WHEN permission_role = 'owner' AND status = 'active' THEN 1 END) STORED,
     CONSTRAINT uq_profile_user_manager UNIQUE (profile_id, user_id),
     CONSTRAINT uq_invitation_token UNIQUE (invitation_token_hash),
