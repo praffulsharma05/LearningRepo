@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>System Design Concepts — CDN · CAP · UUID · Distributed Servers · Replication</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Mermaid JS -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --bg-dark: #0b0f19;
+      --bg-card: rgba(23, 31, 48, 0.75);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --primary: #6366f1;
+      --primary-light: #818cf8;
+      --accent-cyan: #06b6d4;
+      --accent-purple: #a855f7;
+      --accent-amber: #f59e0b;
+      --success: #10b981;
+      --danger: #ef4444;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'Fira Code', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image:
+        radial-gradient(at 10% 10%, rgba(99, 102, 241, 0.15) 0px, transparent 45%),
+        radial-gradient(at 90% 20%, rgba(6, 182, 212, 0.12) 0px, transparent 40%),
+        radial-gradient(at 50% 90%, rgba(168, 85, 247, 0.1) 0px, transparent 50%);
+      background-attachment: fixed;
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      padding: 0;
+      min-height: 100vh;
+    }
+
+    .page-wrapper {
+      max-width: 1250px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+
+    /* ── Header ── */
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .badge-pill {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 16px; border-radius: 9999px;
+      background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.3);
+      color: var(--primary-light); font-size: 0.85rem; font-weight: 700;
+      letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 18px;
+    }
+
+    h1 {
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 800; letter-spacing: -1px; line-height: 1.15; margin-bottom: 14px;
+    }
+    h1 .grad { background: linear-gradient(135deg, #fff 10%, #818cf8 55%, #06b6d4 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+    .subtitle { font-size: 1.1rem; color: var(--text-muted); max-width: 780px; margin: 0 auto; }
+
+    /* ── Sticky NavBar ── */
+    .nav-bar {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(11,15,25,0.85); backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border-color);
+      padding: 12px 0; margin-bottom: 36px;
+      display: flex; gap: 10px; flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .nav-bar a {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 18px; border-radius: 10px; font-size: 0.88rem; font-weight: 600;
+      text-decoration: none; border: 1px solid var(--border-color);
+      color: #cbd5e1; background: rgba(255,255,255,0.04);
+      transition: all 0.2s ease;
+    }
+    .nav-bar a:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); transform: translateY(-2px); }
+
+    /* ── Section ── */
+    .topic-section {
+      margin-bottom: 60px;
+      scroll-margin-top: 70px;
+    }
+
+    .section-head {
+      display: flex; align-items: center; gap: 14px;
+      font-size: 1.7rem; font-weight: 800; margin-bottom: 24px;
+      padding-bottom: 14px; border-bottom: 1px solid var(--border-color);
+    }
+    .section-head i { flex-shrink: 0; }
+
+    .section-number {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 36px; height: 36px; border-radius: 10px; font-size: 1rem; font-weight: 800;
+    }
+    .num-indigo { background: rgba(99,102,241,0.2); color: #818cf8; border: 1px solid rgba(99,102,241,0.35); }
+    .num-purple { background: rgba(168,85,247,0.2); color: #c084fc; border: 1px solid rgba(168,85,247,0.35); }
+    .num-cyan   { background: rgba(6,182,212,0.2); color: #22d3ee; border: 1px solid rgba(6,182,212,0.35); }
+    .num-amber  { background: rgba(245,158,11,0.2); color: #fbbf24; border: 1px solid rgba(245,158,11,0.35); }
+    .num-green  { background: rgba(16,185,129,0.2); color: #34d399; border: 1px solid rgba(16,185,129,0.35); }
+
+    /* ── Glass Panel ── */
+    .glass-panel {
+      background: var(--bg-card); border: 1px solid var(--border-color);
+      border-radius: 20px; padding: 28px; backdrop-filter: blur(12px);
+      box-shadow: 0 18px 40px -14px rgba(0,0,0,0.6);
+      margin-bottom: 24px;
+    }
+
+    .glass-panel h3 {
+      font-size: 1.25rem; font-weight: 700; margin-bottom: 14px; color: #fff;
+      display: flex; align-items: center; gap: 10px;
+    }
+
+    .glass-panel p, .glass-panel li {
+      color: var(--text-muted); font-size: 0.95rem;
+    }
+
+    .glass-panel p { margin-bottom: 12px; }
+
+    .glass-panel strong { color: #e2e8f0; }
+
+    .glass-panel ul {
+      list-style: none; display: flex; flex-direction: column; gap: 8px;
+      padding-left: 0; margin-top: 10px;
+    }
+
+    .glass-panel ul li {
+      display: flex; align-items: flex-start; gap: 8px;
+    }
+
+    .glass-panel ul li i { color: var(--success); flex-shrink: 0; margin-top: 3px; }
+
+    /* ── Mermaid Container ── */
+    .mermaid-box {
+      background: rgba(0,0,0,0.35); border: 1px solid var(--border-color);
+      border-radius: 16px; padding: 24px; margin-bottom: 24px;
+      overflow-x: auto;
+    }
+
+    .mermaid-box .mermaid {
+      display: flex; justify-content: center;
+    }
+
+    .mermaid-box .mermaid svg {
+      max-width: 100%; height: auto;
+    }
+
+    /* ── Concept Grid ── */
+    .concept-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 20px; margin-bottom: 24px;
+    }
+
+    .concept-card {
+      background: var(--bg-card); border: 1px solid var(--border-color);
+      border-radius: 16px; padding: 24px; backdrop-filter: blur(10px);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .concept-card:hover { transform: translateY(-4px); box-shadow: 0 12px 28px -10px rgba(0,0,0,0.5); border-color: rgba(255,255,255,0.18); }
+
+    .card-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+
+    .card-icon {
+      width: 42px; height: 42px; border-radius: 11px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .icon-indigo  { background: rgba(99,102,241,0.15); color: #818cf8; border: 1px solid rgba(99,102,241,0.3); }
+    .icon-cyan    { background: rgba(6,182,212,0.15);   color: #22d3ee; border: 1px solid rgba(6,182,212,0.3); }
+    .icon-emerald { background: rgba(16,185,129,0.15);  color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
+    .icon-amber   { background: rgba(245,158,11,0.15);  color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
+    .icon-purple  { background: rgba(168,85,247,0.15);  color: #c084fc; border: 1px solid rgba(168,85,247,0.3); }
+    .icon-rose    { background: rgba(244,63,94,0.15);   color: #fb7185; border: 1px solid rgba(244,63,94,0.3); }
+
+    .card-head h4 { font-size: 1.1rem; font-weight: 700; color: #fff; }
+
+    .concept-card p { color: var(--text-muted); font-size: 0.92rem; margin-bottom: 10px; }
+
+    .code-pill {
+      display: inline-block; font-family: var(--font-mono); font-size: 0.82rem;
+      background: rgba(0,0,0,0.4); padding: 2px 8px; border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.08); color: #38bdf8;
+    }
+
+    /* ── Tables ── */
+    .table-wrap {
+      background: var(--bg-card); border: 1px solid var(--border-color);
+      border-radius: 16px; overflow-x: auto; margin-bottom: 24px; backdrop-filter: blur(12px);
+    }
+
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th, td { padding: 14px 18px; border-bottom: 1px solid var(--border-color); font-size: 0.92rem; }
+    th { background: rgba(255,255,255,0.04); font-weight: 700; color: #fff; text-transform: uppercase; font-size: 0.78rem; letter-spacing: 0.7px; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+
+    .tag-green  { color: #34d399; background: rgba(16,185,129,0.12); padding: 3px 10px; border-radius: 9999px; font-size: 0.8rem; font-weight: 600; border: 1px solid rgba(16,185,129,0.25); }
+    .tag-blue   { color: #38bdf8; background: rgba(6,182,212,0.12);  padding: 3px 10px; border-radius: 9999px; font-size: 0.8rem; font-weight: 600; border: 1px solid rgba(6,182,212,0.25); }
+    .tag-amber  { color: #fbbf24; background: rgba(245,158,11,0.12); padding: 3px 10px; border-radius: 9999px; font-size: 0.8rem; font-weight: 600; border: 1px solid rgba(245,158,11,0.25); }
+    .tag-red    { color: #fb7185; background: rgba(244,63,94,0.12);  padding: 3px 10px; border-radius: 9999px; font-size: 0.8rem; font-weight: 600; border: 1px solid rgba(244,63,94,0.25); }
+
+    /* ── Callout / Alert ── */
+    .callout {
+      padding: 16px 20px; border-radius: 12px; margin-bottom: 20px;
+      display: flex; align-items: flex-start; gap: 14px;
+    }
+    .callout i { flex-shrink: 0; margin-top: 2px; }
+    .callout p { margin: 0; font-size: 0.93rem; }
+    .callout-info   { background: rgba(99,102,241,0.08); border-left: 4px solid var(--primary-light); }
+    .callout-warn   { background: rgba(245,158,11,0.08); border-left: 4px solid var(--accent-amber); }
+    .callout-danger  { background: rgba(239,68,68,0.08); border-left: 4px solid var(--danger); }
+    .callout-tip     { background: rgba(16,185,129,0.08); border-left: 4px solid var(--success); }
+
+    /* ── Footer ── */
+    footer { text-align: center; margin-top: 50px; color: var(--text-dim); font-size: 0.88rem; }
+
+    /* ── Quick stat strip ── */
+    .stat-strip {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px; margin-bottom: 24px;
+    }
+
+    .stat-pill {
+      background: var(--bg-card); border: 1px solid var(--border-color);
+      border-radius: 12px; padding: 14px 18px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .stat-pill .si { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+    .stat-pill h5 { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); }
+    .stat-pill p  { font-size: 1.05rem; font-weight: 700; color: #fff; }
+
+    /* ── Responsive ── */
+    @media (max-width: 700px) {
+      .concept-grid { grid-template-columns: 1fr; }
+      .stat-strip   { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="page-wrapper">
+
+  <!-- ═══════ HEADER ═══════ -->
+  <header>
+    <div class="badge-pill">
+      <i data-lucide="cpu" style="width:14px;height:14px;"></i>
+      System Design &amp; Distributed Systems
+    </div>
+    <h1>System Design <span class="grad">Core Concepts</span></h1>
+    <p class="subtitle">
+      Interactive Mermaid diagrams &amp; concise notes covering CDN, CAP Theorem, UUID security, Distributed Servers, and Database Replication.
+    </p>
+  </header>
+
+  <!-- ═══════ NAVIGATION ═══════ -->
+  <nav class="nav-bar">
+    <a href="#sec-cdn"><i data-lucide="network" style="width:15px;height:15px;"></i> CDN</a>
+    <a href="#sec-cap"><i data-lucide="triangle" style="width:15px;height:15px;"></i> CAP Theorem</a>
+    <a href="#sec-uuid"><i data-lucide="fingerprint" style="width:15px;height:15px;"></i> UUID &amp; Security</a>
+    <a href="#sec-dist"><i data-lucide="server" style="width:15px;height:15px;"></i> Distributed Servers</a>
+    <a href="#sec-replica"><i data-lucide="copy" style="width:15px;height:15px;"></i> Replication</a>
+  </nav>
+
+
+  <!-- ═════════════════════════════════════════════════════════════
+       SECTION 1 — CDN (Content Delivery Network)
+       ═════════════════════════════════════════════════════════════ -->
+  <section class="topic-section" id="sec-cdn">
+    <h2 class="section-head">
+      <span class="section-number num-indigo">1</span>
+      <i data-lucide="network" style="color:#818cf8;"></i>
+      CDN — Content Delivery Network
+    </h2>
+
+    <!-- Quick Stats -->
+    <div class="stat-strip">
+      <div class="stat-pill"><div class="si icon-indigo"><i data-lucide="zap"></i></div><div><h5>Latency Cut</h5><p>70 – 90 %</p></div></div>
+      <div class="stat-pill"><div class="si icon-cyan"><i data-lucide="server"></i></div><div><h5>Origin Offload</h5><p>80 – 95 %</p></div></div>
+      <div class="stat-pill"><div class="si icon-emerald"><i data-lucide="globe"></i></div><div><h5>PoPs Worldwide</h5><p>300+</p></div></div>
+      <div class="stat-pill"><div class="si icon-purple"><i data-lucide="shield-check"></i></div><div><h5>Edge Security</h5><p>DDoS + WAF</p></div></div>
+    </div>
+
+    <!-- Mermaid: CDN Request Flow -->
+    <div class="mermaid-box">
+      <pre class="mermaid">
+flowchart LR
+    subgraph CLIENT["👤 Client Tier"]
+        U["User Browser / App"]
+    end
+
+    subgraph DNS["🌐 Anycast DNS"]
+        D["GeoDNS / Anycast\nRoutes to closest PoP"]
+    end
+
+    subgraph EDGE["⚡ CDN Edge Network"]
+        E1["Edge PoP #1\n🇺🇸 New York\nSSD + RAM Cache"]
+        E2["Edge PoP #2\n🇮🇳 Mumbai\nSSD + RAM Cache"]
+        E3["Edge PoP #3\n🇯🇵 Tokyo\nSSD + RAM Cache"]
+    end
+
+    subgraph SHIELD["🛡️ Origin Shield"]
+        OS["Regional Cache\nCollapses N misses → 1"]
+    end
+
+    subgraph ORIGIN["🏢 Origin Data Center"]
+        LB["Load Balancer\nNGINX / ALB"]
+        APP["App Server\nNode / Go / Java"]
+        DB["Database\nPostgres / MySQL"]
+        S3["Object Storage\nS3 / GCS"]
+    end
+
+    U -->|"1. DNS Lookup"| D
+    D -->|"2. Nearest PoP IP"| U
+    U -->|"3. HTTPS Request"| E1
+    U -.->|"Geo-routed"| E2
+    U -.->|"Geo-routed"| E3
+    E1 -->|"Cache HIT → 15ms ✅"| U
+    E1 -->|"Cache MISS"| OS
+    E2 -->|"Cache MISS"| OS
+    E3 -->|"Cache MISS"| OS
+    OS -->|"Shield MISS"| LB
+    LB --> APP
+    LB --> S3
+    APP --> DB
+
+    style CLIENT fill:#1e3a5f,stroke:#3b82f6,color:#fff
+    style DNS fill:#2d1b69,stroke:#8b5cf6,color:#fff
+    style EDGE fill:#0c3547,stroke:#06b6d4,color:#fff
+    style SHIELD fill:#3d2607,stroke:#f59e0b,color:#fff
+    style ORIGIN fill:#0d3320,stroke:#10b981,color:#fff
+      </pre>
+    </div>
+
+    <!-- Mermaid: Cache Hit vs Miss Sequence -->
+    <div class="glass-panel">
+      <h3><i data-lucide="git-branch" style="color:#22d3ee;width:20px;height:20px;"></i> Cache Hit vs Cache Miss — Sequence</h3>
+    </div>
+
+    <div class="mermaid-box">
+      <pre class="mermaid">
+sequenceDiagram
+    participant U as 👤 User
+    participant E as ⚡ Edge PoP
+    participant S as 🛡️ Origin Shield
+    participant O as 🏢 Origin Server
+
+    Note over U,O: ── CACHE HIT FLOW (~15ms) ──
+
+    U->>E: GET /static/logo.png
+    E->>E: Check Local SSD/RAM Cache
+    E-->>U: 200 OK (CF-Cache-Status: HIT) ✅
+
+    Note over U,O: ── CACHE MISS FLOW (~140ms) ──
+
+    U->>E: GET /hero-banner.webp
+    E->>E: Check Cache → MISS ❌
+    E->>S: Forward Request
+    S->>S: Check Regional Cache → MISS ❌
+    S->>O: Fetch from Origin
+    O-->>S: 200 + Cache-Control: public, max-age=86400
+    S-->>E: Response (cached at Shield)
+    E-->>U: 200 OK (CF-Cache-Status: MISS)
+    Note over E: Asset now cached for<br/>subsequent requests
+      </pre>
+    </div>
+
+    <!-- Concise Concepts -->
+    <div class="concept-grid">
+      <div class="concept-card">
+        <div class="card-head">
+          <div class="card-icon icon-indigo"><i data-lucide="globe"></i></div>
+          <h4>What is a CDN?</h4>
+        </div>
+        <p>A <strong>geographically distributed network of proxy servers</strong> that caches content (images, JS, CSS, video) close to end users, reducing latency from ~300ms to ~15ms.</p>
+        <ul class="feature-list">
+          <li><i data-lucide="check"></i> Reduces Round-Trip Time (RTT)</li>
+          <li><i data-lucide="check"></i> Offloads 80-95% bandwidth from Origin</li>
+          <li><i data-lucide="check"></i> DDoS absorption at the edge</li>
+        </ul>
+      </div>
+      <div class="concept-card">
+        <div class="card-head">
+          <div class="card-icon icon-cyan"><i data-lucide="server"></i></div>
+          <h4>PoP &amp; Edge Servers</h4>
+        </div>
+        <p><strong>PoP (Point of Presence)</strong> = physical data center at Internet Exchange Points. <strong>Edge Server</strong> = high-performance server inside PoP with SSD/RAM cache &amp; TLS termination.</p>
+        <ul class="feature-list">
+          <li><i data-lucide="check"></i> HTTP/2 &amp; HTTP/3 (QUIC) enabled</li>
+          <li><i data-lucide="check"></i> TLS handshake terminated near user</li>
+          <li><i data-lucide="check"></i> WAF &amp; Bot detection at edge</li>
+        </ul>
+      </div>
+      <div class="concept-card">
+        <div class="card-head">
+          <div class="card-icon icon-purple"><i data-lucide="git-commit"></i></div>
+          <h4>Anycast Routing</h4>
+        </div>
+        <p>Hundreds of PoPs share the <strong>same IP address</strong>. BGP routing tables automatically deliver packets to the <em>topologically closest</em> healthy server — zero client config needed.</p>
+        <ul class="feature-list">
+          <li><i data-lucide="check"></i> Auto-failover if PoP goes down</li>
+          <li><i data-lucide="check"></i> DDoS traffic distributed globally</li>
+        </ul>
+      </div>
+      <div class="concept-card">
+        <div class="card-head">
+          <div class="card-icon icon-rose"><i data-lucide="trash-2"></i></div>
+          <h4>Cache Invalidation</h4>
+        </div>
+        <p><strong>Hard Purge:</strong> Deletes immediately (origin spike risk).<br><strong>Soft Purge:</strong> Serves stale while revalidating in background.<br><strong>Cache-Tags:</strong> Atomic multi-page invalidation via surrogate keys.</p>
+        <ul class="feature-list">
+          <li><i data-lucide="check"></i> Propagates globally in &lt; 150ms</li>
+          <li><i data-lucide="check"></i> URL purge, Wildcard, Tag-based</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═════════════════════════════════════════════════════════════
+       SECTION 2 — CAP THEOREM
+       ═════════════════════════════════════════════════════════════ -->
+  <section class="topic-section" id="sec-cap">
+    <h2 class="section-head">
+      <span class="section-number num-purple">2</span>
+      <i data-lucide="triangle" style="color:#c084fc;"></i>
+      CAP Theorem — Brewer's Theorem
+    </h2>
+
+    <div class="callout callout-warn">
+      <i data-lucide="alert-triangle" style="color:#fbbf24;width:20px;height:20px;"></i>
+      <p><strong>Core Rule:</strong> In a distributed system, during a network <strong>Partition</strong>, you can only guarantee <strong>Consistency OR Availability</strong> — never both simultaneously. You must choose CP or AP.</p>
+    </div>
+
+    <!-- Mermaid: CAP Triangle -->
+    <div class="mermaid-box">
+      <pre class="mermaid">
+flowchart TD
+    CAP["🔺 CAP THEOREM\nPick 2 of 3 during Partition"]
+
+    C["🔒 Consistency\nEvery read gets the\nmost recent write"]
+    A["✅ Availability\nEvery request gets\na non-error response"]
+    P["🔗 Partition Tolerance\nSystem works despite\nnetwork splits"]
+
+    CAP --> C
+    CAP --> A
+    CAP --> P
+
+    C ---|"CP Systems\nBlock writes until\nall replicas agree"| P
+    A ---|"AP Systems\nServe stale data to\nstay responsive"| P
+    C -.-|"CA (Theoretical)\nOnly possible with\nno network partition"| A
+
+    style CAP fill:#2d1b69,stroke:#a855f7,color:#fff,stroke-width:2px
+    style C fill:#1e3a5f,stroke:#3b82f6,color:#fff
+    style A fill:#0d3320,stroke:#10b981,color:#fff
+    style P fill:#3d2607,stroke:#f59e0b,color:#fff
+      </pre>
+    </div>
+
+    <!-- Mermaid: What happens during partition -->
+    <div class="glass-panel">
+      <h3><i data-lucide="wifi-off" style="color:#fbbf24;width:20px;height:20px;"></i> What Happens During a Network Partition?</h3>
+    </div>
+
+    <div class="mermaid-box">
+      <pre class="mermaid">
+sequenceDiagram
+    participant C as 👤 Client
+    participant N1 as Node A (Primary)
+    participant N2 as Node B (Replica)
+
+    Note over N1,N2: 🔗 Network Partition Occurs!
+
+    rect rgb(30, 58, 95)
+        Note over C,N2: CP Choice (Consistency + Partition Tolerance)
+        C->>N1: WRITE user.name = "Alice"
+        N1-xN2: Replicate → TIMEOUT ❌
+        N1-->>C: ❌ 503 Service Unavailable
+        Note over N1: Refuses write to prevent<br/>inconsistency across nodes
+    end
+
+    rect rgb(13, 51, 32)
+        Note over C,N2: AP Choice (Availability + Partition Tolerance)
+        C->>N1: WRITE user.name = "Alice"
+        N1-xN2: Replicate → TIMEOUT ❌
+        N1-->>C: ✅ 200 OK (Write accepted)
+        Note over N1,N2: Nodes are NOW INCONSISTENT<br/>Node A: "Alice" | Node B: "Bob" (stale)
+        Note over N1,N2: Resolved later via<br/>conflict resolution / CRDT
+    end
+      </pre>
+    </div>
+
+    <!-- CP vs AP Real World Examples -->
+    <div class="glass-panel">
+      <h3><i data-lucide="database" style="color:#818cf8;width:20px;height:20px;"></i> Real-World Database Examples</h3>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Database</th>
+            <th>CAP Choice</th>
+            <th>Consistency Model</th>
+            <th>Best Use Case</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>MySQL / PostgreSQL</strong> (Single Primary)</td>
+            <td><span class="tag-blue">CA</span></td>
+            <td>Strong consistency (ACID), not partition-tolerant by default</td>
+            <td>Banking, Transactions</td>
+          </tr>
+          <tr>
+            <td><strong>MongoDB</strong> (with majority write concern)</td>
+            <td><span class="tag-blue">CP</span></td>
+            <td>Strong — blocks writes if majority of replicas unreachable</td>
+            <td>Inventory, Order Management</td>
+          </tr>
+          <tr>
+            <td><strong>HBase / Google Spanner</strong></td>
+            <td><span class="tag-blue">CP</span></td>
+            <td>Linearizable — uses TrueTime / Raft consensus</td>
+            <td>Financial systems, Global banking</td>
+          </tr>
+          <tr>
+            <td><strong>Cassandra</strong></td>
+            <td><span class="tag-green">AP</span></td>
+            <td>Eventual consistency — always writable, reconciles later</td>
+            <td>IoT sensors, Logging, Social feeds</td>
+          </tr>
+          <tr>
+            <td><strong>DynamoDB</strong> (default)</td>
+            <td><span class="tag-green">AP</span></td>
+            <td>Eventually consistent reads; optional strongly consistent reads</td>
+            <td>Cart, Session store, Leaderboards</td>
+          </tr>
+          <tr>
+            <td><strong>CockroachDB</strong></td>
+            <td><span class="tag-blue">CP</span></td>
+            <td>Serializable — distributed SQL with Raft consensus</td>
+            <td>Multi-region ACID transactions</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="concept-grid">
+      <div class="concept-card">
+        <div class="card-head">
+          <div class="card-icon icon-indigo"><i data-lucide="lock"></i></div>
+          <h4>C — Consistency</h4>
+        </div>
+        <p>Every read returns the <strong>most recent write</strong> or an error. All nodes see the same data at the same time. Think of it as a single-copy illusion.</p>
+        <p><strong>Example:</strong> After <code class="code-pill">UPDATE balance=500</code>, every node must return 500 immediately.</p>
+      </div>
+      <div class="concept-card">
+        <div class="card-head">
+          <div class="card-icon icon-emerald"><i data-lucide="check-circle"></i></div>
+          <h4>A — Availability</h4>
+        </div>
+        <p>Every request receives a <strong>non-error response</strong> (might be stale data). The system never refuses to serve, even during failures.</p>
+        <p><strong>Example:</strong> Cassandra always responds even if some nodes are partitioned — you may read stale data.</p>
+      </div>
+      <div class="concept-card">
+        <div class="card-head">
+          <div class="card-icon icon-amber"><i data-lucide="wifi-off"></i></div>
+          <h4>P — Partition Tolerance</h4>
+        </div>
+        <p>System continues operating even when <strong>network messages between nodes are dropped</strong>. In real distributed systems, partitions WILL happen — P is non-negotiable.</p>
+        <p><strong>Key insight:</strong> Since P is mandatory, you choose between <strong>CP</strong> or <strong>AP</strong>.</p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═════════════════════════════════════════════════════════════
+       SECTION 3 — UUID FOR SECURITY
+       ═════════════════════════════════════════════════════════════ -->
+  <section class="topic-section" id="sec-uuid">
+    <h2 class="section-head">
+      <span class="section-number num-cyan">3</span>
+      <i data-lucide="fingerprint" style="color:#22d3ee;"></i>
+      UUID — Why We Use It For Security
+    </h2>
+
+    <div class="callout callout-danger">
+      <i data-lucide="alert-circle" style="color:#f87171;width:20px;height:20px;"></i>
+      <p><strong>Security Risk of Auto-Increment IDs:</strong> Sequential IDs like <code>/api/users/1</code>, <code>/api/users/2</code> expose your total user count, allow resource enumeration attacks (IDOR), and reveal business growth metrics to competitors.</p>
+    </div>
+
+    <!-- Mermaid: Sequential ID Attack vs UUID -->
+    <div class="mermaid-box">
+      <pre class="mermaid">
+flowchart LR
+    subgraph VULN["❌ VULNERABLE: Auto-Increment IDs"]
+        A1["Attacker sees\n/api/orders/1001"] --> A2["Tries /api/orders/1002\n/api/orders/1003\n...iterates all IDs"]
+        A2 --> A3["💀 IDOR Attack\nAccesses other\nusers' data"]
+    end
+
+    subgraph SAFE["✅ SECURE: UUID v4"]
+        B1["User sees\n/api/orders/a3f8...d7e2"] --> B2["Tries to guess\nnext UUID"]
+        B2 --> B3["🔒 2^122 possibilities\nImpossible to guess\nor enumerate"]
+    end
+
+    style VULN fill:#3b1219,stroke:#ef4444,color:#fff
+    style SAFE fill:#0d3320,stroke:#10b981,color:#fff
+      </pre>
+    </div>
+
+    <!-- Mermaid: UUID v4 Structure -->
+    <div class="glass-panel">
+      <h3><i data-lucide="hash" style="color:#22d3ee;width:20px;height:20px;"></i> UUID v4 Structure (128-bit)</h3>
+    </div>
+
+    <div class="mermaid-box">
+      <pre class="mermaid">
+flowchart TD
+    UUID["UUID v4 Example\n550e8400-e29b-41d4-a716-446655440000"]
+
+    subgraph STRUCTURE["128-bit Breakdown"]
+        P1["32 bits\nTime-low\n(random in v4)"]
+        P2["16 bits\nTime-mid\n(random in v4)"]
+        P3["16 bits\nVersion: 4xxx\n4 = Random UUID"]
+        P4["16 bits\nVariant: 8/9/a/b\nRFC 4122"]
+        P5["48 bits\nRandom Node\n(122 bits random total)"]
+    end
+
+    UUID --> STRUCTURE
+    P1 --- P2 --- P3 --- P4 --- P5
+
+    STATS["📊 Collision Probability\n2^122 = 5.3 × 10^36\nGenerate 1 BILLION/sec\nfor 100 years = 50% chance\nof just ONE collision"]
+
+    STRUCTURE --> STATS
+
+    style UUID fill:#0c3547,stroke:#06b6d4,color:#fff,stroke-width:2px
+    style STRUCTURE fill:#1e293b,stroke:#334155,color:#fff
+    style STATS fill:#14532d,stroke:#22c55e,color:#fff
+      </pre>
+    </div>
+
+    <!-- Concept Cards -->
+    <div class="concept-grid">
+      <div class="concept-card">
+        <div class="card-head">
+          <div class="card-icon icon-rose"><i data-lucide="shield-off"></i></div>
+          <h4>IDOR Attack (Insecure Direct Object Reference)</h4>
+        </div>
+        <p>With auto-increment IDs, an attacker changes <code class="code-pill">/api/user/42</code> to <code class="code-pill">/api/user/43</code> and accesses another user's profile, orders, or medical records.</p>
+        <p><strong>UUID fixes this:</strong> IDs become unguessable, so even without authorization checks, enumeration is impossible.</p>
+      </div>
+      <div class="concept-card">
+        <div class="card-head">
+          <div class="card-icon icon-cyan"><i data-lucide="database"></i></div>
+          <h4>UUID in Database Design</h4>
+        </div>
+        <p>Store as <code class="code-pill">BINARY(16)</code> in MySQL or native <code class="code-pill">UUID</code> type in PostgreSQL. Avoid VARCHAR(36) — wastes 2.25× storage and slows indexing.</p>
+        <p><strong>Tip:</strong> Use <strong>UUIDv7</strong> (time-ordered) for primary keys to preserve B-Tree insert performance. Use UUIDv4 for tokens/secrets.</p>
+      </div>
+      <div class="concept-card">
+        <div class="card-head">
+          <div class="card-icon icon-amber"><i data-lucide="eye-off"></i></div>
+          <h4>Information Leakage Prevention</h4>
+        </div>
+        <p>Sequential IDs leak: <strong>total record count</strong> (growth rate), <strong>creation order</strong> (timing attacks), and <strong>volume</strong> (competitor intelligence).</p>
+        <p>UUIDs reveal <em>nothing</em> about database size, order frequency, or user count.</p>
+      </div>
+      <div class="concept-card">
+        <div class="card-head">
+          <div class="card-icon icon-purple"><i data-lucide="git-merge"></i></div>
+          <h4>Distributed ID Generation</h4>
+        </div>
+        <p>Auto-increment requires a <strong>single coordinator</strong> (bottleneck). UUIDs can be generated <strong>independently on any node</strong> without coordination — critical in microservices &amp; distributed databases.</p>
+        <p>Alternatives: <strong>Snowflake IDs</strong> (Twitter), <strong>ULID</strong>, <strong>KSUID</strong>, <strong>NanoID</strong>.</p>
+      </div>
+    </div>
+
+    <!-- Comparison Table -->
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Aspect</th>
+            <th>Auto-Increment ID</th>
+            <th>UUID v4 (Random)</th>
+            <th>UUID v7 (Time-ordered)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>Security</strong></td><td><span class="tag-red">Enumerable</span></td><td><span class="tag-green">Unguessable</span></td><td><span class="tag-green">Unguessable</span></td></tr>
+          <tr><td><strong>Distributed Generation</strong></td><td>❌ Needs coordinator</td><td>✅ Any node, no conflict</td><td>✅ Any node, time-sorted</td></tr>
+          <tr><td><strong>Index Performance</strong></td><td>✅ Sequential inserts</td><td>❌ Random → page splits</td><td>✅ Time-ordered → sequential</td></tr>
+          <tr><td><strong>Storage Size</strong></td><td>4-8 bytes</td><td>16 bytes</td><td>16 bytes</td></tr>
+          <tr><td><strong>Info Leakage</strong></td><td><span class="tag-red">Leaks count &amp; order</span></td><td><span class="tag-green">Zero leakage</span></td><td><span class="tag-amber">Leaks rough timestamp</span></td></tr>
+          <tr><td><strong>Best For</strong></td><td>Internal-only tables</td><td>Tokens, secrets, API keys</td><td>Primary keys, public resources</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+
+  <!-- ═════════════════════════════════════════════════════════════
+       SECTION 4 — DISTRIBUTED SERVERS
+       ═════════════════════════════════════════════════════════════ -->
+  <section class="topic-section" id="sec-dist">
+    <h2 class="section-head">
+      <span class="section-number num-amber">4</span>
+      <i data-lucide="server" style="color:#fbbf24;"></i>
+      Distributed Servers — Architecture
+    </h2>
+
+    <div class="callout callout-info">
+      <i data-lucide="info" style="color:#818cf8;width:20px;height:20px;"></i>
+      <p><strong>Why Distribute?</strong> A single server has finite CPU, RAM, and bandwidth. Distributed servers split workload across multiple machines to achieve <strong>horizontal scalability, fault tolerance, and geographic proximity</strong>.</p>
+    </div>
+
+    <!-- Mermaid: Distributed Architecture -->
+    <div class="mermaid-box">
+      <pre class="mermaid">
+flowchart TD
+    subgraph CLIENTS["👤 Global Users"]
+        C1["🇺🇸 US Users"]
+        C2["🇮🇳 India Users"]
+        C3["🇪🇺 EU Users"]
+    end
+
+    subgraph GLB["🌐 Global Load Balancer"]
+        DNS["GeoDNS / Anycast\nRoutes to nearest region"]
+    end
+
+    subgraph R1["📍 US-East Region"]
+        LB1["Regional LB\nNGINX / ALB"]
+        S1A["Server 1A\nNode.js"]
+        S1B["Server 1B\nNode.js"]
+        S1C["Server 1C\nNode.js"]
+        DB1[("Primary DB\nPostgreSQL")]
+    end
+
+    subgraph R2["📍 AP-South Region"]
+        LB2["Regional LB\nNGINX / ALB"]
+        S2A["Server 2A\nNode.js"]
+        S2B["Server 2B\nNode.js"]
+        DB2[("Replica DB\nPostgreSQL")]
+    end
+
+    subgraph SHARED["🗄️ Shared Services"]
+        CACHE["Redis Cluster\nSession + Cache"]
+        MQ["Message Queue\nKafka / RabbitMQ"]
+    end
+
+    C1 --> DNS
+    C2 --> DNS
+    C3 --> DNS
+    DNS -->|"Low latency"| LB1
+    DNS -->|"Low latency"| LB2
+    LB1 --> S1A & S1B & S1C
+    LB2 --> S2A & S2B
+    S1A & S1B & S1C --> DB1
+    S2A & S2B --> DB2
+    DB1 -->|"Async Replication"| DB2
+    S1A --> CACHE
+    S2A --> CACHE
+    S1A --> MQ
+    S2A --> MQ
+
+    style CLIENTS fill:#1e293b,stroke:#64748b,color:#fff
+    style GLB fill:#2d1b69,stroke:#8b5cf6,color:#fff
+    style R1 fill:#1e3a5f,stroke:#3b82f6,color:#fff
+    style R2 fill:#0c3547,stroke:#06b6d4,color:#fff
+    style SHARED fill:#3d2607,stroke:#f59e0b,color:#fff
+      </pre>
+    </div>
+
+    <!-- Mermaid: Horizontal vs Vertical Scaling -->
+    <div class="glass-panel">
+      <h3><i data-lucide="maximize" style="color:#fbbf24;width:20px;height:20px;"></i> Horizontal vs Vertical Scaling</h3>
+    </div>
+
+    <div class="mermaid-box">
+      <pre class="mermaid">
+flowchart LR
+    subgraph VS["⬆️ Vertical Scaling (Scale UP)"]
+        direction TB
+        V1["Small Server\n2 CPU · 4 GB RAM"]
+        V2["Medium Server\n8 CPU · 32 GB RAM"]
+        V3["Large Server\n64 CPU · 512 GB RAM"]
+        V1 -->|"Upgrade hardware"| V2 -->|"Upgrade hardware"| V3
+    end
+
+    subgraph HS["➡️ Horizontal Scaling (Scale OUT)"]
+        direction TB
+        H0["Load Balancer"]
+        H1["Server 1\n4 CPU · 8 GB"]
+        H2["Server 2\n4 CPU · 8 GB"]
+        H3["Server 3\n4 CPU · 8 GB"]
+        H4["Server N\n4 CPU · 8 GB"]
+        H0 --> H1 & H2 & H3 & H4
+    end
+
+    VERDICT["✅ Horizontal Wins\n• No hardware ceiling\n• Fault tolerant\n• Cost effective\n• Linear scalability"]
+
+    VS --> VERDICT
+    HS --> VERDICT
+
+    style VS fill:#3b1219,stroke:#ef4444,color:#fff
+    style HS fill:#0d3320,stroke:#10b981,color:#fff
+    style VERDICT fill:#14532d,stroke:#22c55e,color:#fff,stroke-width:2px
+      </pre>
+    </div>
+
+    <div class="concept-grid">
+      <div class="concept-card">
+        <div class="card-head">
+          <div class="card-icon icon-amber"><i data-lucide="layers"></i></div>
+          <h4>Load Balancing Strategies</h4>
+        </div>
+        <p><strong>Round Robin:</strong> Rotate requests equally.<br>
+           <strong>Least Connections:</strong> Route to server with fewest active connections.<br>
+           <strong>IP Hash:</strong> Same client always hits same server (session affinity).<br>
+           <strong>Weighted:</strong> Powerful servers get more traffic.</p>
+      </div>
+      <div class="concept-card">
+        <div class="card-head">
+          <div class="card-icon icon-emerald"><i data-lucide="heart-pulse"></i></div>
+          <h4>Health Checks &amp; Failover</h4>
+        </div>
+        <p>Load balancers send periodic <strong>health probes</strong> (HTTP GET <code class="code-pill">/health</code>). If a server fails to respond, traffic is automatically rerouted to healthy nodes in &lt; 10 seconds.</p>
+        <p><strong>Key:</strong> Stateless servers enable instant failover — no session data lost.</p>
+      </div>
+      <div class="concept-card">
+        <div class="card-head">
+          <div class="card-icon icon-purple"><i data-lucide="hard-drive"></i></div>
+          <h4>Stateless vs Stateful</h4>
+        </div>
+        <p><strong>Stateless servers</strong> store zero user state locally. Sessions live in Redis/Memcached. Any server can handle any request — enables effortless horizontal scaling.</p>
+        <p><strong>Stateful servers</strong> require sticky sessions, making scaling and failover difficult.</p>
+      </div>
+      <div class="concept-card">
+        <div class="card-head">
+          <div class="card-icon icon-cyan"><i data-lucide="container"></i></div>
+          <h4>Auto-Scaling</h4>
+        </div>
+        <p>Cloud platforms (AWS ASG, K8s HPA) monitor CPU/memory/request-rate and automatically <strong>add or remove server instances</strong>.</p>
+        <p><strong>Scale-out</strong> at 70% CPU → spin up new containers.<br><strong>Scale-in</strong> at 20% CPU → terminate idle instances to save cost.</p>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ═════════════════════════════════════════════════════════════
+       SECTION 5 — REPLICATION
+       ═════════════════════════════════════════════════════════════ -->
+  <section class="topic-section" id="sec-replica">
+    <h2 class="section-head">
+      <span class="section-number num-green">5</span>
+      <i data-lucide="copy" style="color:#34d399;"></i>
+      Database Replication — Why We Use It
+    </h2>
+
+    <div class="callout callout-tip">
+      <i data-lucide="lightbulb" style="color:#34d399;width:20px;height:20px;"></i>
+      <p><strong>Core Idea:</strong> Keep identical copies of data on multiple servers so that if one dies, data survives and read traffic can be distributed. Replication = <strong>Durability + Read Scalability + Fault Tolerance</strong>.</p>
+    </div>
+
+    <!-- Mermaid: Master-Slave (Primary-Replica) Replication -->
+    <div class="mermaid-box">
+      <pre class="mermaid">
+flowchart TD
+    subgraph APP["🖥️ Application Layer"]
+        W["Write Requests\nINSERT / UPDATE / DELETE"]
+        R["Read Requests\nSELECT queries"]
+    end
+
+    subgraph REPL["🔄 Primary-Replica Replication"]
+        PRIMARY[("🟢 PRIMARY\n(Master)\nHandles ALL writes\nSingle source of truth")]
+        REP1[("🔵 REPLICA 1\n(Slave)\nRead-only copy\nUS-East")]
+        REP2[("🔵 REPLICA 2\n(Slave)\nRead-only copy\nAP-South")]
+        REP3[("🔵 REPLICA 3\n(Slave)\nRead-only copy\nEU-West")]
+    end
+
+    W -->|"All writes"| PRIMARY
+    PRIMARY -->|"Async WAL Stream"| REP1
+    PRIMARY -->|"Async WAL Stream"| REP2
+    PRIMARY -->|"Async WAL Stream"| REP3
+
+    R -->|"Distributed reads"| REP1
+    R -->|"Distributed reads"| REP2
+    R -->|"Distributed reads"| REP3
+
+    FAILOVER["🔥 If PRIMARY dies:\nReplica promoted to new Primary\n(Automatic Failover)"]
+
+    PRIMARY -.-> FAILOVER
+    FAILOVER -.-> REP1
+
+    style APP fill:#1e293b,stroke:#64748b,color:#fff
+    style REPL fill:#0d3320,stroke:#10b981,color:#fff
+    style PRIMARY fill:#14532d,stroke:#22c55e,color:#fff,stroke-width:2px
+    style FAILOVER fill:#3b1219,stroke:#ef4444,color:#fff
+      </pre>
+    </div>
+
+    <!-- Mermaid: Sync vs Async vs Semi-Sync -->
+    <div class="glass-panel">
+      <h3><i data-lucide="git-pull-request" style="color:#818cf8;width:20px;height:20px;"></i> Synchronous vs Asynchronous Replication</h3>
+    </div>
+
+    <div class="mermaid-box">
+      <pre class="mermaid">
+sequenceDiagram
+    participant C as 👤 Client
+    participant P as 🟢 Primary
+    participant R1 as 🔵 Replica 1
+    participant R2 as 🔵 Replica 2
+
+    Note over C,R2: ── SYNCHRONOUS Replication ──
+
+    C->>P: INSERT INTO orders (...)
+    P->>R1: Replicate (WAL)
+    P->>R2: Replicate (WAL)
+    R1-->>P: ACK ✅
+    R2-->>P: ACK ✅
+    P-->>C: COMMIT ✅ (Both replicas confirmed)
+    Note over P,R2: ✅ Zero data loss (RPO = 0)<br/>❌ Slower writes (waits for all ACKs)
+
+    Note over C,R2: ── ASYNCHRONOUS Replication ──
+
+    C->>P: INSERT INTO orders (...)
+    P-->>C: COMMIT ✅ (Immediate)
+    P-)R1: Replicate (background)
+    P-)R2: Replicate (background)
+    Note over P,R2: ✅ Fast writes<br/>❌ Possible data loss if Primary<br/>crashes before replication
+      </pre>
+    </div>
+
+    <!-- Mermaid: Multi-Master Replication -->
+    <div class="glass-panel">
+      <h3><i data-lucide="git-branch" style="color:#c084fc;width:20px;height:20px;"></i> Multi-Master (Active-Active) Replication</h3>
+    </div>
+
+    <div class="mermaid-box">
+      <pre class="mermaid">
+flowchart LR
+    subgraph MM["🔄 Multi-Master Replication"]
+        M1[("🟢 Master 1\nUS Region\nReads + Writes")]
+        M2[("🟢 Master 2\nEU Region\nReads + Writes")]
+        M3[("🟢 Master 3\nAsia Region\nReads + Writes")]
+    end
+
+    M1 <-->|"Bi-directional\nreplication"| M2
+    M2 <-->|"Bi-directional\nreplication"| M3
+    M3 <-->|"Bi-directional\nreplication"| M1
+
+    CONFLICT["⚠️ Conflict Resolution\nNeeded when two masters\nupdate same row\n• Last-Write-Wins (LWW)\n• Application-level merge\n• CRDTs"]
+
+    MM --> CONFLICT
+
+    style MM fill:#2d1b69,stroke:#a855f7,color:#fff
+    style CONFLICT fill:#3d2607,stroke:#f59e0b,color:#fff
+      </pre>
+    </div>
+
+    <!-- Why We Use Replication -->
+    <div class="concept-grid">
+      <div class="concept-card">
+        <div class="card-head">
+          <div class="card-icon icon-emerald"><i data-lucide="shield-check"></i></div>
+          <h4>1. High Availability</h4>
+        </div>
+        <p>If the Primary crashes, a Replica is <strong>automatically promoted</strong> to new Primary within seconds. Zero downtime for users. This is called <strong>automatic failover</strong>.</p>
+        <p><strong>RTO (Recovery Time):</strong> 10-30 seconds with orchestrators like Patroni, Orchestrator, or RDS Multi-AZ.</p>
+      </div>
+      <div class="concept-card">
+        <div class="card-head">
+          <div class="card-icon icon-cyan"><i data-lucide="gauge"></i></div>
+          <h4>2. Read Scalability</h4>
+        </div>
+        <p>Most apps are <strong>80-90% reads, 10-20% writes</strong>. Replicas handle all read queries, spreading load. Adding a replica linearly increases read throughput.</p>
+        <p><strong>Pattern:</strong> Write to Primary → Read from Replica (Read-After-Write consistency via session routing).</p>
+      </div>
+      <div class="concept-card">
+        <div class="card-head">
+          <div class="card-icon icon-amber"><i data-lucide="globe"></i></div>
+          <h4>3. Geographic Distribution</h4>
+        </div>
+        <p>Place replicas in <strong>regions close to users</strong> — US-East, EU-West, AP-South. Users read from the nearest replica with ~20ms latency instead of 200ms cross-ocean.</p>
+        <p>Writes still go to Primary region and asynchronously replicate outward.</p>
+      </div>
+      <div class="concept-card">
+        <div class="card-head">
+          <div class="card-icon icon-purple"><i data-lucide="archive"></i></div>
+          <h4>4. Disaster Recovery</h4>
+        </div>
+        <p>If an entire data center is destroyed (fire, flood), replicas in other regions hold a complete copy. <strong>RPO (Recovery Point Objective)</strong>:</p>
+        <p><strong>Sync replication:</strong> RPO = 0 (zero data loss).<br><strong>Async replication:</strong> RPO = seconds of replication lag.</p>
+      </div>
+      <div class="concept-card">
+        <div class="card-head">
+          <div class="card-icon icon-indigo"><i data-lucide="bar-chart-3"></i></div>
+          <h4>5. Analytics &amp; Reporting</h4>
+        </div>
+        <p>Run expensive <strong>analytics queries and reports</strong> against a dedicated read replica. This prevents heavy reporting workloads from slowing down the production Primary.</p>
+        <p><strong>Pattern:</strong> ETL pipelines, BI dashboards, and batch jobs all point to the replica.</p>
+      </div>
+      <div class="concept-card">
+        <div class="card-head">
+          <div class="card-icon icon-rose"><i data-lucide="alert-triangle"></i></div>
+          <h4>6. Replication Lag Caveat</h4>
+        </div>
+        <p>Async replicas may be <strong>seconds behind the Primary</strong>. A user writes data and immediately reads from a replica — they might see stale data.</p>
+        <p><strong>Fix:</strong> Read-your-own-writes consistency — route the writing user's reads to Primary for a few seconds after their write.</p>
+      </div>
+    </div>
+
+    <!-- Replication Strategies Comparison -->
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Strategy</th>
+            <th>Writes To</th>
+            <th>Reads From</th>
+            <th>Consistency</th>
+            <th>Data Loss Risk</th>
+            <th>Use Case</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Single-Primary (Master-Slave)</strong></td>
+            <td>1 Primary only</td>
+            <td>All Replicas</td>
+            <td><span class="tag-amber">Eventual</span></td>
+            <td><span class="tag-amber">Low (async lag)</span></td>
+            <td>Most web apps, SaaS</td>
+          </tr>
+          <tr>
+            <td><strong>Synchronous Replication</strong></td>
+            <td>1 Primary</td>
+            <td>All Replicas</td>
+            <td><span class="tag-green">Strong</span></td>
+            <td><span class="tag-green">Zero</span></td>
+            <td>Banking, Financial</td>
+          </tr>
+          <tr>
+            <td><strong>Multi-Master (Active-Active)</strong></td>
+            <td>Any Master</td>
+            <td>Any Master</td>
+            <td><span class="tag-red">Conflict resolution</span></td>
+            <td><span class="tag-amber">Medium</span></td>
+            <td>Multi-region apps, CRDTs</td>
+          </tr>
+          <tr>
+            <td><strong>Leaderless (Quorum)</strong></td>
+            <td>Any node (W nodes)</td>
+            <td>Any node (R nodes)</td>
+            <td><span class="tag-blue">Tunable (W+R&gt;N)</span></td>
+            <td><span class="tag-amber">Configurable</span></td>
+            <td>Cassandra, DynamoDB</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ═══════ FOOTER ═══════ -->
+  <footer>
+    <p>Full Stack Learning Notes &bull; System Design Core Concepts &bull; CDN · CAP · UUID · Distributed Servers · Replication</p>
+  </footer>
+
+</div>
+
+<script>
+  // Initialize Mermaid with dark theme
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    themeVariables: {
+      primaryColor: '#1e3a5f',
+      primaryTextColor: '#f8fafc',
+      primaryBorderColor: '#3b82f6',
+      lineColor: '#64748b',
+      secondaryColor: '#0c3547',
+      tertiaryColor: '#2d1b69',
+      fontFamily: 'Plus Jakarta Sans, sans-serif',
+      fontSize: '14px',
+      noteBkgColor: '#1e293b',
+      noteTextColor: '#e2e8f0',
+      noteBorderColor: '#475569',
+      actorBkg: '#1e293b',
+      actorBorder: '#3b82f6',
+      actorTextColor: '#f8fafc',
+      signalColor: '#94a3b8',
+      labelBoxBkgColor: '#1e293b',
+      labelBoxBorderColor: '#475569',
+      labelTextColor: '#f8fafc',
+    },
+    flowchart: {
+      htmlLabels: true,
+      curve: 'basis',
+      padding: 15,
+      useMaxWidth: true,
+    },
+    sequence: {
+      useMaxWidth: true,
+      actorMargin: 80,
+      messageMargin: 40,
+    }
+  });
+
+  // Initialize Lucide icons
+  lucide.createIcons();
+</script>
+</body>
+</html>
